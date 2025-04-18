@@ -1,0 +1,17 @@
+# GAIA project .gitignore
+
+# Model files
+*.gguf
+
+# Database files
+chroma_db/
+
+# Large data files
+*.bin
+
+# Logs
+logs/
+*.log
+
+# Environment and config
+.env

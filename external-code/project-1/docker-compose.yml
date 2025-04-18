@@ -1,0 +1,42 @@
+services:
+  campaign_llm:
+    build: .
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./campaign-data:/app/campaign-data:rw
+      - ./models/Hermes-3-Llama-3.2-3B.Q4_K_M.gguf:/app/model.gguf:ro
+      - ./chroma_db:/app/chroma_db:rw
+      - ./gaia_instructions.txt:/app/gaia_instructions.txt:ro
+      - ./logs:/app/logs:rw
+      - ./external-code:/app/external-code:rw
+    environment:
+      MODEL_PATH: /app/model.gguf
+      DATA_PATH: /app/campaign-data/core-documentation
+      RAW_DATA_PATH: /app/campaign-data/raw-data
+      OUTPUT_PATH: /app/campaign-data/converted_raw
+      VECTOR_DB_PATH: /app/chroma_db
+      CORE_INSTRUCTIONS_FILE: /app/gaia_instructions.txt
+      EXTERNAL_CODE_PATH: /app/external-code
+      CODE_PATH: /app
+      N_GPU_LAYERS: 0       # Set to higher value if you have GPU support
+      N_THREADS: 8          # Adjust based on available CPU cores
+      N_BATCH: 768          # Good batch size for performance
+      N_CTX: 8192           # Reasonable context window size
+      SKIP_TTS_SELECTION: 'true'
+      FLASK_ENV: 'production'
+      PORT: 7860
+      SECRET_KEY: Banana_King_Of_Seattle_4163
+      EMBEDDING_MODEL: all-mpnet-base-v2
+    deploy:
+      resources:
+        limits:
+          memory: 12G        # Adjust based on available system memory
+          cpus: '6'         # Adjust based on available CPU cores
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s     # Longer start period to account for model loading
