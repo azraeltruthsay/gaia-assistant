@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAIA - D&D Campaign Assistant</title>
+    
+    <!-- Load CSS files -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+    
+    <!-- Load JavaScript libraries - use specific versions -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/lib/marked.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    
+	<script src="{{ url_for('static', filename='js/project_switcher.js') }}"></script>
+	
+    <!-- Add marked.js fix -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log("Marked library type:", typeof marked);
+        
+        // Fix for marked library if needed
+        if (typeof marked !== 'function') {
+          if (window.marked && typeof window.marked !== 'function') {
+            if (window.marked.parse && typeof window.marked.parse === 'function') {
+              window.marked = function(text) {
+                return window.marked.parse(text);
+              };
+              console.log("Set marked to use marked.parse function");
+            } else if (window.marked.marked && typeof window.marked.marked === 'function') {
+              window.marked = window.marked.marked;
+              console.log("Set marked to use marked.marked function");
+            } else {
+              console.error("Cannot find appropriate marked function");
+              // Basic fallback
+              window.marked = function(text) {
+                return "<p>" + text.replace(/\n\n/g, "</p><p>") + "</p>";
+              };
+            }
+          }
+        }
+        
+        // Test marked
+        try {
+          console.log("Testing marked with: # Test");
+          var result = marked("# Test");
+          console.log("Result:", result);
+        } catch(e) {
+          console.error("Error testing marked:", e);
+        }
+      });
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>GAIA</h1>
+                <p>D&D Campaign Assistant</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-tab="chat">
+                    <i class="fas fa-comments"></i> <span>Chat</span>
+                </button>
+                <button class="nav-btn" data-tab="documents">
+                    <i class="fas fa-file-alt"></i> <span>Documents</span>
+                </button>
+                <button class="nav-btn" data-tab="upload">
+                    <i class="fas fa-upload"></i> <span>Upload</span>
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <p>Campaign: <span id="campaign-name">Brænēage</span></p>
+                <p class="version">v1.0.0</p>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Loading Screen -->
+            <div id="loading-screen" class="content-section active">
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <h2>Initializing GAIA</h2>
+                    <p>Please wait while the AI systems are being initialized...</p>
+                    <div id="initialization-progress">
+                        <p>This process may take several minutes the first time as models are downloaded.</p>
+                        <div id="initialization-status">Checking status...</div>
+                    </div>
+                    <div id="initialization-error" class="error-message hidden"></div>
+                </div>
+            </div>
+            
+            <!-- Chat Section -->
+            <section id="chat" class="content-section">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message system">
+                            <div class="message-content">
+                                <p>Welcome to GAIA (General Assistant - Intelligent Artifice). How can I assist with your campaign today?</p>
+                            </div>
+                            <div class="message-timestamp">
+                                <script>document.write(new Date().toLocaleTimeString());</script>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <textarea id="chat-input" placeholder="Ask about your campaign world or type 'artifact: ...' to generate content..."></textarea>
+                        <button id="send-button">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Documents Section -->
+            <section id="documents" class="content-section">
+                <div class="documents-container">
+                    <div class="section-header">
+                        <h2>Campaign Documents</h2>
+                        <div class="search-container">
+                            <input type="text" id="document-search" placeholder="Search documents...">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="document-tabs">
+                        <button class="doc-tab-btn active" data-doctab="core">Core Documentation</button>
+                        <button class="doc-tab-btn" data-doctab="artifacts">Generated Artifacts</button>
+                    </div>
+                    
+                    <div id="core-docs" class="document-list doc-tab active">
+                        <div class="loading-spinner document-spinner"></div>
+                    </div>
+                    
+                    <div id="artifacts-docs" class="document-list doc-tab">
+                        <div class="loading-spinner document-spinner"></div>
+                    </div>
+                    
+                    <div id="document-viewer" class="document-viewer">
+                        <div class="document-viewer-header">
+                            <h3 id="document-title">Document Title</h3>
+                            <div class="document-actions">
+                                <button id="download-document" title="Download Document">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button id="close-document" title="Close Document">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="document-content" class="document-content markdown-body">
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Upload Section -->
+            <section id="upload" class="content-section">
+                <div class="upload-container">
+                    <div class="section-header">
+                        <h2>Upload Campaign Materials</h2>
+                    </div>
+                    
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <p>Drag and drop files here</p>
+                        <p class="upload-subtitle">or</p>
+                        <label for="file-input" class="upload-btn">Browse Files</label>
+                        <input type="file" id="file-input" accept=".txt,.rtf,.docx,.md" hidden>
+                        <p class="upload-formats">Supported formats: TXT, RTF, DOCX, MD</p>
+                    </div>
+                    
+                    <div class="upload-status" id="upload-status">
+                    </div>
+                    
+                    <div class="upload-list" id="upload-list">
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Document Preview Modal -->
+    <div id="preview-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Document Title</h3>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div id="modal-body" class="modal-body markdown-body">
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom status update script -->
+    <script>
+    // Add better initialization status updates
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusElem = document.getElementById('initialization-status');
+        let dots = 0;
+        
+        function updateLoadingDots() {
+            dots = (dots + 1) % 4;
+            let dotStr = '.'.repeat(dots);
+            return dotStr;
+        }
+        
+        function checkStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.initialized) {
+                        statusElem.innerHTML = '<span style="color: green;">✓ Initialization complete!</span>';
+                        setTimeout(() => {
+                            document.getElementById('loading-screen').classList.remove('active');
+                            document.getElementById('chat').classList.add('active');
+                        }, 1000);
+                    } else {
+                        if (data.error) {
+                            statusElem.innerHTML = '<span style="color: red;">Error: ' + data.error + '</span>';
+                        } else {
+                            statusElem.innerHTML = 'Loading models and processing documents' + updateLoadingDots();
+                            setTimeout(checkStatus, 2000);
+                        }
+                    }
+                })
+                .catch(err => {
+                    statusElem.innerHTML = '<span style="color: red;">Connection error. Retrying' + updateLoadingDots() + '</span>';
+                    setTimeout(checkStatus, 3000);
+                });
+        }
+        
+        // Start checking status
+        checkStatus();
+    });
+    </script>
+
+    <!-- Include the troubleshooting script -->
+    <script src="{{ url_for('static', filename='js/troubleshoot.js') }}"></script>
+    
+    <!-- Add the chat fix script (must be loaded after troubleshoot.js and before app.js) -->
+    <script src="{{ url_for('static', filename='js/chat-fix.js') }}"></script>
+    
+	<!-- Add conversation archives UI -->
+	<script src="{{ url_for('static', filename='js/conversation_archives.js') }}"></script>
+	
+    <!-- Include the code analyzer script -->
+	<script src="{{ url_for('static', filename='js/code-analyzer.js') }}"></script>
+
+	<!-- Add before the app.js script -->
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/code-fix.css') }}">
+
+	<!-- App JS (load last) -->
+	<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
