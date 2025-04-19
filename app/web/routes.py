@@ -529,3 +529,161 @@ def upload_code_file():
     except Exception as e:
         logger.error(f"Error processing uploaded code file: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
+# Add these routes to the web_bp Blueprint in routes.py
+
+@web_bp.route('/api/conversation/archive/background', methods=['POST'])
+def archive_conversation_background():
+    """Archive the current conversation for background processing."""
+    ai_manager = current_app.config.get('AI_MANAGER')
+    
+    if not ai_manager:
+        return jsonify({'error': 'AI not initialized yet'}), 503
+    
+    try:
+        archive_info = ai_manager.background_archive_conversation()
+        
+        if not archive_info:
+            return jsonify({'error': 'Failed to archive conversation'}), 500
+        
+        return jsonify({
+            'success': True,
+            'id': archive_info['id'],
+            'summary': archive_info['summary'],
+            'status': archive_info['status']
+        })
+    except Exception as e:
+        logger.error(f"Error archiving conversation for background processing: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+@web_bp.route('/api/background/status', methods=['GET'])
+def get_background_status():
+    """Get status information about background tasks."""
+    ai_manager = current_app.config.get('AI_MANAGER')
+    
+    if not ai_manager:
+        return jsonify({'error': 'AI not initialized yet'}), 503
+    
+    try:
+        status = ai_manager.get_background_tasks_status()
+        
+        if 'error' in status:
+            return jsonify({'error': status['error']}), 500
+        
+        return jsonify({
+            'success': True,
+            'status': status
+        })
+    except Exception as e:
+        logger.error(f"Error getting background status: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+@web_bp.route('/api/background/task/<task_id>', methods=['GET'])
+def get_task_status(task_id):
+    """Get status information about a specific background task."""
+    ai_manager = current_app.config.get('AI_MANAGER')
+    
+    if not ai_manager:
+        return jsonify({'error': 'AI not initialized yet'}), 503
+    
+    if not ai_manager.background_processor:
+        return jsonify({'error': 'Background processor not initialized'}), 503
+    
+    try:
+        task_info = ai_manager.background_processor.get_task_status(task_id)
+        
+        if not task_info:
+            return jsonify({'error': 'Task not found'}), 404
+        
+        return jsonify({
+            'success': True,
+            'task': task_info
+        })
+    except Exception as e:
+        logger.error(f"Error getting task status: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+@web_bp.route('/api/structured_archives', methods=['GET'])
+def list_structured_archives():
+    """List all available structured archives."""
+    ai_manager = current_app.config.get('AI_MANAGER')
+    
+    if not ai_manager:
+        return jsonify({'error': 'AI not initialized yet'}), 503
+    
+    try:
+        structured_dir = os.path.join(
+            ai_manager.config.data_path, "../structured_archives"
+        )
+        
+        if not os.path.exists(structured_dir):
+            return jsonify({'structured_archives': []})
+        
+        structured_archives = []
+        for filename in os.listdir(structured_dir):
+            if filename.endswith('.md'):
+                filepath = os.path.join(structured_dir, filename)
+                file_info = ai_manager.doc_processor.get_document_info(filepath)
+                if file_info:
+                    # Extract archive ID from filename
+                    archive_id = filename.replace('_structured.md', '')
+                    file_info['archive_id'] = archive_id
+                    structured_archives.append(file_info)
+        
+        return jsonify({
+            'success': True,
+            'structured_archives': structured_archives
+        })
+    except Exception as e:
+        logger.error(f"Error listing structured archives: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+@web_bp.route('/api/structured_archive/<archive_id>', methods=['GET'])
+def get_structured_archive(archive_id):
+    """Get the content of a specific structured archive."""
+    ai_manager = current_app.config.get('AI_MANAGER')
+    
+    if not ai_manager:
+        return jsonify({'error': 'AI not initialized yet'}), 503
+    
+    try:
+        structured_dir = os.path.join(
+            ai_manager.config.data_path, "../structured_archives"
+        )
+        filepath = os.path.join(structured_dir, f"{archive_id}_structured.md")
+        
+        if not os.path.exists(filepath):
+            return jsonify({'error': 'Structured archive not found'}), 404
+        
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        return jsonify({
+            'success': True,
+            'id': archive_id,
+            'content': content
+        })
+    except Exception as e:
+        logger.error(f"Error retrieving structured archive: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+@web_bp.route('/api/background/register_activity', methods=['POST'])
+def register_user_activity():
+    """Register user activity to prevent processing during active use."""
+    ai_manager = current_app.config.get('AI_MANAGER')
+    
+    if not ai_manager:
+        return jsonify({'error': 'AI not initialized yet'}), 503
+    
+    if not ai_manager.background_processor:
+        return jsonify({'error': 'Background processor not initialized'}), 503
+    
+    try:
+        ai_manager.register_user_activity()
+        
+        return jsonify({
+            'success': True,
+            'message': 'User activity registered'
+        })
+    except Exception as e:
+        logger.error(f"Error registering user activity: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500

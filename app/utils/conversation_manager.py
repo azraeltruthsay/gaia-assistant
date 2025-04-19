@@ -372,3 +372,181 @@ class ConversationManager:
             context_parts.append(f"From previous conversation ({item['id']}):\n{item['summary']}")
         
         return "\n\n".join(context_parts)
+    def summarize_and_archive_for_background(self):
+        """
+        Prepare the current conversation for background processing.
+        Similar to summarize_and_archive but delegates processing to background tasks.
+        
+        Returns:
+            Dictionary with archive information
+        """
+        if not self.conversation_history:
+            return None
+        
+        # Generate a basic summary for immediate feedback
+        summary = self._generate_basic_summary()
+        
+        # Create a unique archive ID
+        archive_id = f"{self.current_session_id}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        filename = f"{archive_id}.md"
+        filepath = os.path.join(self.archives_dir, filename)
+        
+        # Format raw conversation as markdown
+        markdown_content = self._format_conversation_as_markdown(summary)
+        
+        # Save raw conversation
+        try:
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(markdown_content)
+            logger.info(f"Raw conversation archived to {filepath}")
+        except Exception as e:
+            logger.error(f"Error saving archive: {e}")
+            return None
+    
+        # Add to summaries index with basic summary
+        summary_entry = {
+            "id": archive_id,
+            "timestamp": datetime.datetime.now().isoformat(),
+            "summary": summary,
+            "keyword_phrases": self._extract_keywords(),
+            "status": "pending_processing"
+        }
+    
+        self.summaries.append(summary_entry)
+    
+        # Save the updated summaries index
+        try:
+            with open(self.summaries_index_path, 'w', encoding='utf-8') as f:
+                json.dump(self.summaries, f, indent=2)
+        except Exception as e:
+            logger.error(f"Error saving summaries index: {e}")
+        
+        # Clear the active conversation history
+        self.conversation_history = []
+        
+        logger.info(f"Conversation prepared for background processing with ID: {archive_id}")
+        
+        return {
+            "id": archive_id,
+            "filepath": filepath,
+            "summary": summary
+        }
+
+# Add this method to the ConversationManager class
+
+    def update_archive_status(self, archive_id, new_status, new_summary=None):
+        """
+        Update the status of an archived conversation after background processing.
+        
+        Args:
+            archive_id: ID of the archive to update
+            new_status: New status string (e.g., 'processed', 'failed')
+            new_summary: Optional improved summary from structured processing
+            
+        Returns:
+            True if update successful, False otherwise
+        """
+        try:
+            # Find the summary entry
+            for summary in self.summaries:
+                if summary["id"] == archive_id:
+                    summary["status"] = new_status
+                    if new_summary:
+                        summary["summary"] = new_summary
+                    
+                    # Save the updated summaries index
+                    with open(self.summaries_index_path, 'w', encoding='utf-8') as f:
+                        json.dump(self.summaries, f, indent=2)
+                    
+                    logger.info(f"Updated archive {archive_id} status to {new_status}")
+                    return True
+            
+            logger.warning(f"Archive {archive_id} not found in summaries index")
+            return False
+        except Exception as e:
+            logger.error(f"Error updating archive status: {e}")
+            return False
+    
+    # Add this method to the ConversationManager class
+    
+    def get_archive_statistics(self):
+        """
+        Get statistics about archived conversations.
+        
+        Returns:
+            Dictionary with archive statistics
+        """
+        try:
+            total_archives = len(self.summaries)
+            processed_archives = sum(1 for s in self.summaries if s.get("status") == "processed")
+            pending_archives = sum(1 for s in self.summaries if s.get("status") == "pending_processing")
+            failed_archives = sum(1 for s in self.summaries if s.get("status") == "failed")
+            
+            # Count keywords
+            all_keywords = []
+            for summary in self.summaries:
+                all_keywords.extend(summary.get("keyword_phrases", []))
+            
+            # Get most common keywords
+            keyword_counts = {}
+            for keyword in all_keywords:
+                keyword_counts[keyword] = keyword_counts.get(keyword, 0) + 1
+            
+            top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+            
+            return {
+                "total_archives": total_archives,
+                "processed_archives": processed_archives,
+                "pending_archives": pending_archives,
+                "failed_archives": failed_archives,
+                "top_keywords": top_keywords
+            }
+        except Exception as e:
+            logger.error(f"Error getting archive statistics: {e}")
+            return {
+                "total_archives": 0,
+                "processed_archives": 0,
+                "pending_archives": 0,
+                "failed_archives": 0,
+                "top_keywords": []
+            }
+    
+    # Add this method to the ConversationManager class
+    
+    def get_related_archives(self, query, max_results=5):
+        """
+        Find archives related to a specific query using keywords.
+        
+        Args:
+            query: Query string to match against archives
+            max_results: Maximum number of results to return
+            
+        Returns:
+            List of related archive entries
+        """
+        # Extract keywords from the query
+        query_words = re.findall(r'\b[a-zA-Z\']+\b', query.lower())
+        
+        # Score archives based on keyword matches
+        scored_archives = []
+        for archive in self.summaries:
+            score = 0
+            
+            # Match against summary
+            summary = archive.get("summary", "").lower()
+            for word in query_words:
+                if word in summary:
+                    score += 1
+            
+            # Match against keywords
+            keywords = [k.lower() for k in archive.get("keyword_phrases", [])]
+            for word in query_words:
+                if any(word in keyword for keyword in keywords):
+                    score += 2
+            
+            if score > 0:
+                scored_archives.append((score, archive))
+        
+        # Sort by score and return top results
+        scored_archives.sort(reverse=True, key=lambda x: x[0])
+        return [archive for _, archive in scored_archives[:max_results]]

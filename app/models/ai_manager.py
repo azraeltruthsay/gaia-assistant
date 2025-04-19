@@ -19,6 +19,7 @@ from app.models.tts import SpeechManager
 from app.utils.hardware_optimization import detect_hardware, optimize_config
 from app.utils.conversation_manager import ConversationManager
 from app.models.code_analyzer import CodeAnalyzer
+from app.utils.background_processor import BackgroundProcessor
 
 # Import the ProjectManager
 from app.utils.project_manager import ProjectManager
@@ -46,6 +47,7 @@ class AIManager:
         self.conversation_history = []
         self.core_instructions = ""
         self.code_analyzer = None
+        self.background_processor = None  # Will be initialized later
     
         # Initialize Project Manager
         self.project_manager = ProjectManager(config)
@@ -84,6 +86,7 @@ class AIManager:
         self.conversation_manager = ConversationManager(self.config, self.llm)
         self.code_analyzer = CodeAnalyzer(self.config, self.llm)
         
+        
         # Process raw data
         self.doc_processor.process_raw_data()
         
@@ -100,7 +103,10 @@ class AIManager:
         if not self.vector_store:
             logger.error("Failed to initialize vector store")
             return False
-        
+        # Add this near the end of the existing initialize method
+        if all_initialized:
+            # Initialize background processor
+            self.initialize_background_processor()
         return True
     
     def _load_core_instructions(self) -> str:
@@ -126,6 +132,120 @@ class AIManager:
         except Exception as e:
             logger.error(f"Error reading core instructions file: {e}")
             return ""
+    
+    # Add this method to the AIManager class
+    def initialize_background_processor(self):
+        """Initialize the background processor for idle-time tasks."""
+        try:
+            self.background_processor = BackgroundProcessor(self.config, self)
+            success = self.background_processor.start()
+            if success:
+                logger.info("Background processor initialized and started")
+            else:
+                logger.warning("Background processor initialization returned False")
+            return success
+        except Exception as e:
+            logger.error(f"Error initializing background processor: {e}", exc_info=True)
+            return False
+    def register_user_activity(self):
+        """Register user activity to inform the background processor."""
+        if self.background_processor:
+            self.background_processor.register_activity()
+    
+    def background_archive_conversation(self):
+        """
+        Archive the current conversation and schedule it for background processing.
+        
+        Returns:
+            Summary information or None if operation failed
+        """
+        if not self.conversation_manager:
+            logger.warning("Conversation manager not initialized")
+            return None
+            
+        if not self.background_processor:
+            logger.warning("Background processor not initialized")
+            return None
+        
+        try:
+            # Archive conversation
+            archive_info = self.conversation_manager.summarize_and_archive_for_background()
+            
+            if not archive_info:
+                logger.warning("Failed to archive conversation")
+                return None
+            
+            # Add task to background processor
+            self.background_processor.add_conversation_processing_task(
+                archive_info["id"],
+                archive_info["filepath"]
+            )
+            
+            return {
+                "id": archive_info["id"],
+                "summary": archive_info["summary"],
+                "status": "scheduled_for_processing"
+            }
+        except Exception as e:
+            logger.error(f"Error archiving conversation for background processing: {e}", exc_info=True)
+            return None
+    
+    
+    def get_background_tasks_status(self):
+        """
+        Get status information about background tasks.
+        
+        Returns:
+            Dictionary with task status information
+        """
+        if not self.background_processor:
+            return {"error": "Background processor not initialized"}
+        
+        try:
+            task_status = self.background_processor.get_task_status()
+            archive_stats = self.conversation_manager.get_archive_statistics()
+            
+            return {
+                "tasks": task_status,
+                "archives": archive_stats
+            }
+        except Exception as e:
+            logger.error(f"Error getting background tasks status: {e}", exc_info=True)
+            return {"error": str(e)}
+    
+    # Add this method to the AIManager class
+    def analyze_code(self, filepath):
+        """
+        Analyze a code file using the code analyzer.
+        
+        Args:
+            filepath: Path to the code file
+            
+        Returns:
+            Analysis results or None if analysis fails
+        """
+        self.register_user_activity()
+        
+        if not self.code_analyzer:
+            logger.warning("Code analyzer not initialized")
+            return None
+        
+        try:
+            # Load the file content
+            content = self.code_analyzer.load_code_file(filepath)
+            if not content:
+                logger.warning(f"Failed to load code file: {filepath}")
+                return None
+            
+            # Analyze the code
+            analysis = self.code_analyzer.analyze_code_with_llm(filepath, content)
+            return analysis
+        except Exception as e:
+            logger.error(f"Error analyzing code: {e}", exc_info=True)
+            return None
+        
+        
+        
     def analyze_code(self, filepath: str) -> Optional[Dict[str, Any]]:
         """
         Analyze a code file.
@@ -225,6 +345,8 @@ class AIManager:
         Returns:
             Response from the AI
         """
+        # Add this at the beginning of the method
+        self.register_user_activity()
         if not self.llm or not self.vector_store:
             return "System not fully initialized. Please check logs."
         
@@ -363,6 +485,8 @@ class AIManager:
         Returns:
             Path to the saved artifact or None if generation fails
         """
+        # Add this at the beginning of the method
+        self.register_user_activity()
         if not self.llm:
             logger.error("LLM not available for artifact generation")
             return None
@@ -560,3 +684,7 @@ class AIManager:
         if self.speech_manager:
             self.speech_manager.stop()
         logger.info("AI Manager shutdown complete")
+        # Add this to the shutdown method
+        if self.background_processor:
+            self.background_processor.stop()
+            logger.info("Background processor stopped")

@@ -29,6 +29,12 @@ services:
       PORT: 7860
       SECRET_KEY: Banana_King_Of_Seattle_4163
       EMBEDDING_MODEL: all-mpnet-base-v2
+      # Background Processor Configuration
+      BG_IDLE_THRESHOLD: 300
+      BG_ENABLE_LORA: 'false'
+      BG_OVERNIGHT: 'true'
+      BG_OVERNIGHT_START: 22
+      BG_OVERNIGHT_END: 6
     deploy:
       resources:
         limits:
