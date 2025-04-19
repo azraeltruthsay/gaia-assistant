@@ -27,7 +27,7 @@ services:
       SKIP_TTS_SELECTION: 'true'
       FLASK_ENV: 'production'
       PORT: 7860
-      SECRET_KEY: Banana_King_Of_Seattle_4163
+      SECRET_KEY: You_Are_SIMPLY-THE-BEST!!!
       EMBEDDING_MODEL: all-mpnet-base-v2
       # Background Processor Configuration
       BG_IDLE_THRESHOLD: 300

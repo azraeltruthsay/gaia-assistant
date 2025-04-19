@@ -59,6 +59,7 @@ class AIManager:
         Returns:
             True if initialization is successful, False otherwise
         """
+        all_initialized = False
         # Load core instructions
         self.core_instructions = self._load_core_instructions()
         if not self.core_instructions:
@@ -103,10 +104,17 @@ class AIManager:
         if not self.vector_store:
             logger.error("Failed to initialize vector store")
             return False
-        # Add this near the end of the existing initialize method
+        
+        # Check if all components are initialized
+        all_initialized = (self.llm is not None and 
+                  self.vector_store is not None and 
+                  self.doc_processor is not None and 
+                  self.vector_store_manager is not None)
+                
         if all_initialized:
             # Initialize background processor
             self.initialize_background_processor()
+        return all_initialized
         return True
     
     def _load_core_instructions(self) -> str:
@@ -214,38 +222,6 @@ class AIManager:
             return {"error": str(e)}
     
     # Add this method to the AIManager class
-    def analyze_code(self, filepath):
-        """
-        Analyze a code file using the code analyzer.
-        
-        Args:
-            filepath: Path to the code file
-            
-        Returns:
-            Analysis results or None if analysis fails
-        """
-        self.register_user_activity()
-        
-        if not self.code_analyzer:
-            logger.warning("Code analyzer not initialized")
-            return None
-        
-        try:
-            # Load the file content
-            content = self.code_analyzer.load_code_file(filepath)
-            if not content:
-                logger.warning(f"Failed to load code file: {filepath}")
-                return None
-            
-            # Analyze the code
-            analysis = self.code_analyzer.analyze_code_with_llm(filepath, content)
-            return analysis
-        except Exception as e:
-            logger.error(f"Error analyzing code: {e}", exc_info=True)
-            return None
-        
-        
-        
     def analyze_code(self, filepath: str) -> Optional[Dict[str, Any]]:
         """
         Analyze a code file.
@@ -256,6 +232,9 @@ class AIManager:
         Returns:
             Dictionary with analysis results or None if analysis fails
         """
+        
+        self.register_user_activity()
+        
         if not self.code_analyzer:
             logger.error("Code analyzer not initialized")
             return None
@@ -267,10 +246,11 @@ class AIManager:
                 logger.error(f"Failed to load code file: {filepath}")
                 return None
             
-            # Get analysis
-            return self.code_analyzer.analyze_code_with_llm(filepath, content)
+            # Analyze the code
+          analysis = self.code_analyzer.analyze_code_with_llm(filepath, content)
+            return analysis
         except Exception as e:
-            logger.error(f"Error analyzing code: {e}")
+            logger.error(f"Error analyzing code: {e}", exc_info=True)
             return None
     
     # Add method to switch project context

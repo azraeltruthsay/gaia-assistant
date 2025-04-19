@@ -1,0 +1,402 @@
+# GAIA Assistant Project Documentation
+
+## Overview
+
+GAIA (General Assistant - Intelligent Artifice) is an AI-powered assistant designed to help manage projects, generate content, and organize information. Initially focused on D&D campaign management, GAIA is designed as a versatile project partner that adapts to various domains and use cases.
+
+GAIA runs as a self-hosted application that combines:
+- A large language model (LLM) for text generation and understanding
+- Vector database for knowledge retrieval
+- Document processing capabilities
+- Web interface for user interaction
+- Background processing for idle-time tasks
+
+## Architecture
+
+### Core Components
+
+```
+gaia-assistant/                   # Main project directory
+├── app/                          # Main application code
+│   ├── __init__.py              # Package declaration for main app
+│   ├── config.py                # Configuration management
+│   ├── models/                  # AI and data models
+│   │   ├── __init__.py          # Package declaration
+│   │   ├── ai_manager.py        # Core AI coordination
+│   │   ├── document.py          # Document processing
+│   │   ├── vector_store.py      # Vector embedding management
+│   │   ├── tts.py               # Text-to-speech functionality
+│   │   └── code_analyzer.py     # Code analysis
+│   ├── utils/                   # Utility modules
+│   │   ├── __init__.py          # Package declaration
+│   │   ├── helpers.py           # Common utility functions
+│   │   ├── conversation_manager.py # Conversation tracking
+│   │   ├── hardware_optimization.py # Hardware detection/optimization
+│   │   ├── project_manager.py   # Project management utilities
+│   │   ├── background_processor.py # Background task processing
+│   │   └── background_processor_config.py # Background processor settings
+│   └── web/                     # Web interface
+│       ├── __init__.py          # Package declaration
+│       ├── routes.py            # API endpoints
+│       ├── project_routes.py    # Project management routes
+│       └── error_handlers.py    # Error management
+├── campaign-data/               # Project content (initially D&D)
+│   ├── core-documentation/      # Core project documents
+│   ├── converted_raw/           # Processed documents
+│   ├── generated_documentation/ # AI-generated documentation
+│   ├── raw-data/                # Raw notes for processing
+│   ├── conversation_archives/   # Raw conversation archives
+│   ├── structured_archives/     # Processed conversation archives
+│   └── lora_adapters/           # LoRA fine-tuning adapters (optional)
+├── chroma_db/                   # Vector database storage
+├── logs/                        # Application logs
+├── static/                      # Web static assets
+│   ├── css/                     # Stylesheets
+│   │   ├── styles.css           # Main stylesheet
+│   │   └── code-fix.css         # Code-specific styles
+│   └── js/                      # JavaScript files
+│       ├── app.js               # Main application logic
+│       ├── chat-fix.js          # Chat functionality fixes
+│       ├── conversation_archives.js # Conversation archive UI
+│       ├── code-analyzer.js     # Code analysis UI
+│       ├── troubleshoot.js      # Debugging utilities
+│       ├── project_switcher.js  # Project switching functionality
+│       └── background_processing_ui.js # Background processing UI
+├── templates/                   # Web templates
+│   └── index.html               # Main HTML template
+├── tools/                       # Project tools
+│   └── campaign-tools.py        # Campaign management utilities
+├── external-code/               # External code for analysis
+├── main.py                      # CLI entry point
+├── web_app.py                   # Web server entry point
+├── code_uploader.py             # Code upload utility
+├── debug-script.js              # Debugging helper script
+├── Dockerfile                   # Docker build definition
+├── docker-compose.yml           # Docker Compose configuration
+├── gaia_instructions.txt        # Core AI instructions
+├── gaia_code_instruction.txt    # Code analysis instructions
+└── benchmark.py                 # Performance benchmarking
+```
+
+Adjacent to the main project directory:
+
+```
+gaia-models/                     # AI model files (outside of git repo)
+├── Hermes-3-Llama-3.2-3B.Q4_K_M.gguf      # D&D optimized model
+└── qwen2.5-coder-3b-instruct-q4_k_m.gguf  # Code optimized model
+```
+
+> **Note**: All Python package directories (`app/`, `app/models/`, `app/utils/`, `app/web/`) include `__init__.py` files to mark them as packages, even when these files may be empty or contain only comments. These files are critical for proper Python module imports.
+
+### Complete File Structure
+
+A more detailed file structure showing all required files (including configuration and initializers) is available in the [File Structure Guide](file-structure-guide.md).
+
+### Data Flow
+
+1. **User Input**: User interacts with GAIA through web or CLI interface
+2. **Query Processing**: AI Manager coordinates the response generation
+   - Relevant documents retrieved from vector store
+   - Context is assembled with conversation history
+   - Query is processed by the LLM
+3. **Response Generation**: AI produces a response based on context
+4. **Document Management**: Users can upload and process documents
+5. **Background Processing**: During idle time, system processes archived conversations and other tasks
+
+### Component Relationships
+
+```
+                   ┌─────────────┐
+                   │   Web UI    │
+                   └──────┬──────┘
+                          │
+                          ▼
+┌──────────────┐   ┌─────────────┐   ┌───────────────┐
+│  Document    │◄──┤  AI Manager │◄──┤ Vector Store  │
+│  Processor   │   └──────┬──────┘   └───────────────┘
+└──────────────┘          │
+                          │
+┌──────────────┐   ┌──────┴──────┐   ┌───────────────┐
+│    Speech    │◄──┤ Conversation│◄──┤   Background  │
+│    Manager   │   │   Manager   │   │   Processor   │
+└──────────────┘   └─────────────┘   └───────────────┘
+                          │
+                          ▼
+                   ┌─────────────┐   
+                   │   Project   │
+                   │   Manager   │
+                   └─────────────┘
+```
+
+### Module Initialization Flow
+
+1. `web_app.py` creates Flask application
+2. Application initializes config from environment variables
+3. AI Manager initializes with config settings
+4. AI Manager initializes document processor, vector store, etc.
+5. When all components are initialized, background processor starts
+6. Web routes become available for user interaction
+
+### Model Management
+
+GAIA supports multiple models for different specialized tasks:
+- **D&D/Creative Model**: Hermes-3-Llama-3.2-3B for campaign and creative content (mounted as `/app/model-d.gguf`)
+- **Code Model**: Qwen2.5-coder-3b for code analysis and development (mounted as `/app/model.gguf`)
+
+The models are stored separately from the main repository to avoid bloating the git repo with large files. Docker volume mappings connect these external model files to the container:
+
+```yaml
+volumes:
+  - ../gaia-models/Hermes-3-Llama-3.2-3B.Q4_K_M.gguf:/app/model-d.gguf:ro
+  - ../gaia-models/qwen2.5-coder-3b-instruct-q4_k_m.gguf:/app/model.gguf:ro
+```
+
+Future development may include the ability to dynamically select between models based on the task or allow users to choose their preferred model.
+
+## Core Features
+
+### 1. Knowledge Management
+
+- **Document Processing**: Convert raw documents (TXT, RTF, DOCX) to structured Markdown
+- **Vector Storage**: Index and retrieve relevant information using embeddings
+- **Content Generation**: Create structured artifacts based on user requests
+
+### 2. Conversation System
+
+- **Chat Interface**: Natural language interaction with the AI
+- **Context Management**: Maintain conversation history and context
+- **Conversation Archives**: Store and retrieve past conversations
+- **Background Processing**: Deep analysis of conversations during idle time
+
+### 3. Code Analysis
+
+- **Code Understanding**: Process and analyze code files
+- **Structure Recognition**: Extract structure from various programming languages
+- **Documentation Generation**: Create documentation artifacts from code
+
+### 4. Background Processing
+
+- **Idle-Time Tasks**: Process long-running tasks when the system is not in use
+- **Task Queue**: Prioritize tasks based on importance and resource requirements
+- **Progressive Enhancement**: Structured documentation → Vector embedding → (Optional) LoRA fine-tuning
+
+### 5. Performance Optimization
+
+- **Hardware Detection**: Identify system capabilities
+- **Automatic Tuning**: Adjust parameters based on available resources
+- **Benchmark Tools**: Measure and optimize performance
+
+## Technology Stack
+
+- **Backend**: Python with Flask web server
+- **AI**: Local LLM using llama-cpp-python
+- **Vector Database**: ChromaDB for retrieval-augmented generation
+- **Frontend**: HTML/CSS/JavaScript single-page application
+- **Container**: Docker and Docker Compose for deployment
+- **Text Processing**: Markdown, langchain for document processing
+
+## Development Guide
+
+### Setup
+
+#### Prerequisites
+
+- [Docker](https://www.docker.com/products/docker-desktop/) and [Docker Compose](https://docs.docker.com/compose/install/)
+- 8GB+ RAM (12GB+ recommended)
+- 2GB+ free disk space
+- LLM model file (Hermes-3-Llama-3.2-3B.Q4_K_M.gguf or similar)
+
+#### Quick Start
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/azraeltruthsay/gaia-assistant.git
+   cd gaia-assistant
+   ```
+
+2. Download a compatible LLM model file and place it in the `models/` directory
+   
+3. Configure environment in `docker-compose.yml`:
+   ```yaml
+   environment:
+     MODEL_PATH: /app/models/Hermes-3-Llama-3.2-3B.Q4_K_M.gguf
+     N_GPU_LAYERS: 0       # Set to higher value for GPU support
+     N_THREADS: 8          # Adjust based on available CPU cores
+     N_BATCH: 768          # Batch size for performance
+     N_CTX: 8192           # Context window size
+   ```
+
+4. Build and run the container:
+   ```bash
+   docker-compose up --build
+   ```
+
+5. Access the web interface at http://localhost:7860
+
+### Project Structure Guidelines
+
+#### Adding New Features
+
+1. **Backend Components**:
+   - Place new models in `app/models/`
+   - Place utilities in `app/utils/`
+   - Add routes to `app/web/routes.py`
+
+2. **Frontend Components**:
+   - Add JavaScript to `static/js/`
+   - Add CSS to `static/css/`
+   - Update `templates/index.html` as needed
+
+3. **Configuration**:
+   - Add environment variables to `docker-compose.yml`
+   - Update configuration classes as needed
+
+#### Code Style
+
+- Follow PEP 8 for Python code
+- Use clear docstrings with type hints
+- Use descriptive variable and function names
+- Include proper error handling and logging
+
+### Testing
+
+- Use benchmark.py for performance testing
+- Use troubleshoot.js for frontend debugging
+- Check logs/ directory for error logs
+
+### Background Processor Integration
+
+The background processor allows GAIA to perform time-consuming tasks during system idle time:
+
+1. **Task Queue**: Tasks are added with priorities:
+   - Conversation summarization (Priority 10)
+   - Document embedding (Priority 20)
+   - LoRA fine-tuning (Priority 30)
+
+2. **Activation**: Background processing activates after a period of inactivity (default 5 minutes)
+
+3. **Configuration**: Controlled via environment variables:
+   ```yaml
+   BG_IDLE_THRESHOLD: 300      # 5 minutes inactivity
+   BG_ENABLE_LORA: 'false'     # Enable/disable LoRA
+   BG_OVERNIGHT: 'true'        # Process overnight
+   ```
+
+4. **API Endpoints**:
+   - `/api/conversation/archive/background` - Archive conversation for background processing
+   - `/api/background/status` - Get status of background tasks
+   - `/api/structured_archives` - List all structured archives
+
+## Roadmap
+
+### Current Development
+
+- [x] Core AI interaction
+- [x] Web interface
+- [x] Document processing
+- [x] Vector database integration
+- [x] Conversation archiving
+- [ ] Background processing implementation
+- [ ] Enhanced conversation analysis
+- [ ] LoRA fine-tuning integration
+
+### Future Development
+
+1. **Foundation Enhancements**
+   - [ ] Expanded context windows
+   - [ ] Project switching functionality
+   - [ ] User authentication system
+   - [ ] Dynamic context management with archiving
+
+2. **Advanced Features**
+   - [ ] Image generation capabilities
+   - [ ] Conversation summarization with filtering
+   - [ ] Smart context archiving and retrieval
+
+3. **AI Learning Capabilities**
+   - [ ] LoRA fine-tuning during system idle time
+   - [ ] Content importance weighting for memory management
+   - [ ] Incremental vector database updates
+
+4. **User Experience**
+   - [ ] Enhanced templating system
+   - [ ] Improved artifact editing
+   - [ ] Real-time knowledge updates
+
+5. **Infrastructure**
+   - [ ] Multi-project support
+   - [ ] Optimizations for larger models
+   - [ ] Backup and versioning systems
+
+## Performance Enhancement Considerations
+
+1. **Vector Database Indexing**
+	Consider adding batch processing for large document updates to avoid performance spikes.
+
+2. **Background Processing Queue**
+	The current implementation processes tasks sequentially. Consider adding priority-based processing for important tasks.
+
+3. **Model Loading Time**
+	Improve the user experience during model loading with more detailed progress indicators.
+
+
+## Contributing
+
+### Development Workflow
+
+1. Create a new branch for each feature
+2. Implement the feature with appropriate tests
+3. Update documentation to reflect changes
+4. Submit a pull request with a clear description
+
+### Release Process
+
+1. Update version numbers in relevant files
+2. Run benchmark tests to verify performance
+3. Create release notes documenting changes
+4. Tag the release in the repository
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Initialization Failure**:
+   - Check that the model file exists and is correctly referenced
+   - Ensure enough RAM is available
+   - Check logs for specific errors
+
+2. **Slow Performance**:
+   - Run benchmark.py to identify bottlenecks
+   - Adjust N_THREADS, N_BATCH based on hardware
+   - Consider using a smaller model or enabling GPU acceleration
+
+3. **Web Interface Issues**:
+   - Check browser console for JavaScript errors
+   - Verify that all static files are being served correctly
+   - Use the troubleshooting panel for diagnostics
+
+### Logging
+
+- Application logs are stored in `logs/gaia.log`
+- Web server logs are in `logs/gaia_web.log`
+- CLI logs are in `logs/gaia_cli.log`
+- Background processor logs are in `logs/gaia_background.log`
+
+## Customization
+
+### Model Selection
+
+The system supports various GGUF-format models:
+- Small models (3B-7B parameters) for limited hardware
+- Medium models (13B parameters) for balanced performance
+- Large models (30B+ parameters) for high-quality results
+
+### System Behavior
+
+- Edit `gaia_instructions.txt` to modify core AI behavior
+- Adjust environment variables for performance tuning
+- Modify templates for UI customization
+
+---
+
+*This documentation is a living document that will be updated as the project evolves.*

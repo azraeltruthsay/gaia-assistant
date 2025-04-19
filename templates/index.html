@@ -10,10 +10,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
     
-    <!-- Load JavaScript libraries - use specific versions -->
-    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/lib/marked.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <!-- Load base libraries first -->
+	<script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/lib/marked.umd.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     
+	<!-- Load components that depend on utilities -->
+	<script src="{{ url_for('static', filename='js/chat-fix.js') }}" defer></script>
+	<script src="{{ url_for('static', filename='js/conversation_archives.js') }}" defer></script>
+	<script src="{{ url_for('static', filename='js/code-analyzer.js') }}" defer></script>
+	
+	
 	<script src="{{ url_for('static', filename='js/project_switcher.js') }}"></script>
 	
     <!-- Add marked.js fix -->
@@ -244,25 +250,13 @@
     });
     </script>
 
-    <!-- Include the troubleshooting script -->
-    <script src="{{ url_for('static', filename='js/troubleshoot.js') }}"></script>
     
-    <!-- Add the chat fix script (must be loaded after troubleshoot.js and before app.js) -->
-    <script src="{{ url_for('static', filename='js/chat-fix.js') }}"></script>
-    
-	<!-- Add conversation archives UI -->
-	<script src="{{ url_for('static', filename='js/conversation_archives.js') }}"></script>
-	
-    <!-- Include the code analyzer script -->
-	<script src="{{ url_for('static', filename='js/code-analyzer.js') }}"></script>
-
 	<!-- Add before the app.js script -->
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/code-fix.css') }}">
 
-	<!-- App JS (load last) -->
-	<script src="{{ url_for('static', filename='js/app.js') }}"></script>
-	
-	<script src="{{ url_for('static', filename='js/background_processing_ui.js') }}"></script>
+	<!-- Main app logic loads last -->
+	<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+	<script src="{{ url_for('static', filename='js/background_processing_ui.js') }}" defer></script>
 	
 </body>
 </html>

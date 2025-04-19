@@ -58,6 +58,103 @@ document.addEventListener('DOMContentLoaded', function() {
                 padding: 0.5rem;
                 border: none;
                 border-radius: var(--radius-md);
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                font-size: 0.9rem;
+            }
+            
+            .project-dropdown-btn:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+            
+            .project-dropdown-content {
+                display: none;
+                position: absolute;
+                background-color: var(--primary-light);
+                min-width: 100%;
+                box-shadow: var(--shadow-md);
+                z-index: 1;
+                border-radius: var(--radius-md);
+                max-height: 300px;
+                overflow-y: auto;
+            }
+            
+            .project-dropdown-content.show {
+                display: block;
+            }
+            
+            .project-item {
+                color: white;
+                padding: 0.5rem;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .project-item:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .project-item.active {
+                background-color: rgba(255, 255, 255, 0.2);
+                font-weight: bold;
+            }
+            
+            .project-spinner {
+                margin: 1rem auto;
+                border-color: rgba(255, 255, 255, 0.3);
+                border-top-color: white;
+            }
+            
+            .project-item-name {
+                font-weight: bold;
+                margin-bottom: 0.25rem;
+            }
+            
+            .project-item-desc {
+                font-size: 0.75rem;
+                opacity: 0.8;
+            }
+            
+            /* Add new project button */
+            .add-project-btn {
+                color: white;
+                padding: 0.5rem;
+                cursor: pointer;
+                text-align: center;
+                background-color: rgba(255, 255, 255, 0.1);
+                margin-top: 0.5rem;
+                border-radius: var(--radius-md);
+            }
+            
+            .add-project-btn:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+            
+            /* Project modal */
+            .project-modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 100;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .project-modal.show {
+                display: flex;
+            }
+            
+            .project-modal-content {
+                background-color: white;
+                padding: 1rem;
+                border-radius: var(--radius-md);
                 max-width: 500px;
                 width: 90%;
                 box-shadow: var(--shadow-lg);
@@ -477,100 +574,3 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 });
-                cursor: pointer;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                width: 100%;
-                font-size: 0.9rem;
-            }
-            
-            .project-dropdown-btn:hover {
-                background-color: rgba(255, 255, 255, 0.2);
-            }
-            
-            .project-dropdown-content {
-                display: none;
-                position: absolute;
-                background-color: var(--primary-light);
-                min-width: 100%;
-                box-shadow: var(--shadow-md);
-                z-index: 1;
-                border-radius: var(--radius-md);
-                max-height: 300px;
-                overflow-y: auto;
-            }
-            
-            .project-dropdown-content.show {
-                display: block;
-            }
-            
-            .project-item {
-                color: white;
-                padding: 0.5rem;
-                cursor: pointer;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            
-            .project-item:hover {
-                background-color: rgba(255, 255, 255, 0.1);
-            }
-            
-            .project-item.active {
-                background-color: rgba(255, 255, 255, 0.2);
-                font-weight: bold;
-            }
-            
-            .project-spinner {
-                margin: 1rem auto;
-                border-color: rgba(255, 255, 255, 0.3);
-                border-top-color: white;
-            }
-            
-            .project-item-name {
-                font-weight: bold;
-                margin-bottom: 0.25rem;
-            }
-            
-            .project-item-desc {
-                font-size: 0.75rem;
-                opacity: 0.8;
-            }
-            
-            /* Add new project button */
-            .add-project-btn {
-                color: white;
-                padding: 0.5rem;
-                cursor: pointer;
-                text-align: center;
-                background-color: rgba(255, 255, 255, 0.1);
-                margin-top: 0.5rem;
-                border-radius: var(--radius-md);
-            }
-            
-            .add-project-btn:hover {
-                background-color: rgba(255, 255, 255, 0.2);
-            }
-            
-            /* Project modal */
-            .project-modal {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: rgba(0, 0, 0, 0.5);
-                z-index: 100;
-                align-items: center;
-                justify-content: center;
-            }
-            
-            .project-modal.show {
-                display: flex;
-            }
-            
-            .project-modal-content {
-                background-color: white;
-                padding: 1rem;
-                border-radius: var(--radius-md);

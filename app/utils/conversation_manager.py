@@ -9,6 +9,7 @@ import json
 import uuid
 import logging
 import datetime
+import threading
 from typing import List, Dict, Any, Optional, Tuple
 
 # Get the logger
@@ -30,10 +31,18 @@ class ConversationManager:
         self.current_session_id = str(uuid.uuid4())
         self.conversation_history = []
         self.summaries = []
+        self.max_summaries = 100  # Maximum number of summaries to keep
+        
+        # Add lock for thread safety
+        self.summary_lock = threading.Lock()
         
         # Create archives directory if it doesn't exist
         self.archives_dir = os.path.join(config.data_path, "../conversation_archives")
         os.makedirs(self.archives_dir, exist_ok=True)
+        
+        # Create structured archives directory if it doesn't exist
+        self.structured_archives_dir = os.path.join(config.data_path, "../structured_archives")
+        os.makedirs(self.structured_archives_dir, exist_ok=True)
         
         # Load existing summaries index if it exists
         self.summaries_index_path = os.path.join(self.archives_dir, "summaries_index.json")
@@ -47,6 +56,9 @@ class ConversationManager:
         
         # Max message count before summarization/archiving
         self.max_active_messages = 30
+        
+        # Check if we need to clean up old archives
+        self.cleanup_old_archives()
         
         logger.info("Conversation Manager initialized")
     
@@ -66,6 +78,10 @@ class ConversationManager:
         }
         
         self.conversation_history.append(message)
+        
+        # Maintain a maximum history size
+        if len(self.conversation_history) > self.max_active_messages * 2:
+            self.conversation_history = self.conversation_history[-self.max_active_messages:]
         
         # Check if we need to summarize and archive
         if len(self.conversation_history) >= self.max_active_messages:
@@ -108,17 +124,35 @@ class ConversationManager:
             "id": archive_id,
             "timestamp": datetime.datetime.now().isoformat(),
             "summary": summary,
-            "keyword_phrases": self._extract_keywords()
+            "keyword_phrases": self._extract_keywords(),
+            "status": "processed"
         }
         
-        self.summaries.append(summary_entry)
-        
-        # Save the updated summaries index
-        try:
-            with open(self.summaries_index_path, 'w', encoding='utf-8') as f:
-                json.dump(self.summaries, f, indent=2)
-        except Exception as e:
-            logger.error(f"Error saving summaries index: {e}")
+        # Thread-safe update of summaries
+        with self.summary_lock:
+            self.summaries.append(summary_entry)
+            
+            # Apply size limit
+            if len(self.summaries) > self.max_summaries:
+                # Sort by timestamp (oldest first)
+                self.summaries.sort(key=lambda x: x["timestamp"])
+                # Remove oldest
+                removed = self.summaries.pop(0)
+                # Delete the file if it exists
+                filepath = os.path.join(self.archives_dir, f"{removed['id']}.md")
+                if os.path.exists(filepath):
+                    try:
+                        os.remove(filepath)
+                        logger.info(f"Removed old archive: {removed['id']}")
+                    except Exception as e:
+                        logger.error(f"Error removing old archive file: {e}")
+            
+            # Save the updated summaries index
+            try:
+                with open(self.summaries_index_path, 'w', encoding='utf-8') as f:
+                    json.dump(self.summaries, f, indent=2)
+            except Exception as e:
+                logger.error(f"Error saving summaries index: {e}")
         
         # Clear the active conversation history
         self.conversation_history = []
@@ -372,6 +406,7 @@ class ConversationManager:
             context_parts.append(f"From previous conversation ({item['id']}):\n{item['summary']}")
         
         return "\n\n".join(context_parts)
+    
     def summarize_and_archive_for_background(self):
         """
         Prepare the current conversation for background processing.
@@ -412,14 +447,23 @@ class ConversationManager:
             "status": "pending_processing"
         }
     
-        self.summaries.append(summary_entry)
-    
-        # Save the updated summaries index
-        try:
-            with open(self.summaries_index_path, 'w', encoding='utf-8') as f:
-                json.dump(self.summaries, f, indent=2)
-        except Exception as e:
-            logger.error(f"Error saving summaries index: {e}")
+        # Thread-safe update of summaries
+        with self.summary_lock:
+            self.summaries.append(summary_entry)
+            
+            # Apply size limit
+            if len(self.summaries) > self.max_summaries:
+                # Sort by timestamp (oldest first)
+                self.summaries.sort(key=lambda x: x["timestamp"])
+                # Remove oldest
+                self.summaries.pop(0)
+            
+            # Save the updated summaries index
+            try:
+                with open(self.summaries_index_path, 'w', encoding='utf-8') as f:
+                    json.dump(self.summaries, f, indent=2)
+            except Exception as e:
+                logger.error(f"Error saving summaries index: {e}")
         
         # Clear the active conversation history
         self.conversation_history = []
@@ -431,8 +475,6 @@ class ConversationManager:
             "filepath": filepath,
             "summary": summary
         }
-
-# Add this method to the ConversationManager class
 
     def update_archive_status(self, archive_id, new_status, new_summary=None):
         """
@@ -447,27 +489,27 @@ class ConversationManager:
             True if update successful, False otherwise
         """
         try:
-            # Find the summary entry
-            for summary in self.summaries:
-                if summary["id"] == archive_id:
-                    summary["status"] = new_status
-                    if new_summary:
-                        summary["summary"] = new_summary
-                    
-                    # Save the updated summaries index
-                    with open(self.summaries_index_path, 'w', encoding='utf-8') as f:
-                        json.dump(self.summaries, f, indent=2)
-                    
-                    logger.info(f"Updated archive {archive_id} status to {new_status}")
-                    return True
+            # Thread-safe update of summaries
+            with self.summary_lock:
+                # Find the summary entry
+                for summary in self.summaries:
+                    if summary["id"] == archive_id:
+                        summary["status"] = new_status
+                        if new_summary:
+                            summary["summary"] = new_summary
+                        
+                        # Save the updated summaries index
+                        with open(self.summaries_index_path, 'w', encoding='utf-8') as f:
+                            json.dump(self.summaries, f, indent=2)
+                        
+                        logger.info(f"Updated archive {archive_id} status to {new_status}")
+                        return True
             
             logger.warning(f"Archive {archive_id} not found in summaries index")
             return False
         except Exception as e:
             logger.error(f"Error updating archive status: {e}")
             return False
-    
-    # Add this method to the ConversationManager class
     
     def get_archive_statistics(self):
         """
@@ -477,30 +519,32 @@ class ConversationManager:
             Dictionary with archive statistics
         """
         try:
-            total_archives = len(self.summaries)
-            processed_archives = sum(1 for s in self.summaries if s.get("status") == "processed")
-            pending_archives = sum(1 for s in self.summaries if s.get("status") == "pending_processing")
-            failed_archives = sum(1 for s in self.summaries if s.get("status") == "failed")
-            
-            # Count keywords
-            all_keywords = []
-            for summary in self.summaries:
-                all_keywords.extend(summary.get("keyword_phrases", []))
-            
-            # Get most common keywords
-            keyword_counts = {}
-            for keyword in all_keywords:
-                keyword_counts[keyword] = keyword_counts.get(keyword, 0) + 1
-            
-            top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:10]
-            
-            return {
-                "total_archives": total_archives,
-                "processed_archives": processed_archives,
-                "pending_archives": pending_archives,
-                "failed_archives": failed_archives,
-                "top_keywords": top_keywords
-            }
+            # Thread-safe access to summaries
+            with self.summary_lock:
+                total_archives = len(self.summaries)
+                processed_archives = sum(1 for s in self.summaries if s.get("status") == "processed")
+                pending_archives = sum(1 for s in self.summaries if s.get("status") == "pending_processing")
+                failed_archives = sum(1 for s in self.summaries if s.get("status") == "failed")
+                
+                # Count keywords
+                all_keywords = []
+                for summary in self.summaries:
+                    all_keywords.extend(summary.get("keyword_phrases", []))
+                
+                # Get most common keywords
+                keyword_counts = {}
+                for keyword in all_keywords:
+                    keyword_counts[keyword] = keyword_counts.get(keyword, 0) + 1
+                
+                top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+                
+                return {
+                    "total_archives": total_archives,
+                    "processed_archives": processed_archives,
+                    "pending_archives": pending_archives,
+                    "failed_archives": failed_archives,
+                    "top_keywords": top_keywords
+                }
         except Exception as e:
             logger.error(f"Error getting archive statistics: {e}")
             return {
@@ -510,8 +554,6 @@ class ConversationManager:
                 "failed_archives": 0,
                 "top_keywords": []
             }
-    
-    # Add this method to the ConversationManager class
     
     def get_related_archives(self, query, max_results=5):
         """
@@ -529,24 +571,71 @@ class ConversationManager:
         
         # Score archives based on keyword matches
         scored_archives = []
-        for archive in self.summaries:
-            score = 0
-            
-            # Match against summary
-            summary = archive.get("summary", "").lower()
-            for word in query_words:
-                if word in summary:
-                    score += 1
-            
-            # Match against keywords
-            keywords = [k.lower() for k in archive.get("keyword_phrases", [])]
-            for word in query_words:
-                if any(word in keyword for keyword in keywords):
-                    score += 2
-            
-            if score > 0:
-                scored_archives.append((score, archive))
+        
+        # Thread-safe access to summaries
+        with self.summary_lock:
+            for archive in self.summaries:
+                score = 0
+                
+                # Match against summary
+                summary = archive.get("summary", "").lower()
+                for word in query_words:
+                    if word in summary:
+                        score += 1
+                
+                # Match against keywords
+                keywords = [k.lower() for k in archive.get("keyword_phrases", [])]
+                for word in query_words:
+                    if any(word in keyword for keyword in keywords):
+                        score += 2
+                
+                if score > 0:
+                    scored_archives.append((score, archive))
         
         # Sort by score and return top results
         scored_archives.sort(reverse=True, key=lambda x: x[0])
         return [archive for _, archive in scored_archives[:max_results]]
+    
+    def cleanup_old_archives(self, max_count=None):
+        """
+        Remove oldest archives if count exceeds maximum.
+        
+        Args:
+            max_count: Maximum number of archives to keep (defaults to self.max_summaries)
+        """
+        if max_count is None:
+            max_count = self.max_summaries
+            
+        with self.summary_lock:
+            if len(self.summaries) > max_count:
+                # Sort by timestamp (oldest first)
+                self.summaries.sort(key=lambda x: x.get("timestamp", ""))
+                
+                # Get archives to remove
+                to_remove = self.summaries[:(len(self.summaries) - max_count)]
+                self.summaries = self.summaries[(len(self.summaries) - max_count):]
+                
+                # Remove archive files
+                for archive in to_remove:
+                    try:
+                        archive_id = archive.get("id")
+                        if archive_id:
+                            filepath = os.path.join(self.archives_dir, f"{archive_id}.md")
+                            if os.path.exists(filepath):
+                                os.remove(filepath)
+                                logger.info(f"Removed old archive: {archive_id}")
+                            
+                            # Also remove structured archive if it exists
+                            structured_filepath = os.path.join(self.structured_archives_dir, f"{archive_id}_structured.md")
+                            if os.path.exists(structured_filepath):
+                                os.remove(structured_filepath)
+                                logger.info(f"Removed old structured archive: {archive_id}")
+                    except Exception as e:
+                        logger.error(f"Error removing archive file: {e}")
+                
+                # Save updated summaries index
+                try:
+                    with open(self.summaries_index_path, 'w', encoding='utf-8') as f:
+                        json.dump(self.summaries, f, indent=2)
+                except Exception as e:
+                    logger.error(f"Error saving summaries index after cleanup: {e}")

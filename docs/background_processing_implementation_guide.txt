@@ -1,0 +1,281 @@
+# Background Processing Implementation Guide
+
+This document details the implementation of the background processing system for GAIA.
+
+## 1. Overview
+
+The background processing system allows GAIA to perform resource-intensive tasks during idle periods when the user is not actively interacting with the system. This includes:
+
+- Deep analysis of conversation archives
+- Structured knowledge extraction from conversations
+- Vector database embedding of extracted knowledge
+- (Optional) LoRA fine-tuning for deeper memory retention
+
+## 2. Components
+
+### 2.1 Core Modules
+
+1. **Background Processor** (`app/utils/background_processor.py`)
+   - Task queue management and prioritization
+   - Idle detection
+   - Task execution and monitoring
+   - Error handling and recovery
+
+2. **Background Processor Config** (`app/utils/background_processor_config.py`)
+   - Configurable settings for behavior
+   - Resource limits and thresholds
+   - Directory configurations
+   - LoRA parameters (when enabled)
+
+3. **Conversation Manager Extensions** (additions to `app/utils/conversation_manager.py`)
+   - Background-aware conversation archiving
+   - Archive status tracking
+   - Improved search and retrieval
+
+4. **AI Manager Integration** (additions to `app/models/ai_manager.py`)
+   - Background processor initialization
+   - User activity registration
+   - Interface for background task management
+
+### 2.2 API Routes
+
+Added to `app/web/routes.py`:
+
+1. `/api/conversation/archive/background` (POST)
+   - Archive the current conversation for background processing
+
+2. `/api/background/status` (GET)
+   - Get status information about background tasks
+
+3. `/api/background/task/<task_id>` (GET)
+   - Get information about a specific task
+
+4. `/api/structured_archives` (GET)
+   - List all available structured archives
+
+5. `/api/structured_archive/<archive_id>` (GET)
+   - Get the content of a specific structured archive
+
+6. `/api/background/register_activity` (POST)
+   - Register user activity to reset idle timer
+
+### 2.3 User Interface
+
+**Background Processing UI** (`static/js/background_processing_ui.js`)
+- Status dashboard for background tasks
+- Integration with conversation archives section
+- Activity tracking for idle detection
+- Enhanced archive button functionality
+
+## 3. Implementation Steps
+
+### 3.1 File Placement
+
+| File | Location |
+|------|----------|
+| `background_processor.py` | `app/utils/` |
+| `background_processor_config.py` | `app/utils/` |
+| `background_processing_ui.js` | `static/js/` |
+
+### 3.2 Integration Steps
+
+1. **Create New Files**
+   - Add the three new files above to their respective locations
+
+2. **Update Conversation Manager**
+   - Add the following methods to `ConversationManager` class:
+     - `summarize_and_archive_for_background()`
+     - `update_archive_status()`
+     - `get_archive_statistics()`
+     - `get_related_archives()`
+
+3. **Update AI Manager**
+   - Add import for `BackgroundProcessor`
+   - Add initialization in `__init__` method
+   - Add method `initialize_background_processor()`
+   - Add method `register_user_activity()`
+   - Add method `background_archive_conversation()`
+   - Add method `get_background_tasks_status()`
+   - Update shutdown procedure to stop background processor
+
+4. **Update Routes**
+   - Add all new API endpoints to the web blueprint
+
+5. **Update Index.html**
+   - Add script tag for background processing UI
+   ```html
+   <script src="{{ url_for('static', filename='js/background_processing_ui.js') }}"></script>
+   ```
+
+6. **Update Docker Configuration**
+   - Add background processor configuration to `docker-compose.yml`
+
+### 3.3 Directory Structure
+
+Create these directories if they don't already exist:
+
+```
+campaign-data/
+├── conversation_archives/    # Raw conversation archives
+└── structured_archives/      # Processed conversation archives
+```
+
+If LoRA is enabled, also create:
+
+```
+campaign-data/lora_adapters/ # For LoRA fine-tuning results
+```
+
+## 4. Configuration
+
+### 4.1 Environment Variables
+
+Add to `docker-compose.yml`:
+
+```yaml
+environment:
+  # Existing variables
+  MODEL_PATH: /app/model.gguf
+  # ...
+  
+  # Background Processor Configuration
+  BG_IDLE_THRESHOLD: 300        # 5 minutes of inactivity
+  BG_LONG_IDLE_THRESHOLD: 1800  # 30 minutes for longer tasks
+  BG_ENABLE_LORA: 'false'       # Disable LoRA by default
+  BG_OVERNIGHT: 'true'          # Enable overnight processing
+  BG_OVERNIGHT_START: 22        # Start at 10:00 PM
+  BG_OVERNIGHT_END: 6           # End at 6:00 AM
+  BG_MAX_MEMORY: 0.75           # Use up to 75% of available memory
+  BG_MAX_CPU: 0.5               # Use up to 50% of CPU
+```
+
+### 4.2 LoRA Configuration (Optional)
+
+If enabling LoRA fine-tuning:
+
+```yaml
+BG_ENABLE_LORA: 'true'
+BG_LORA_LR: 0.0001      # Learning rate
+BG_LORA_BATCH: 4        # Batch size
+BG_LORA_R: 8            # r rank
+BG_LORA_ALPHA: 16       # Alpha
+```
+
+## 5. Processing Flow
+
+### 5.1 Conversation Archiving
+
+1. User clicks the archive button
+2. System generates quick summary
+3. Conversation is saved to `conversation_archives/`
+4. Task is added to background processing queue
+
+### 5.2 Background Processing
+
+1. System detects idle period (no activity for `BG_IDLE_THRESHOLD` seconds)
+2. Background processor takes highest priority task from queue
+3. Task is processed (summarization, embedding, etc.)
+4. Results are saved to appropriate directories
+5. Task status is updated
+
+### 5.3 Structured Archives
+
+1. Conversation is analyzed and key information extracted
+2. Structured markdown is created and saved to `structured_archives/`
+3. New knowledge is embedded into vector database
+4. (Optional) LoRA adapter is trained for deeper memory
+
+## 6. Testing
+
+### 6.1 Basic Functionality
+
+1. Start the GAIA system
+2. Have a conversation
+3. Click the archive button
+4. Verify the initial summary appears
+5. Leave the system idle for at least 5 minutes
+6. Return and check the Archives tab to see processing status
+
+### 6.2 API Testing
+
+Use tools like Postman or curl to test API endpoints:
+
+```bash
+# Check background status
+curl http://localhost:7860/api/background/status
+
+# Archive a conversation
+curl -X POST http://localhost:7860/api/conversation/archive/background
+
+# List structured archives
+curl http://localhost:7860/api/structured_archives
+```
+
+### 6.3 Troubleshooting
+
+If background processing is not working:
+
+1. Check logs:
+   ```bash
+   docker-compose logs | grep "Background"
+   ```
+
+2. Verify idle threshold:
+   ```bash
+   # Reduce threshold for testing
+   BG_IDLE_THRESHOLD: 60  # 1 minute
+   ```
+
+3. Check directory permissions:
+   ```bash
+   docker exec -it <container_name> ls -la /app/campaign-data/structured_archives
+   ```
+
+## 7. Advanced Usage
+
+### 7.1 Resource Management
+
+For limited hardware, adjust:
+
+```yaml
+BG_MAX_MEMORY: 0.5      # Use only 50% of available memory
+BG_MAX_CPU: 0.3         # Use only 30% of CPU
+```
+
+### 7.2 Overnight Processing
+
+For systems that stay on overnight, configure:
+
+```yaml
+BG_OVERNIGHT: 'true'
+BG_OVERNIGHT_START: 20  # 8:00 PM
+BG_OVERNIGHT_END: 7     # 7:00 AM
+```
+
+### 7.3 Task Priorities
+
+Default priorities:
+- Conversation summarization: 10
+- Document embedding: 20
+- LoRA fine-tuning: 30
+
+Lower numbers are higher priority.
+
+## 8. Future Enhancements
+
+Planned improvements for the background processing system:
+
+1. **Smart Task Scheduling**
+   - Adaptive resource usage based on system load
+   - Task bundling for efficiency
+   - Priority adjustments based on user patterns
+
+2. **Advanced Memory Integration**
+   - Progressive knowledge integration
+   - Conflict resolution for contradictory information
+   - Automatic cleanup of redundant knowledge
+
+3. **Reporting and Analytics**
+   - Usage patterns detection
+   - Knowledge graph visualization
+   - Learning effectiveness metrics
