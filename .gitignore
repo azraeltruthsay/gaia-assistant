@@ -1,17 +1,46 @@
-# GAIA project .gitignore
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
 
-# Model files
+# === Environments ===
+.venv/
+.env
+*.env
+
+# === OS/System Junk ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Editor files ===
+.vscode/
+.idea/
+
+# === LLM Models & Snapshots ===
+/app/model.gguf
+/app/shared/chroma_db/
 *.gguf
-
-# Database files
-chroma_db/
-
-# Large data files
+*.ckpt
+*.pt
+*.pth
 *.bin
 
-# Logs
-logs/
+# === Vector DB / Memory Artifacts ===
+/app/knowledge/system-reference/code_summaries/
+/app/knowledge/system-reference/*.md
+/app/shared/gaia_code_snapshot.json
+/app/conversation_logs/
 *.log
 
-# Environment and config
-.env
+# === Compiled JS/CSS (if built locally) ===
+*.min.js
+*.min.css
+
+# === Other Caches ===
+*.sqlite
+*.sqlite3
+*.db
+*.tmp

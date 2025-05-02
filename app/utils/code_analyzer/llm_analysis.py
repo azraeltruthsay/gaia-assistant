@@ -23,7 +23,21 @@ class LLMAnalyzer:
             llm: Optional LLM instance for code analysis
         """
         self.llm = llm
-
+    
+    def _extract_json(self, text: str) -> dict:
+        """
+        Extract and parse JSON object from a possibly noisy LLM response.
+        """
+        try:
+            # Try to extract the first JSON-like block in the response
+            json_match = re.search(r"\{.*\}", text, re.DOTALL)
+            if json_match:
+                return json.loads(json_match.group(0))
+            return {}
+        except Exception as e:
+            logging.warning(f"⚠️ Failed to parse LLM JSON response: {e}")
+            return {}
+    
     def analyze_code(self, filepath: str, content: str, language: str) -> dict:
         """
         Analyze code using an LLM and return structured insights.
