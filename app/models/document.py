@@ -13,7 +13,7 @@ from striprtf.striprtf import rtf_to_text
 from docx import Document as DocxDocument
 from langchain_core.documents import Document
 from langchain_community.document_loaders import TextLoader
-
+from langchain_core.documents import Document
 # Get the logger
 logger = logging.getLogger("GAIA")
 
@@ -218,3 +218,48 @@ class DocumentProcessor:
         except Exception as e:
             logger.error(f"Error getting document info for {filepath}: {e}")
             return None
+            
+    def process_documents(self, directory: str, tier: Optional[str] = None, project: Optional[str] = None) -> List[Document]:
+        """
+        Load and wrap documents from a directory with tier/project metadata.
+        
+        Args:
+            directory: Path to the documents folder
+            tier: Knowledge tier (e.g., '0_system_reference', '2_structured')
+            project: Optional project name
+            
+        Returns:
+            List of LangChain Document objects with metadata
+        """
+        documents = []
+        
+        if not os.path.isdir(directory):
+            logger.warning(f"Directory not found or invalid: {directory}")
+            return documents
+    
+        try:
+            for filename in os.listdir(directory):
+                if filename.endswith(".md"):
+                    filepath = os.path.join(directory, filename)
+                    try:
+                        with open(filepath, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                            if not content.strip():
+                                logger.warning(f"Empty file skipped: {filepath}")
+                                continue
+    
+                            metadata = {
+                                "filename": filename,
+                                "source_path": filepath,
+                                "tier": tier if tier else "unspecified",
+                                "project": project or "global"
+                            }
+    
+                            documents.append(Document(page_content=content, metadata=metadata))
+                            logger.info(f"Loaded document with metadata: {metadata}")
+                    except Exception as e:
+                        logger.error(f"Failed to load file {filepath}: {e}")
+        except Exception as e:
+            logger.error(f"Error accessing directory {directory}: {e}")
+        
+        return documents

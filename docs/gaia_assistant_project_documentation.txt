@@ -16,66 +16,141 @@ GAIA runs as a self-hosted application that combines:
 ### Core Components
 
 ```
-gaia-assistant/                   # Main project directory
-├── app/                          # Main application code
-│   ├── __init__.py              # Package declaration for main app
-│   ├── config.py                # Configuration management
-│   ├── models/                  # AI and data models
-│   │   ├── __init__.py          # Package declaration
-│   │   ├── ai_manager.py        # Core AI coordination
-│   │   ├── document.py          # Document processing
-│   │   ├── vector_store.py      # Vector embedding management
-│   │   ├── tts.py               # Text-to-speech functionality
-│   │   └── code_analyzer.py     # Code analysis
-│   ├── utils/                   # Utility modules
-│   │   ├── __init__.py          # Package declaration
-│   │   ├── helpers.py           # Common utility functions
-│   │   ├── conversation_manager.py # Conversation tracking
-│   │   ├── hardware_optimization.py # Hardware detection/optimization
-│   │   ├── project_manager.py   # Project management utilities
-│   │   ├── background_processor.py # Background task processing
-│   │   └── background_processor_config.py # Background processor settings
-│   └── web/                     # Web interface
-│       ├── __init__.py          # Package declaration
-│       ├── routes.py            # API endpoints
-│       ├── project_routes.py    # Project management routes
-│       └── error_handlers.py    # Error management
-├── campaign-data/               # Project content (initially D&D)
-│   ├── core-documentation/      # Core project documents
-│   ├── converted_raw/           # Processed documents
-│   ├── generated_documentation/ # AI-generated documentation
-│   ├── raw-data/                # Raw notes for processing
-│   ├── conversation_archives/   # Raw conversation archives
-│   ├── structured_archives/     # Processed conversation archives
-│   └── lora_adapters/           # LoRA fine-tuning adapters (optional)
-├── chroma_db/                   # Vector database storage
-├── logs/                        # Application logs
-├── static/                      # Web static assets
-│   ├── css/                     # Stylesheets
-│   │   ├── styles.css           # Main stylesheet
-│   │   └── code-fix.css         # Code-specific styles
-│   └── js/                      # JavaScript files
-│       ├── app.js               # Main application logic
-│       ├── chat-fix.js          # Chat functionality fixes
-│       ├── conversation_archives.js # Conversation archive UI
-│       ├── code-analyzer.js     # Code analysis UI
-│       ├── troubleshoot.js      # Debugging utilities
-│       ├── project_switcher.js  # Project switching functionality
-│       └── background_processing_ui.js # Background processing UI
-├── templates/                   # Web templates
-│   └── index.html               # Main HTML template
-├── tools/                       # Project tools
-│   └── campaign-tools.py        # Campaign management utilities
-├── external-code/               # External code for analysis
-├── main.py                      # CLI entry point
-├── web_app.py                   # Web server entry point
-├── code_uploader.py             # Code upload utility
-├── debug-script.js              # Debugging helper script
-├── Dockerfile                   # Docker build definition
-├── docker-compose.yml           # Docker Compose configuration
-├── gaia_instructions.txt        # Core AI instructions
-├── gaia_code_instruction.txt    # Code analysis instructions
-└── benchmark.py                 # Performance benchmarking
+gaia-assistant$ tree
+.
+├── Dockerfile
+├── README.md
+├── app
+│   ├── __init__.py
+│   ├── config.py
+│   ├── desktop.ini
+│   ├── models
+│   │   ├── __init__.py
+│   │   ├── ai_manager.py
+│   │   ├── code_analyzer.py
+│   │   ├── desktop.ini
+│   │   ├── document.py
+│   │   ├── tts.py
+│   │   └── vector_store.py
+│   ├── utils
+│   │   ├── __init__.py
+│   │   ├── background_processor.py
+│   │   ├── background_processor_config.py
+│   │   ├── conversation_manager.py
+│   │   ├── desktop.ini
+│   │   ├── hardware_optimization.py
+│   │   ├── helpers.py
+│   │   └── project_manager.py
+│   └── web
+│       ├── __init__.py
+│       ├── desktop.ini
+│       ├── error_handlers.py
+│       ├── project_routes.py
+│       └── routes.py
+├── benchmark.py
+├── code_uploader.py
+├── debug-script.js
+├── directory_structure.md
+├── docker-compose.yml
+├── docs
+│   ├── background_processing_implementation_guide.txt
+│   ├── gaia_assistant_project_documentation.txt
+│   └── gaia_enhancement_feasibility_assessment.txt
+├── gaia_code_instructions.txt
+├── gaia_gamer_instructions.txt
+├── gaia_instructions.txt
+├── implementation-guide.md
+├── logs
+│   ├── gaia.log
+│   └── gaia_web.log
+├── main.py
+├── project-instructions.md
+├── projects
+│   ├── code-assistant
+│   │   ├── conversation_archives
+│   │   ├── core-documentation
+│   │   ├── files
+│   │   ├── output
+│   │   ├── raw
+│   │   └── structured_archives
+│   ├── default
+│   │   ├── conversation_archives
+│   │   ├── converted_raw
+│   │   ├── core-documentation
+│   │   ├── raw-data
+│   │   └── structured_archives
+│   └── dnd-campaign
+│       ├── conversation_archives
+│       ├── converted_raw
+│       │   ├── converted_Strauthauk_20250420_232910.md
+│       │   ├── converted_Strauthauk_20250421_021125.md
+│       │   ├── converted_Strauthauk_20250423_141743.md
+│       │   └── desktop.ini
+│       ├── core-documentation
+│       │   ├── braeneage_general_info.md
+│       │   ├── desktop.ini
+│       │   ├── gaia_conversational_record.md
+│       │   ├── gaia_mission_record_axuraud_engagement.md
+│       │   ├── gaia_mission_record_axuraud_engagement_part_2.md
+│       │   ├── gaia_system_status_update.md
+│       │   ├── heimr_general_info.md
+│       │   ├── mechaduellum_system_reference_document.md
+│       │   ├── mission_and_operational_tracker.md
+│       │   ├── rupert_roads_character_sheet_with_tactical_tracker.md
+│       │   ├── sonic_artifice_designations.md
+│       │   └── the_fabric_of_reality.md
+│       ├── raw-data
+│       │   ├── Strauthauk.txt
+│       │   └── desktop.ini
+│       └── structured_archives
+├── shared
+│   ├── chroma_db
+│   │   ├── code
+│   │   ├── default
+│   │   │   ├── 0f0a5d0c-3508-4d91-bbe6-c86fef0d9451
+│   │   │   │   ├── data_level0.bin
+│   │   │   │   ├── header.bin
+│   │   │   │   ├── length.bin
+│   │   │   │   └── link_lists.bin
+│   │   │   └── chroma.sqlite3
+│   │   └── dnd
+│   │       ├── cad58d7e-1c7a-4a9a-b8ed-d5fab6995174
+│   │       │   ├── data_level0.bin
+│   │       │   ├── header.bin
+│   │       │   ├── length.bin
+│   │       │   └── link_lists.bin
+│   │       └── chroma.sqlite3
+│   ├── instructions
+│   │   ├── code_instructions.txt
+│   │   ├── default_instructions.txt
+│   │   ├── dnd_instructions.txt
+│   │   └── gaia_instructions.txt
+│   └── projects.json
+├── static
+│   ├── code-debug.html
+│   ├── css
+│   │   ├── code-fix.css
+│   │   ├── desktop.ini
+│   │   └── styles.css
+│   ├── desktop.ini
+│   └── js
+│       ├── app.js
+│       ├── background_processing_ui.js
+│       ├── chat-fix.js
+│       ├── code-analyzer.js
+│       ├── conversation_archives.js
+│       ├── desktop.ini
+│       ├── project_switcher.js
+│       └── troubleshoot.js
+├── templates
+│   ├── desktop.ini
+│   └── index.html
+├── tools
+│   ├── campaign-tools.py
+│   └── desktop.ini
+├── troubleshooting
+│   └── desktop.ini
+└── web_app.py
 ```
 
 Adjacent to the main project directory:
@@ -86,7 +161,7 @@ gaia-models/                     # AI model files (outside of git repo)
 └── qwen2.5-coder-3b-instruct-q4_k_m.gguf  # Code optimized model
 ```
 
-> **Note**: All Python package directories (`app/`, `app/models/`, `app/utils/`, `app/web/`) include `__init__.py` files to mark them as packages, even when these files may be empty or contain only comments. These files are critical for proper Python module imports.
+> **Note**: All Python package directories (`app/`, `app/models/`, `app/utils/`, `app/web/`) should include `__init__.py` files to mark them as packages, even when these files may be empty or contain only comments. These files are critical for proper Python module imports.
 
 ### Complete File Structure
 

@@ -154,19 +154,23 @@ def optimize_config(config, hardware_info: Dict[str, Any]) -> None:
         
         logger.info(f"Set n_threads to {config.n_threads}")
     
+    
+    
     # Memory-based optimizations
     if hardware_info["memory_gb"] >= 16:
         # With 16+ GB, we can use a larger context window
         config.n_ctx = 8192
         logger.info(f"Set n_ctx to {config.n_ctx}")
-    elif hardware_info["memory_gb"] >= 8:
-        # With 8-16 GB, use a medium context window
-        config.n_ctx = 4096
+    elif hardware_info["memory_gb"] >= 4:
+        # With 4-16 GB, use a medium context window
+        config.n_ctx = 8192
         logger.info(f"Set n_ctx to {config.n_ctx}")
     else:
-        # With less than 8 GB, use a smaller context window
+        # With less than 4 GB, use a smaller context window
         config.n_ctx = 2048
         logger.info(f"Set n_ctx to {config.n_ctx}")
+    
+    
     
     # GPU detection
     if "NVIDIA" in hardware_info["gpu"]:

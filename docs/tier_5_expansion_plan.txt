@@ -1,0 +1,41 @@
+🎨 Tier 5 Expansion Map for GAIA
+Goal: Gradual, manageable steps to turn GAIA into a living campaign companion.
+
+🌱 Phase 1: Meta-Memory Layer
+
+Step	What to Build	Notes
+1.1	meta_memory.json per project	Track emotional state, lessons learned, player relationships.
+1.2	Update after each session	After each D&D session, append memory/summaries.
+1.3	Expose "meta" to core prompts	Let GAIA know how she's supposed to feel today.
+🧠 Phase 2: Dynamic Personality Adjustment
+
+Step	What to Build	Notes
+2.1	"Mood" System	Internal states like Curious, Focused, Melancholy.
+2.2	Influence word choice subtly	More adjectives? More formal speech? Witty vs Stoic?
+2.3	Trigger moods based on events	Big battle = somber GAIA. Light town visit = playful GAIA.
+🛠 Phase 3: Self-Reflection and Growth
+
+Step	What to Build	Notes
+3.1	End-of-session self-prompt	GAIA asks: "What did I learn? What should I improve?"
+3.2	Adjust instruction snippets	Save tiny behavior tweaks for next sessions.
+🎯 Phase 4: Sub-Goal System
+
+Step	What to Build	Notes
+4.1	Minor Task List for GAIA	Example: "Research city of Heimr overnight."
+4.2	Background Processing Expansion	Schedule goal fulfillment overnight (during BG processor runs).
+🚀 Phase 5: Aspect LoRA Adapters (Advanced)
+
+Step	What to Build	Notes
+5.1	LoRA generator module (optional)	Let GAIA spin small adapters when campaign arcs finish.
+5.2	Dynamic aspect switching	Choose tactical GAIA vs lorekeeper GAIA depending on need.
+🗺️ Visual Map (summary)
+plaintext
+Copy
+Edit
+Player ↔️ GAIA
+          ↳ Short-term Memory (conversation logs)
+          ↳ Meta Memory (feelings, goals, player bonds)
+          ↳ Context Builder (builds smarter prompts dynamically)
+          ↳ LLM + Vector Search
+          ↳ Subgoal Planner (research quests, player needs)
+          ↳ LoRA Aspect Manager (future specialization)

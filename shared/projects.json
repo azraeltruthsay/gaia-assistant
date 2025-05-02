@@ -1,0 +1,59 @@
+{
+  "default": {
+    "name": "Personal Assistant",
+    "description": "Real-world applications for the user Doru",
+    "instructions_file": "instructions/default_instructions.txt",
+    "data_path": "/app/projects/default/core-documentation",
+    "output_path": "/app/projects/default/converted_raw",
+    "raw_data_path": "/app/projects/default/raw-data",
+    "archives_dir": "/app/projects/default/conversation_archives",
+    "structured_archives_dir": "/app/projects/default/structured_archives",
+    "is_default": true,
+    "icon": "user",
+    "vector_db_subdir": "default",
+    "user_context": {
+      "user_name": "Doru",
+      "relation": "personal assistant",
+      "greeting": "Hello",
+      "style": "helpful and conversational"
+    }
+  },
+  "dnd": {
+    "name": "D&D Gaming Assistant",
+    "description": "Gaming context for Rupert Roads",
+    "instructions_file": "instructions/dnd_instructions.txt",
+    "data_path": "/app/projects/dnd-campaign/core-documentation",
+    "output_path": "/app/projects/dnd-campaign/converted_raw",
+    "raw_data_path": "/app/projects/dnd-campaign/raw-data",
+    "archives_dir": "/app/projects/dnd-campaign/conversation_archives",
+    "structured_archives_dir": "/app/projects/dnd-campaign/structured_archives",
+    "is_default": false,
+    "icon": "dice-d20",
+    "vector_db_subdir": "dnd",
+    "user_context": {
+      "user_name": "Rupert",
+      "relation": "integrated AI",
+      "greeting": "Systems online",
+      "style": "technical but supportive",
+      "perspective_phrases": [
+        "my Warforged frame",
+        "my artifice",
+        "my mission"
+      ]
+    }
+  },
+  "code": {
+    "name": "Code Assistant",
+    "description": "Programming and code review assistance",
+    "instructions_file": "instructions/code_instructions.txt",
+    "data_path": "/app/projects/code-assistant/core-documentation",
+    "output_path": "/app/projects/code-assistant/output",
+    "raw_data_path": "/app/projects/code-assistant/raw",
+    "archives_dir": "/app/projects/code-assistant/conversation_archives",
+    "structured_archives_dir": "/app/projects/code-assistant/structured_archives",
+    "is_default": false,
+    "icon": "code",
+    "vector_db_subdir": "code",
+    "model_type": "code"
+  }
+}

@@ -1,689 +1,188 @@
 """
-Web routes for GAIA D&D Campaign Assistant.
-Defines all Flask routes for the web interface.
+GAIA Primary Web Routes (core API endpoints)
+Cleaned, logged, and annotated for stability and maintainability.
 """
 
 import os
 import logging
-import re
 from datetime import datetime
-from flask import Blueprint, request, jsonify, render_template, send_from_directory, current_app
+from flask import Blueprint, request, jsonify, render_template, current_app
 from werkzeug.utils import secure_filename
-
 from app.utils.helpers import sanitize_filename, clean_response, get_file_extension
 
-# Get the logger
-logger = logging.getLogger("GAIA")
+# Behavior + intent detection
+from app.intent_detection import detect_intent
+from app.behavior.creation_manager import BehaviorCreationManager
+from app.commands.create_behavior_trigger import trigger_behavior_creation
 
-# Create the blueprint
+logger = logging.getLogger("GAIA")
 web_bp = Blueprint('web', __name__)
 
-# Allowed file extensions for uploads
 ALLOWED_EXTENSIONS = {'txt', 'rtf', 'docx', 'md'}
 
 def allowed_file(filename):
-    """Check if the file has an allowed extension."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @web_bp.route('/')
 def index():
-    """Render the main page."""
+    """Serve main page."""
     return render_template('index.html')
+
 
 @web_bp.route('/api/status')
 def status():
-    """Return the initialization status of the AI."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    return jsonify({
-        'initialized': ai_manager is not None,
-        'error': current_app.config.get('INIT_ERROR')
-    })
+    """Healthcheck + readiness probe."""
+    try:
+        logger.info("🩺 /api/status requested")
+        ai_manager = current_app.config.get('AI_MANAGER')
+        init_error = current_app.config.get('INIT_ERROR')
+
+        if init_error:
+            logger.warning(f"Startup error reported: {init_error}")
+            return jsonify({'initialized': False, 'error': init_error})
+
+        if not ai_manager or not getattr(ai_manager, 'initialized', False):
+            return jsonify({'initialized': False, 'error': 'AI components not fully initialized yet'})
+
+        return jsonify({'initialized': True})
+
+    except Exception as e:
+        logger.error(f"Error in /api/status: {e}", exc_info=True)
+        return jsonify({'initialized': False, 'error': 'Internal error'}), 500
+
 
 @web_bp.route('/api/query', methods=['POST'])
 def query():
-    """Process a query to the AI."""
+    """Main chat interface for campaign world queries."""
     ai_manager = current_app.config.get('AI_MANAGER')
-    
+    behavior_manager = current_app.config.get('BEHAVIOR_MANAGER')
+
     if not ai_manager:
         return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    data = request.json
-    query_text = data.get('query', '')
-    
-    if not query_text:
-        return jsonify({'error': 'Query cannot be empty'}), 400
-    
+
     try:
-        # Check if this is an artifact generation request
-        if query_text.lower().startswith('artifact:'):
-            artifact_prompt = query_text[len('artifact:'):].strip()
-            artifact_path = ai_manager.generate_artifact(artifact_prompt)
-            
-            if not artifact_path:
-                return jsonify({'error': 'Failed to generate artifact'}), 500
-            
-            # Get filename from path
-            artifact_filename = os.path.basename(artifact_path)
-            
-            # Add to history
-            ai_manager.add_to_history(f"User: {query_text}")
-            ai_manager.add_to_history(f"Generated artifact: {artifact_filename}")
-            
-            response = f"I've prepared the artifact you requested. It's been stored as '{artifact_filename}'."
-            
-            return jsonify({
-                'response': response,
-                'artifact': artifact_filename
-            })
+        data = request.get_json()
+        query_text = data.get('query', '').strip()
+
+        if not query_text:
+            return jsonify({'error': 'No query provided'}), 400
+
+        logger.info(f"📨 User query received: {query_text}")
+
+        if query_text.lower() in {"cancel", "stop", "nevermind", "abort"}:
+            if behavior_manager and behavior_manager.awaiting_user_response:
+                behavior_manager.awaiting_user_response = False
+                behavior_manager.filled_fields = {}
+                behavior_manager.current_field = None
+                return jsonify({"response": "🔝 Behavior creation has been canceled."})
+            return jsonify({"response": "🔝 Request canceled."})
+
+        if behavior_manager and behavior_manager.awaiting_user_response:
+            response = behavior_manager.process_user_response(query_text)
         else:
-            # Process normal query
-            response = ai_manager.query_campaign_world(query_text)
-            
-            # Clean response
-            response = clean_response(response)
-            
-            # Add to history
-            ai_manager.add_to_history(f"User: {query_text}")
-            ai_manager.add_to_history(f"GAIA: {response}")
-            
-            return jsonify({'response': response})
-                
+            intent = detect_intent(query_text)
+            if intent == "create_behavior":
+                response = trigger_behavior_creation(ai_manager.vector_store_manager)
+            else:
+                response = ai_manager.process_query(query_text)
+
+        return jsonify({'response': response})
     except Exception as e:
-        logger.error(f"Error processing query: {e}", exc_info=True)
+        logger.error(f"Query processing error: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
-@web_bp.route('/api/history')
-def get_history():
-    """Get the conversation history."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    return jsonify({'history': ai_manager.conversation_history})
 
 @web_bp.route('/api/documents')
 def list_documents():
-    """List all available documents."""
+    """List available markdown docs (core + artifact)."""
     ai_manager = current_app.config.get('AI_MANAGER')
-    
     if not ai_manager:
         return jsonify({'error': 'AI not initialized yet'}), 503
-    
+
     try:
-        # List core documentation
         core_docs = []
-        for filename in os.listdir(ai_manager.config.data_path):
-            if filename.endswith('.md'):
-                filepath = os.path.join(ai_manager.config.data_path, filename)
-                doc_info = ai_manager.doc_processor.get_document_info(filepath)
-                if doc_info:
-                    core_docs.append(doc_info)
-        
-        # List generated artifacts
         artifacts = []
-        for filename in os.listdir(ai_manager.config.output_path):
-            if filename.endswith('.md'):
-                filepath = os.path.join(ai_manager.config.output_path, filename)
-                doc_info = ai_manager.doc_processor.get_document_info(filepath)
-                if doc_info:
-                    artifacts.append(doc_info)
-        
-        return jsonify({
-            'core_documentation': core_docs,
-            'artifacts': artifacts
-        })
+
+        if os.path.exists(ai_manager.config.data_path):
+            for fname in os.listdir(ai_manager.config.data_path):
+                if fname.endswith('.md'):
+                    fpath = os.path.join(ai_manager.config.data_path, fname)
+                    core_docs.append({
+                        'name': fname,
+                        'modified': datetime.fromtimestamp(os.path.getmtime(fpath)).strftime('%Y-%m-%d %H:%M:%S'),
+                        'size': os.path.getsize(fpath)
+                    })
+
+        if os.path.exists(ai_manager.config.output_path):
+            for fname in os.listdir(ai_manager.config.output_path):
+                if fname.endswith('.md'):
+                    fpath = os.path.join(ai_manager.config.output_path, fname)
+                    artifacts.append({
+                        'name': fname,
+                        'modified': datetime.fromtimestamp(os.path.getmtime(fpath)).strftime('%Y-%m-%d %H:%M:%S'),
+                        'size': os.path.getsize(fpath)
+                    })
+
+        return jsonify({'core_documentation': core_docs, 'artifacts': artifacts})
     except Exception as e:
         logger.error(f"Error listing documents: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
-@web_bp.route('/api/document/<path:filename>')
+
+@web_bp.route('/api/document/<filename>')
 def get_document(filename):
-    """Get the content of a specific document."""
+    """Load markdown content of one document."""
     ai_manager = current_app.config.get('AI_MANAGER')
-    
     if not ai_manager:
         return jsonify({'error': 'AI not initialized yet'}), 503
-    
+
     try:
-        # Check in core documentation
-        core_path = os.path.join(ai_manager.config.data_path, filename)
-        if os.path.exists(core_path):
-            with open(core_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-            return jsonify({'content': content, 'type': 'core'})
-        
-        # Check in artifacts
-        artifact_path = os.path.join(ai_manager.config.output_path, filename)
-        if os.path.exists(artifact_path):
-            with open(artifact_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-            return jsonify({'content': content, 'type': 'artifact'})
-        
-        # Check in external code path - Add this section
-        code_path = os.path.join(ai_manager.config.external_code_path, filename)
-        if os.path.exists(code_path):
-            try:
-                with open(code_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                return jsonify({'content': content, 'type': 'code'})
-            except UnicodeDecodeError:
-                # Try with a different encoding for binary files
-                with open(code_path, 'r', encoding='latin-1') as f:
-                    content = f.read()
-                return jsonify({'content': content, 'type': 'code'})
-        
+        paths = [
+            os.path.join(ai_manager.config.data_path, filename),
+            os.path.join(ai_manager.config.output_path, filename)
+        ]
+
+        for path in paths:
+            if os.path.exists(path):
+                with open(path, 'r', encoding='utf-8') as f:
+                    return jsonify({'content': f.read()})
+
         return jsonify({'error': 'Document not found'}), 404
     except Exception as e:
-        logger.error(f"Error retrieving document: {e}", exc_info=True)
+        logger.error(f"Error retrieving document {filename}: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
-@web_bp.route('/api/upload', methods=['POST'])
-def upload_file():
-    """Upload a file to the raw data directory."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(ai_manager.config.raw_data_path, filename)
-        file.save(file_path)
-        
-        # Process the uploaded file
-        try:
-            processed = False
-            raw_text = ai_manager.doc_processor.extract_text_from_file(file_path)
-            if raw_text:
-                markdown_content = ai_manager.doc_processor.convert_to_markdown(raw_text)
-                if markdown_content:
-                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                    output_filename = f"converted_{os.path.splitext(filename)[0]}_{timestamp}.md"
-                    output_filepath = os.path.join(ai_manager.config.output_path, output_filename)
-                    if ai_manager.doc_processor.save_markdown(output_filepath, markdown_content):
-                        processed = True
-                        
-                        # Update vector store with new content
-                        new_documents = ai_manager.doc_processor.load_and_preprocess_data(ai_manager.config.output_path)
-                        if new_documents:
-                            ai_manager.vector_store_manager.update_vector_store(ai_manager.vector_store, new_documents)
-            
-            return jsonify({
-                'success': True,
-                'filename': filename,
-                'processed': processed
-            })
-        except Exception as e:
-            logger.error(f"Error processing uploaded file: {e}", exc_info=True)
-            return jsonify({'error': str(e), 'filename': filename}), 500
-    
-    return jsonify({'error': 'File type not allowed'}), 400
+@web_bp.route('/api/switch_project', methods=['POST'])
+def switch_project():
+    """Switch active GAIA project (e.g., dnd-campaign, code-assistant)."""
+    try:
+        ai_manager = current_app.config.get('AI_MANAGER')
+        if not ai_manager:
+            return jsonify({'success': False, 'error': 'AI Manager not available'}), 503
 
-@web_bp.route('/downloads/<path:filename>')
-def download_file(filename):
-    """Download a document file."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return "AI not initialized yet", 503
-    
-    # Check if file exists in core documentation
-    if os.path.exists(os.path.join(ai_manager.config.data_path, filename)):
-        return send_from_directory(ai_manager.config.data_path, filename, as_attachment=True)
-    
-    # Check if file exists in artifacts
-    if os.path.exists(os.path.join(ai_manager.config.output_path, filename)):
-        return send_from_directory(ai_manager.config.output_path, filename, as_attachment=True)
-    
-    return "File not found", 404
+        project_name = request.args.get('name')
+        if not project_name:
+            return jsonify({'success': False, 'error': 'No project name provided'}), 400
 
-@web_bp.route('/api/conversation/summary', methods=['GET'])
-def get_conversation_summary():
-    """Get a summary of the current conversation."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    try:
-        # Force summarization and archiving
-        summary = ai_manager.summarize_and_archive_conversation()
-        return jsonify({
-            'success': True,
-            'summary': summary or "No summary available"
-        })
-    except Exception as e:
-        logger.error(f"Error generating conversation summary: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
+        # Adjust project-specific config
+        project_base = os.path.join('/app/projects', project_name)
+        raw_data = os.path.join(project_base, 'raw-data')
+        core_docs = os.path.join(project_base, 'core-documentation')
 
-@web_bp.route('/api/conversation/archives', methods=['GET'])
-def get_conversation_archives():
-    """Get a list of archived conversations."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    try:
-        # Get summaries from conversation manager
-        summaries = ai_manager.conversation_manager.summaries
-        
-        # Format for response
-        archives = []
-        for summary in summaries:
-            archives.append({
-                'id': summary['id'],
-                'timestamp': summary['timestamp'],
-                'summary': summary['summary'],
-                'keywords': summary.get('keyword_phrases', [])
-            })
-        
-        return jsonify({
-            'success': True,
-            'archives': archives
-        })
-    except Exception as e:
-        logger.error(f"Error retrieving conversation archives: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
+        # Update config paths
+        ai_manager.config.data_path = core_docs
+        ai_manager.config.raw_data_path = raw_data
+        ai_manager.config.output_path = os.path.join(project_base, 'converted_raw')
 
-@web_bp.route('/api/conversation/archive/<archive_id>', methods=['GET'])
-def get_conversation_archive(archive_id):
-    """Get a specific archived conversation."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    try:
-        # Get archived conversation
-        content = ai_manager.conversation_manager.get_archived_conversation(archive_id)
-        
-        if not content:
-            return jsonify({'error': 'Archive not found'}), 404
-        
-        return jsonify({
-            'success': True,
-            'id': archive_id,
-            'content': content
-        })
-    except Exception as e:
-        logger.error(f"Error retrieving archive {archive_id}: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-        
-@web_bp.route('/api/conversation/relevant', methods=['POST'])
-def get_relevant_conversations():
-    """Get archived conversations relevant to a query."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    data = request.json
-    query = data.get('query', '')
-    
-    if not query:
-        return jsonify({'error': 'Query cannot be empty'}), 400
-    
-    try:
-        # Find relevant conversations
-        relevant = ai_manager.conversation_manager.find_relevant_context(query)
-        
-        return jsonify({
-            'success': True,
-            'relevant_conversations': relevant
-        })
-    except Exception as e:
-        logger.error(f"Error finding relevant conversations: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-        
-@web_bp.route('/api/code', methods=['GET'])
-def list_code_files():
-    """List all code files available for analysis."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    try:
-        code_files = []
-        
-        # List files in code paths
-        for root, dirs, files in os.walk(ai_manager.config.external_code_path):
-            for file in files:
-                filepath = os.path.join(root, file)
-                relative_path = os.path.relpath(filepath, ai_manager.config.external_code_path)
-                
-                # Only include text files
-                try:
-                    with open(filepath, 'r', encoding='utf-8') as f:
-                        # Just try to read the first few bytes to confirm it's text
-                        f.read(1024)
-                        
-                    # Get language
-                    language = ai_manager.code_analyzer.identify_language(filepath)
-                    
-                    # Only include recognized code files
-                    if language != 'unknown':
-                        code_files.append({
-                            'path': relative_path,
-                            'language': language,
-                            'full_path': filepath
-                        })
-                except:
-                    # Not a text file or couldn't be read, skip
-                    pass
-        
-        return jsonify({
-            'success': True,
-            'code_files': code_files
-        })
-    except Exception as e:
-        logger.error(f"Error listing code files: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
+        # Reprocess content
+        ai_manager.doc_processor.process_raw_data()
+        documents = ai_manager.doc_processor.load_and_preprocess_data(core_docs)
+        ai_manager.vector_store = ai_manager.vector_store_manager.create_vector_store(documents)
 
-@web_bp.route('/api/code/analyze', methods=['POST'])
-def analyze_code():
-    """Analyze a specific code file."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    data = request.json
-    filepath = data.get('filepath', '')
-    
-    if not filepath:
-        return jsonify({'error': 'File path cannot be empty'}), 400
-    
-    # Validate path is within external code path
-    full_path = os.path.join(ai_manager.config.external_code_path, filepath)
-    if not os.path.exists(full_path):
-        return jsonify({'error': 'File not found'}), 404
-    
-    try:
-        # Analyze the code
-        content = ai_manager.code_analyzer.load_code_file(full_path)
-        if not content:
-            return jsonify({'error': 'Failed to load code file'}), 500
-            
-        analysis = ai_manager.code_analyzer.analyze_code_with_llm(full_path, content)
-        
-        if not analysis:
-            return jsonify({'error': 'Failed to analyze code'}), 500
-        
-        return jsonify({
-            'success': True,
-            'analysis': analysis
-        })
-    except Exception as e:
-        logger.error(f"Error analyzing code: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-        
-@web_bp.route('/api/code/file', methods=['GET'])
-def get_code_file():
-    """Get the content of a specific code file."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    filepath = request.args.get('filepath', '')
-    
-    if not filepath:
-        return jsonify({'error': 'File path cannot be empty'}), 400
-    
-    try:
-        # Build the full path from the external code path
-        full_path = os.path.join(ai_manager.config.external_code_path, filepath)
-        
-        # Check if file exists
-        if not os.path.exists(full_path):
-            return jsonify({'error': f'File not found at {filepath}'}), 404
-        
-        # Read file content
-        try:
-            with open(full_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-        except UnicodeDecodeError:
-            # Try with a different encoding for binary files
-            with open(full_path, 'r', encoding='latin-1') as f:
-                content = f.read()
-        
-        # Get file language
-        language = ai_manager.code_analyzer.identify_language(full_path)
-        
-        return jsonify({
-            'success': True,
-            'content': content,
-            'language': language,
-            'path': filepath,
-            'full_path': full_path
-        })
-    except Exception as e:
-        logger.error(f"Error retrieving code file: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-        
-@web_bp.route('/api/code/upload', methods=['POST'])
-def upload_code_file():
-    """Upload a file to the external code directory."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    
-    # Create target directory structure
-    directory = request.form.get('directory', '')
-    target_dir = os.path.join(ai_manager.config.external_code_path, directory)
-    
-    # Ensure the directory exists
-    os.makedirs(target_dir, exist_ok=True)
-    
-    # Save the file
-    filename = secure_filename(file.filename)
-    file_path = os.path.join(target_dir, filename)
-    file.save(file_path)
-    
-    # Process the uploaded file
-    try:
-        # Check if it's a text file
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-        except UnicodeDecodeError:
-            try:
-                with open(file_path, 'r', encoding='latin-1') as f:
-                    content = f.read()
-            except:
-                return jsonify({'error': 'File is not a text file'}), 400
-        
-        # Create chunks for the file
-        language = ai_manager.code_analyzer.identify_language(file_path)
-        file_chunks = ai_manager.code_analyzer.create_code_chunks(file_path, content)
-        
-        # Update vector store with new chunks
-        if file_chunks and ai_manager.vector_store:
-            ai_manager.vector_store_manager.update_vector_store(ai_manager.vector_store, file_chunks)
-            
-        return jsonify({
-            'success': True,
-            'filename': filename,
-            'language': language,
-            'chunks': len(file_chunks)
-        })
-    except Exception as e:
-        logger.error(f"Error processing uploaded code file: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-# Add these routes to the web_bp Blueprint in routes.py
+        logger.info(f"🔄 Project switched to: {project_name}")
+        return jsonify({'success': True})
 
-@web_bp.route('/api/conversation/archive/background', methods=['POST'])
-def archive_conversation_background():
-    """Archive the current conversation for background processing."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    try:
-        archive_info = ai_manager.background_archive_conversation()
-        
-        if not archive_info:
-            return jsonify({'error': 'Failed to archive conversation'}), 500
-        
-        return jsonify({
-            'success': True,
-            'id': archive_info['id'],
-            'summary': archive_info['summary'],
-            'status': archive_info['status']
-        })
     except Exception as e:
-        logger.error(f"Error archiving conversation for background processing: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
-@web_bp.route('/api/background/status', methods=['GET'])
-def get_background_status():
-    """Get status information about background tasks."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    try:
-        status = ai_manager.get_background_tasks_status()
-        
-        if 'error' in status:
-            return jsonify({'error': status['error']}), 500
-        
-        return jsonify({
-            'success': True,
-            'status': status
-        })
-    except Exception as e:
-        logger.error(f"Error getting background status: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
-@web_bp.route('/api/background/task/<task_id>', methods=['GET'])
-def get_task_status(task_id):
-    """Get status information about a specific background task."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    if not ai_manager.background_processor:
-        return jsonify({'error': 'Background processor not initialized'}), 503
-    
-    try:
-        task_info = ai_manager.background_processor.get_task_status(task_id)
-        
-        if not task_info:
-            return jsonify({'error': 'Task not found'}), 404
-        
-        return jsonify({
-            'success': True,
-            'task': task_info
-        })
-    except Exception as e:
-        logger.error(f"Error getting task status: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
-@web_bp.route('/api/structured_archives', methods=['GET'])
-def list_structured_archives():
-    """List all available structured archives."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    try:
-        structured_dir = os.path.join(
-            ai_manager.config.data_path, "../structured_archives"
-        )
-        
-        if not os.path.exists(structured_dir):
-            return jsonify({'structured_archives': []})
-        
-        structured_archives = []
-        for filename in os.listdir(structured_dir):
-            if filename.endswith('.md'):
-                filepath = os.path.join(structured_dir, filename)
-                file_info = ai_manager.doc_processor.get_document_info(filepath)
-                if file_info:
-                    # Extract archive ID from filename
-                    archive_id = filename.replace('_structured.md', '')
-                    file_info['archive_id'] = archive_id
-                    structured_archives.append(file_info)
-        
-        return jsonify({
-            'success': True,
-            'structured_archives': structured_archives
-        })
-    except Exception as e:
-        logger.error(f"Error listing structured archives: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
-@web_bp.route('/api/structured_archive/<archive_id>', methods=['GET'])
-def get_structured_archive(archive_id):
-    """Get the content of a specific structured archive."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    try:
-        structured_dir = os.path.join(
-            ai_manager.config.data_path, "../structured_archives"
-        )
-        filepath = os.path.join(structured_dir, f"{archive_id}_structured.md")
-        
-        if not os.path.exists(filepath):
-            return jsonify({'error': 'Structured archive not found'}), 404
-        
-        with open(filepath, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        return jsonify({
-            'success': True,
-            'id': archive_id,
-            'content': content
-        })
-    except Exception as e:
-        logger.error(f"Error retrieving structured archive: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
-@web_bp.route('/api/background/register_activity', methods=['POST'])
-def register_user_activity():
-    """Register user activity to prevent processing during active use."""
-    ai_manager = current_app.config.get('AI_MANAGER')
-    
-    if not ai_manager:
-        return jsonify({'error': 'AI not initialized yet'}), 503
-    
-    if not ai_manager.background_processor:
-        return jsonify({'error': 'Background processor not initialized'}), 503
-    
-    try:
-        ai_manager.register_user_activity()
-        
-        return jsonify({
-            'success': True,
-            'message': 'User activity registered'
-        })
-    except Exception as e:
-        logger.error(f"Error registering user activity: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"❌ Error switching project: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
