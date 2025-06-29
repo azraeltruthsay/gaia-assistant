@@ -1,0 +1,342 @@
+app/models/tts.py:16:    def __init__(self, config):
+app/models/tts.py:27:    def initialize(self) -> bool:
+app/models/tts.py:50:    def _select_voice(self, voices: List) -> None:
+app/models/tts.py:89:    def speak(self, text: str) -> None:
+app/models/tts.py:105:    def stop(self) -> None:
+app/models/tts.py:113:    def set_properties(self, rate: Optional[int] = None, volume: Optional[float] = None) -> None:
+app/models/model_pool.py:10:    def __init__(self, config: Config = None):
+app/models/model_pool.py:15:    def load_models(self):
+app/models/model_pool.py:43:    def get(self, name: str):
+app/models/model_pool.py:46:    def list_models(self):
+app/models/model_pool.py:49:    def set_status(self, name: str, status: str):
+app/models/model_pool.py:54:    def get_idle_model(self, exclude=[]):
+app/models/vector_store.py:15:    def __init__(self, config):
+app/models/vector_store.py:20:    def initialize_store(self):
+app/models/vector_store.py:34:    def persist(self):
+app/models/vector_store.py:43:    def delete_all_documents(self):
+app/models/vector_store.py:52:    def as_retriever(self):
+app/models/vector_store.py:56:    def add_documents(self, documents: List[Document]):
+app/models/vector_store.py:64:    def split_and_embed_documents(self, raw_documents: List[str], source: Optional[str] = None):
+app/models/ai_manager Backup 050425-0914.py:31:    def __init__(self, config):
+app/models/ai_manager Backup 050425-0914.py:45:    def initialize(self) -> bool:
+app/models/ai_manager Backup 050425-0914.py:123:    def _initialize_llm(self):
+app/models/ai_manager Backup 050425-0914.py:136:    def _try_initialize_component(self, component_class):
+app/models/ai_manager Backup 050425-0914.py:143:    def initialize_background_processor(self):
+app/models/ai_manager Backup 050425-0914.py:156:    def process_query(self, query_text: str) -> str:
+app/models/ai_manager Backup 050425-0914.py:168:    def query_campaign_world(self, query_text: str) -> str:
+app/models/ai_manager Backup 050425-0914.py:176:    def _get_relevant_documents(self, query: str) -> List[Document]:
+app/models/ai_manager Backup 050425-0914.py:192:    def generate_response(self, user_prompt: str, context: Optional[str] = None) -> str:
+app/models/ai_manager Backup 050425-0914.py:235:    def create_empty_vector_store(self):
+app/models/ai_manager Backup 050425-0914.py:239:    def shutdown(self):
+app/models/ai_manager Backup 051325-0748.py:30:    def __init__(self, config, minimal=False):
+app/models/ai_manager Backup 051325-0748.py:55:    def initialize(self):
+app/models/ai_manager Backup 051325-0748.py:109:    def set_persona(self, persona_name):
+app/models/ai_manager Backup 051325-0748.py:119:    def get_persona(self):
+app/models/ai_manager Backup 051325-0748.py:122:    def summarize_conversation(self):
+app/models/ai_manager Backup 051325-0748.py:126:    def embed_documents(self, doc_paths):
+app/models/ai_manager Backup 051325-0748.py:130:    def analyze_codebase(self):
+app/models/ai_manager Backup 051325-0748.py:134:    def handle_intent(self, intent: str, message: str = None) -> str:
+app/models/ai_manager Backup 051325-0748.py:144:    def update_background_status(self):
+app/models/ai_manager Backup 051325-0748.py:151:    def generate_response(self, user_prompt: str) -> str:
+app/models/ai_manager Backup 051325-0748.py:182:    def compose_reflective_prompt(self, traits: dict, instructions: list, prompt: str) -> str:
+app/models/ai_manager Backup 051325-0748.py:193:    def shutdown(self):
+app/models/document.py:19:    def __init__(self, config, llm=None):
+app/models/document.py:30:    def extract_text_from_file(self, filepath: str) -> Optional[str]:
+app/models/document.py:48:    def _extract_rtf(self, filepath: str) -> Optional[str]:
+app/models/document.py:64:    def _extract_docx(self, filepath: str) -> Optional[str]:
+app/models/document.py:73:    def convert_to_markdown(self, text: str) -> Optional[str]:
+app/models/document.py:120:    def save_markdown(self, filepath: str, content: str) -> bool:
+app/models/document.py:131:    def load_and_preprocess_data(self, data_path: str) -> List[Document]:
+app/models/document.py:157:    def process_raw_data(self) -> None:
+app/models/document.py:186:    def get_document_info(self, filepath: str):
+app/models/document.py:202:    def process_documents(self, directory: str, tier: Optional[str] = None, project: Optional[str] = None) -> List[Document]:
+app/models/document.py:235:    def embed_documents(self) -> int:
+app/models/document.py:244:    def generate_artifacts(self) -> int:
+app/models/ai_manager.py:27:    def __init__(self, config, minimal=False):
+app/models/ai_manager.py:52:    def generate_response(self, user_prompt: str) -> str:
+app/models/ai_manager.py:86:    def initialize(self):
+app/models/ai_manager.py:139:    def set_persona(self, persona_name):
+app/models/ai_manager.py:149:    def get_persona(self):
+app/models/ai_manager.py:152:    def summarize_conversation(self):
+app/models/ai_manager.py:156:    def embed_documents(self, doc_paths):
+app/models/ai_manager.py:160:    def analyze_codebase(self):
+app/models/ai_manager.py:164:    def handle_intent(self, intent: str, message: str = None) -> str:
+app/models/ai_manager.py:172:    def update_background_status(self):
+app/models/ai_manager.py:179:    def shutdown(self):
+app/templates/persona_template.py:15:def get_blank_persona_template(name: str = "untitled") -> dict:
+app/config - Backup.py:30:    def __init__(self):
+app/config - Backup.py:94:    def get_path_for_tier(self, tier):
+app/config - Backup.py:110:    def describe_tier(self, tier):
+app/config - Backup.py:114:    def __repr__(self):
+app/gaia_core/primitives.py:14:def read(filepath):
+app/gaia_core/primitives.py:26:def write(filepath, content):
+app/gaia_core/primitives.py:36:def vector_query(query):
+app/gaia_core/primitives.py:43:def shell(command):
+app/gaia_core/manager.py:24:    def __init__(self):
+app/gaia_core/manager.py:39:    def reset(self):
+app/gaia_core/manager.py:45:def get_context():
+app/gaia_core/manager.py:80:def get_idle_observer(responder="Prime"):
+app/gaia_core/manager.py:87:def route_primitive(intent, user_input):
+app/gaia_core/manager.py:108:def chat_loop(input_fn=input, output_fn=print, responder_name="Prime", interrupt_check=None, stream_callback=None):
+app/gaia_core/manager.py:196:        def observer_fn(buffer, ctx=context):
+app/gaia_core/manager.py:201:        def streaming_output(chunk, end="", flush=True):
+app/gaia_core/manager.py:219:def load_models(config, model_pool):
+app/gaia_core/bootstrap.py:12:def manifest_is_stale():
+app/gaia_core/bootstrap.py:30:def bootstrap_gaia():
+app/__init__.py:20:def create_app():
+app/__init__.py:50:def start_app():
+app/commands/self_analysis_trigger.py:33:def run_self_analysis(ai_manager):
+app/commands/create_persona_trigger.py:7:def trigger_persona_creation(vectordb_client):
+app/commands/create_persona_trigger.py:16:def create_code_analyzer_persona(vectordb_client):
+app/commands/create_persona_command.py:6:def run_create_persona_command(vectordb_client, persona_data, instructions=None):
+app/memory/session_manager.py:9:    def __init__(self, config):
+app/memory/session_manager.py:17:    def initialize_session(self, style: str):
+app/memory/session_manager.py:30:    def load_persona(self, style: str) -> Optional[Dict]:
+app/memory/session_manager.py:42:    def load_session_data(self, style: str) -> Dict:
+app/memory/session_manager.py:50:    def save_session(self, session_data: Dict):
+app/memory/session_manager.py:62:    def clear_session(self):
+app/memory/session_manager.py:72:    def list_archives(self) -> List[str]:
+app/memory/session_manager.py:79:    def assemble_prompt(self, conversation_history: List[str], user_message: str) -> str:
+app/memory/session_manager.py:83:    def report_current_persona(self) -> str:
+app/memory/session_manager.py:89:    def sync_personas_with_behavior(self):
+app/memory/session_manager.py:97:    def summarize_history(self):
+app/memory/status_tracker.py:12:    def update(cls, key: str, value):
+app/memory/status_tracker.py:17:    def get(cls, key: str, default=None):
+app/memory/status_tracker.py:22:    def as_dict(cls):
+app/memory/status_tracker.py:27:    def clear(cls):
+app/memory/conversation/archiver.py:21:    def __init__(self, config):
+app/memory/conversation/archiver.py:24:    def archive_conversation(self, session_id: str, persona: str, messages: List[dict], summary: str, keywords: List[str]):
+app/memory/conversation/manager.py:26:    def __init__(self, config, llm=None):
+app/memory/conversation/manager.py:37:    def set_persona(self, persona: str):
+app/memory/conversation/manager.py:40:    def add_message(self, role: str, content: str):
+app/memory/conversation/manager.py:47:    def get_recent_messages(self, count: int = 10) -> List[dict]:
+app/memory/conversation/manager.py:50:    def summarize_and_archive(self):
+app/memory/conversation/manager.py:71:    def reset(self):
+app/memory/conversation/keywords.py:28:    def extract_keywords(self, messages: List[dict], max_keywords: int = 10) -> List[str]:
+app/memory/conversation/summarizer.py:19:    def __init__(self, llm=None):
+app/memory/conversation/summarizer.py:22:    def generate_summary(self, messages: List[dict]) -> str:
+app/memory/priority_manager.py:12:    def __init__(self, config):
+app/memory/priority_manager.py:18:    def _load(self):
+app/memory/priority_manager.py:26:    def _save(self):
+app/memory/priority_manager.py:33:    def add_task(self, label: str, details: str, urgency: str = "medium", impact: str = "medium", source: str = "manual") -> None:
+app/memory/priority_manager.py:46:    def get_open_tasks(self) -> List[Dict]:
+app/memory/priority_manager.py:49:    def get_top_tasks(self, limit: int = 5) -> List[Dict]:
+app/memory/priority_manager.py:50:        def score(t):
+app/memory/priority_manager.py:57:    def resolve_task(self, label: str) -> bool:
+app/memory/priority_manager.py:66:    def clear_resolved(self):
+app/memory/priority_manager.py:70:    def dump(self) -> List[Dict]:
+app/memory/knowledge_integrity.py:5:def hash_file(filepath):
+app/memory/knowledge_integrity.py:12:def check_or_generate_hash_manifest():
+app/memory/dev_matrix.py:12:    def __init__(self, config):
+app/memory/dev_matrix.py:18:    def _load(self):
+app/memory/dev_matrix.py:26:    def _save(self):
+app/memory/dev_matrix.py:33:    def add_task(self, label: str, purpose: str, urgency: str = "medium", impact: str = "medium", source: str = "manual") -> None:
+app/memory/dev_matrix.py:46:    def get_open_tasks(self) -> List[Dict]:
+app/memory/dev_matrix.py:49:    def resolve_task(self, label: str) -> bool:
+app/memory/dev_matrix.py:58:    def dump(self) -> List[Dict]:
+app/ethics/ethical_sentinel.py:19:    def __init__(self, identity_guardian=None):
+app/ethics/ethical_sentinel.py:27:    def check_system_resources(self) -> bool:
+app/ethics/ethical_sentinel.py:40:    def check_loop_counter(self) -> bool:
+app/ethics/ethical_sentinel.py:50:    def check_recent_errors(self) -> bool:
+app/ethics/ethical_sentinel.py:57:    def register_error(self, exc: Exception):
+app/ethics/ethical_sentinel.py:66:    def reset_loop(self):
+app/ethics/ethical_sentinel.py:70:    def run_full_safety_check(self, persona_traits=None, instructions=None, prompt=None) -> bool:
+app/ethics/consent_protocol.py:18:    def request_consent(reason="Initial boot") -> bool:
+app/ethics/core_identity_guardian.py:14:    def __init__(self, config):
+app/ethics/core_identity_guardian.py:19:    def load_identity(self) -> Optional[dict]:
+app/ethics/core_identity_guardian.py:39:    def validate_prompt_stack(self, persona_traits: dict, instructions: List[str], prompt: str) -> bool:
+app/__init__ - Backup.py:17:def create_app():
+app/__init__ - Backup.py:49:def init_ai(app):
+app/config - Backup 2.py:17:    def __init__(self):
+app/config - Backup 2.py:99:    def _initialize_directories(self):
+app/config - Backup 2.py:114:    def system_reference_path(self, subdir=""):
+app/config - Backup 2.py:119:    def get_path_for_tier(self, tier):
+app/config - Backup 2.py:134:    def describe_tier(self, tier):
+app/config - Backup 2.py:137:    def __repr__(self):
+app/web/routes.py:21:def set_ai_manager(manager):
+app/web/routes.py:26:def index():
+app/web/routes.py:30:def status():
+app/web/routes.py:39:def api_status():
+app/web/routes.py:43:def chat():
+app/web/routes.py:74:def get_projects_alias():
+app/web/routes.py:82:def switch_project(name):
+app/web/routes.py:91:def list_personas():
+app/web/routes.py:100:def switch_persona(name):
+app/web/routes.py:110:def get_archives():
+app/web/routes.py:119:def get_conversations_archived():
+app/web/routes.py:123:def get_archive(archive_id):
+app/web/routes.py:132:def delete_archive(archive_id):
+app/web/routes.py:141:def background_status():
+app/web/routes_archive.py:15:def list_structured_archives():
+app/web/routes_archive.py:57:def get_structured_archive(archive_id):
+app/web/error_handlers.py:16:def bad_request(error):
+app/web/error_handlers.py:25:def not_found(error):
+app/web/error_handlers.py:34:def method_not_allowed(error):
+app/web/error_handlers.py:43:def request_entity_too_large(error):
+app/web/error_handlers.py:52:def internal_server_error(error):
+app/web/error_handlers.py:61:def handle_exception(error):
+app/web/project_routes.py:16:def list_projects():
+app/web/project_routes.py:35:def get_current_project():
+app/web/project_routes.py:54:def switch_project(project_id):
+app/web/project_routes.py:87:def list_projects_alias():
+app/web/project_routes.py:91:def create_project():
+app/web/project_routes.py:124:def update_project(project_id):
+app/web/project_routes.py:153:def delete_project(project_id):
+app/web/routes_chat.py:24:def chat():
+app/web/routes_chat.py:66:        def observer_fn(buffer, ctx=context):
+app/web/routes_chat.py:72:        def response_stream():
+app/web/routes_chat.py:80:            def sse_format(data):
+app/web/routes_chat.py:84:            def output_fn(chunk, end="", flush=True):
+app/web/archives.py:20:def list_archives():
+app/web/archives.py:49:def get_archive(archive_id):
+app/behavior/creation_manager.py:15:    def __init__(self, vectordb_client, personas_dir="/personas"):
+app/behavior/creation_manager.py:18:    def start_persona_creation(self):
+app/behavior/creation_manager.py:23:    def process_user_response(self, input_str: str):
+app/behavior/creation_manager.py:31:    def create_persona(self, template: Dict, instructions: Optional[Dict[str, str]] = None) -> bool:
+app/behavior/creation_manager.py:45:    def generate_persona_from_traits(self, name: str, tone: str, context: str, traits: Optional[Dict[str, str]] = None, instructions: Optional[Dict[str, str]] = None) -> bool:
+app/behavior/helper.py:3:def complete_persona_template_interactively(template_structure, partially_filled=None):
+app/behavior/intent_detection.py:15:def fast_intent_check(text):
+app/behavior/intent_detection.py:28:def model_intent_detection(text, config, lite_llm=None, full_llm=None):
+app/behavior/intent_detection.py:63:def detect_intent(text, config, lite_llm=None, full_llm=None):
+app/behavior/persona_writer.py:15:    def __init__(self, vectordb_client, personas_dir="/personas"):
+app/behavior/persona_writer.py:24:    def create_persona_from_template(self, template: Dict, instructions: Optional[Dict[str, str]] = None) -> bool:
+app/behavior/persona_writer.py:69:    def _summarize_persona(self, template: Dict) -> str:
+app/behavior/persona_writer.py:85:    def _embed_to_vectordb(self, summary_text: str, tag: str) -> None:
+app/behavior/persona_adapter.py:7:def adapt_persona(context, persona):
+app/behavior/persona_manager.py:18:    def load_persona(name):
+app/utils/helpers.py:12:def safe_mkdir(path: str):
+app/utils/helpers.py:20:def get_timestamp(compact: bool = False) -> str:
+app/utils/helpers.py:25:def get_tier_from_path(path: str, config=None) -> Optional[str]:
+app/utils/context.py:8:def get_context_for_task(task_type: str, config=None) -> str:
+app/utils/output_router.py:2:    def __init__(self, default="chat-ui"):
+app/utils/output_router.py:5:    def route(self, origin: str, task_type: str = "", purpose: str = "") -> str:
+app/utils/verifier.py:32:def verify_prompt_safety(prompt: str) -> Dict[str, Any]:
+app/utils/verifier.py:53:def verify_action_context(context: Dict[str, Any]) -> bool:
+app/utils/output_sanitizer.py:6:def sanitize_llm_output(output: str) -> str:
+app/utils/output_sanitizer.py:22:def enforce_single_response(output: str) -> str:
+app/utils/output_sanitizer.py:37:def enforce_file_verification(output: str, user_prompt: str) -> str:
+app/utils/role_manager.py:8:    def set_responder(cls, name):
+app/utils/role_manager.py:13:    def add_observer(cls, name):
+app/utils/role_manager.py:19:    def get_current_roles(cls):
+app/utils/code_analyzer/snapshot_manager.py:15:    def __init__(self, config):
+app/utils/code_analyzer/snapshot_manager.py:20:    def _load_snapshot(self) -> dict:
+app/utils/code_analyzer/snapshot_manager.py:30:    def _hash_file(self, path: str) -> str:
+app/utils/code_analyzer/snapshot_manager.py:37:    def update_snapshot(self, file_list: List[str], base_path: str = "/app"):
+app/utils/code_analyzer/snapshot_manager.py:53:    def get_modified_files(self) -> List[str]:
+app/utils/code_analyzer/docstring_extractor.py:12:def extract_docstrings(code: str, language: str = "python") -> dict:
+app/utils/code_analyzer/chunk_creator.py:13:def create_chunks(file_path: str, code: str, structure: Dict) -> List[Dict]:
+app/utils/code_analyzer/file_loader.py:12:def load_file_safely(path: str) -> str:
+app/utils/code_analyzer/file_scanner.py:10:def scan_code_directory(root: str) -> List[str]:
+app/utils/code_analyzer/language_detector.py:19:def detect_language(file_path: str, code: str = None) -> str:
+app/utils/code_analyzer/base_analyzer.py:25:    def __init__(self, config: Config, llm=None, doc_processor=None):
+app/utils/code_analyzer/base_analyzer.py:34:    def refresh_code_tree(self, root_dir: str = None):
+app/utils/code_analyzer/base_analyzer.py:42:    def review_codebase(self):
+app/utils/code_analyzer/structure_extractor.py:13:def extract_structure(code: str, language: str = "python") -> Dict[str, List[Dict]]:
+app/utils/code_analyzer/structure_extractor.py:57:def _get_end_line(node, lines: List[str]) -> int:
+app/utils/code_analyzer/llm_analysis.py:14:def summarize_chunks(chunks: List[Dict], llm, reflect: bool = True) -> str:
+app/utils/background/background_tasks.py:20:    def __init__(self, ai_manager=None):
+app/utils/background/background_tasks.py:27:    def process_conversation_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
+app/utils/background/background_tasks.py:67:    def get_status(self):
+app/utils/background/task_queue.py:21:    def __init__(self):
+app/utils/background/task_queue.py:25:    def add_task(self, task: Dict):
+app/utils/background/task_queue.py:36:    def pop_next_task(self) -> Optional[Dict]:
+app/utils/background/task_queue.py:48:    def is_empty(self) -> bool:
+app/utils/background/task_queue.py:52:    def size(self) -> int:
+app/utils/background/processor.py:24:    def __init__(self, config):
+app/utils/background/processor.py:39:    def start(self):
+app/utils/background/processor.py:47:    def stop(self):
+app/utils/background/processor.py:54:    def run(self):
+app/utils/background/idle_monitor.py:21:    def __init__(self, idle_seconds=600):
+app/utils/background/idle_monitor.py:25:    def mark_active(self):
+app/utils/background/idle_monitor.py:30:    def is_system_idle(self) -> bool:
+app/utils/background/idle_monitor.py:44:    def idle_check(self, ai_manager):
+app/utils/background/idle_monitor.py:53:def summary_exists():
+app/utils/stream_bus.py:13:def stream_response(
+app/utils/stream_bus.py:37:        def chunker(text, n):
+app/utils/gaia_rescue_helper.py:28:def run_shell_safe(command: str) -> str:
+app/utils/gaia_rescue_helper.py:43:def buffer_and_execute_shell(content: str):
+app/utils/gaia_rescue_helper.py:74:def queue_thought_seed(prompt: str, note: str = "", priority: str = "normal") -> str:
+app/utils/gaia_rescue_helper.py:114:def list_safe_primitives():
+app/utils/gaia_rescue_helper.py:127:def process_thought_seeds():
+app/utils/gaia_rescue_helper.py:135:def sketch(title: str, content: str):
+app/utils/gaia_rescue_helper.py:156:def show_sketchpad():
+app/utils/gaia_rescue_helper.py:169:def clear_sketchpad():
+app/utils/gaia_rescue_helper.py:185:def update_json(filepath, key_path, new_value):
+app/utils/gaia_rescue_helper.py:226:def generate_json_schema(filepath):
+app/utils/observer_manager.py:7:def assign_observer(current_responder, stream_channel="active_response"):
+app/utils/observer_manager.py:28:def default_interrupt_eval(model, stream_text):
+app/utils/observer_manager.py:34:def default_interrupt_handler(reason):
+app/utils/vector_indexer.py:14:def load_vector_index():
+app/utils/vector_indexer.py:20:def save_vector_index(index):
+app/utils/vector_indexer.py:24:def embed_gaia_reference():
+app/utils/vector_indexer.py:39:def vector_query(query):
+app/utils/knowledge_index.py:15:    def __init__(self, path="/app/utils/knowledge_index.json"):
+app/utils/knowledge_index.py:21:    def load(self):
+app/utils/knowledge_index.py:33:    def save(self):
+app/utils/knowledge_index.py:41:    def add(self, file_path: str, hash_value: str, tier: str):
+app/utils/knowledge_index.py:50:    def get(self, file_path: str) -> Optional[Dict]:
+app/utils/knowledge_index.py:53:    def get_hash(self, file_path: str) -> Optional[str]:
+app/utils/knowledge_index.py:56:    def was_already_processed(self, file_path: str, hash_value: str) -> bool:
+app/utils/knowledge_index.py:62:    def remove(self, file_path: str):
+app/utils/knowledge_index.py:69:    def list_all(self):
+app/utils/prompt_builder.py:12:def build_prompt(
+app/utils/stream_observer.py:13:def stream_observer(buffer, context, observer_fn=None):
+app/utils/project_manager.py:13:    def __init__(self, config):
+app/utils/project_manager.py:21:    def ensure_default_projects_exist(self):
+app/utils/project_manager.py:31:    def set_active_project(self, project_name: str):
+app/utils/project_manager.py:58:    def get_project_path(self, subdir: str = "") -> str:
+app/utils/project_manager.py:64:    def list_available_projects(self) -> list:
+app/utils/project_manager.py:72:    def get_vector_store_path(self) -> str:
+app/utils/project_manager.py:75:    def get_instruction_file(self) -> str:
+app/utils/project_manager.py:79:    def describe(self) -> dict:
+app/utils/hardware_optimization.py:8:def optimize_config_for_hardware(config, force_high_performance=False):
+app/cli/cli_session.py:19:def cli_loop():
+app/council/council_manager.py:20:def send_gcp_message(sender_id, message_type, payload):
+app/council/council_manager.py:39:def handle_gcp_message():
+app/config.py:21:    def __init__(self, persona=None, override_path=None):
+app/config.py:49:    def _load_constants(self, override_path=None):
+app/config.py:58:    def reload(self, override_path=None):
+app/config.py:61:    def get_persona_instructions(self):
+app/config.py:67:    def as_dict(self):
+app/config.py:97:def load_constants():
+app/cognition/thought_seed.py:19:def generate_thought_seed(prompt, context=None, config=None, llm=None):
+app/cognition/thought_seed.py:63:def list_unreviewed_seeds():
+app/cognition/thought_seed.py:72:def review_and_process_seeds(config=None, llm=None, auto_act=False):
+app/cognition/thought_seed.py:113:def maybe_generate_seed(prompt, context, config):
+app/cognition/thought_seed.py:121:def maybe_review_seeds(config):
+app/cognition/inner_monologue.py:16:def process_thought_stream(thought, model, config=None, source="unknown", interrupt_check=None, stream_callback=None):
+app/cognition/inner_monologue.py:66:def process_thought(task_type, persona, instructions, payload, llm, identity_intro="", reflect=True, context=None, config=None):
+app/cognition/inner_monologue.py:110:def quick_thought(prompt, config, llm, persona="gaia-lite"):
+app/cognition/inner_monologue.py:128:def generate_response(
+app/cognition/inner_monologue.py:151:    def default_model_selector(text, config, lite, full):
+app/cognition/external_voice.py:26:def suppress_llama_logs():
+app/cognition/external_voice.py:31:def log_chat_entry(user_input: str, assistant_output: str):
+app/cognition/external_voice.py:37:    def __init__(
+app/cognition/external_voice.py:71:    def stream_response(self, user_input: str = None):
+app/cognition/external_voice.py:74:        def token_callback(token):
+app/cognition/external_voice.py:107:    def _attempt_stream(self, callback):
+app/cognition/external_voice.py:119:    def from_thought(cls, model, thought: str, **kwargs):
+app/cognition/external_voice.py:124:    def from_messages(cls, model, messages: list, **kwargs):
+app/cognition/external_voice.py:128:    def one_shot(cls, model, prompt: str, **kwargs) -> str:
+app/cognition/external_voice.py:139:def pipe_chat_loop(model, lite_model=None):
+app/cognition/external_voice.py:143:    def handle_interrupt(signum, frame):
+app/cognition/topic_manager.py:20:def _load_topic_cache(path: str) -> List[Dict[str, Any]]:
+app/cognition/topic_manager.py:31:def _save_topic_cache(path: str, cache: List[Dict[str, Any]]):
+app/cognition/topic_manager.py:39:def add_topic(path: str, topic: Dict[str, Any]) -> None:
+app/cognition/topic_manager.py:54:def resolve_topic(path: str, topic_id: str) -> bool:
+app/cognition/topic_manager.py:66:def update_topic(path: str, topic_id: str, updates: Dict[str, Any]) -> bool:
+app/cognition/topic_manager.py:77:def prune_resolved_topics(path: str) -> None:
+app/cognition/topic_manager.py:84:def list_topics(path: str, include_resolved: bool = False) -> List[Dict[str, Any]]:
+app/cognition/topic_manager.py:90:def prioritize_topics(path: str, top_n: Optional[int] = 5) -> List[Dict[str, Any]]:
+app/cognition/self_reflection.py:17:def run_self_reflection(context, output, config=None, llm=None):
+app/cognition/telemetric_senses.py:25:def tick():
+app/cognition/telemetric_senses.py:31:def update_token_usage(count: int):
+app/cognition/telemetric_senses.py:37:def scan_files():
+app/cognition/telemetric_senses.py:56:def system_health():
+app/cognition/telemetric_senses.py:66:def get_telemetry_summary() -> str:
+app/cognition/telemetric_senses.py:88:def full_sense_sweep():
+app/cognition/council_dispatcher.py:34:def get_active_members():
+app/cognition/council_dispatcher.py:37:def send_gcp_message(sender_id, message_type, payload):
+app/cognition/council_dispatcher.py:55:def dispatch_thought(prompt, max_cycles=3, reflection_delay=2.0):
+app/cognition/council_dispatcher.py:98:def update_council_state(member, status):
+app/cognition/council_dispatcher.py:106:def show_council_status():

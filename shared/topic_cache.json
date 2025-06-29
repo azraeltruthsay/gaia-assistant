@@ -1,0 +1,17 @@
+[
+  {
+    "topic_id": "self_analysis",
+    "topic": "self_analysis",
+    "category": "technical",
+    "subtopics": [],
+    "urgency": 0.9,
+    "emotional_weight": 0.7,
+    "relevance_to_current_context": 0.8,
+    "novelty_score": 0.6,
+    "surface": true,
+    "resolved": false,
+    "last_discussed": null,
+    "parent": null,
+    "source": "system_event"
+  }
+]

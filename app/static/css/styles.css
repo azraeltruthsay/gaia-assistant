@@ -1,0 +1,179 @@
+/* === Base Layout === */
+body {
+  display: flex;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f9f9f9;
+  padding: 1rem;
+  overflow: auto;
+}
+
+/* === Sidebar === */
+.sidebar {
+  width: 220px;
+  background-color: #1e1e2f;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.sidebar h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  color: white;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.3s;
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+  background: #2e2e4d;
+}
+
+/* === Status Bar === */
+.status-bar {
+  background: #eee;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+}
+
+/* === Tabs === */
+.tab-content {
+  display: none;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.tab-content.active {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* === Chat === */
+.chat-log {
+  flex: 1;
+  background: #fff;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.chat-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-form input[type="text"] {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.chat-form button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.chat-form button:hover {
+  background: #0056b3;
+}
+
+/* === Code + Archives === */
+pre {
+  background: #1e1e1e;
+  color: #e6e6e6;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.button-row {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+/* === Diagnostics === */
+.diagnostics-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#diagnostic-panel {
+  flex: 1;
+  background-color: #fffbea;
+  padding: 1rem;
+  border: 1px solid #e0e0b4;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.95rem;
+  overflow-y: auto;
+}
+
+#diagnostic-toggle {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 10000;
+  padding: 0.5rem 1rem;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+#diagnostic-toggle:hover {
+  opacity: 1;
+}
+
+/* === Project Dropdown === */
+#project-dropdown {
+  padding: 0.5rem;
+  font-size: 1rem;
+  max-width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: white;
+}

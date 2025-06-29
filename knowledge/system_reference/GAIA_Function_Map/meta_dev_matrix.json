@@ -1,0 +1,234 @@
+[
+  {
+    "task": "Primitives-Only Reasoning Finalization",
+    "status": "Done",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": [],
+    "notes": "Core primitives (ai.read, ai.write, etc.)"
+  },
+  {
+    "task": "Autonomous ai.write",
+    "status": "Done",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["SelfReflection", "process_thought"],
+    "notes": "Reflection-guarded auto-exec logic"
+  },
+  {
+    "task": "Self-Reflection Safety Pipeline",
+    "status": "Done",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["SelfReflection", "core_identity.json"],
+    "notes": "Active safety with caution tone"
+  },
+  {
+    "task": "Function Map Embedding",
+    "status": "Partial",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["vector_indexer.py"],
+    "notes": "Needs final schema + chunk review"
+  },
+  {
+    "task": "Vector Query Reasoning Loop",
+    "status": "Partial",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["vector_indexer", "vector_query"],
+    "notes": "Semantic queries on system code"
+  },
+  {
+    "task": "Idle-Time Thought Seeding",
+    "status": "Partial",
+    "urgency": "Medium",
+    "impact": "Medium",
+    "dependencies": ["self_reflection"],
+    "notes": "Periodic self-task generation"
+  },
+  {
+    "task": "GAIA Sketchpad Module",
+    "status": "Open",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["Thoughtseeds", "reflection"],
+    "notes": "Safe scratchpad mode for exploratory reasoning"
+  },
+  {
+    "task": "Thoughtstream Tone Refinement",
+    "status": "Partial",
+    "urgency": "Medium",
+    "impact": "Medium",
+    "dependencies": ["output_sanitizer", "thoughtstream logs"],
+    "notes": "Logs with cautious + curious tone mix"
+  },
+  {
+    "task": "System State Snapshot Tool",
+    "status": "Open",
+    "urgency": "High",
+    "impact": "Medium",
+    "dependencies": ["graceful shutdown"],
+    "notes": "Archive system state (code, metadata)"
+  },
+  {
+    "task": "TTS Integration (ai.speak())",
+    "status": "Open",
+    "urgency": "Medium",
+    "impact": "Medium",
+    "dependencies": ["pyttsx3", "pydub"],
+    "notes": "Audio output for GAIA voice"
+  },
+  {
+    "task": "STT Integration (ai.listen())",
+    "status": "Open",
+    "urgency": "Medium",
+    "impact": "Medium",
+    "dependencies": ["whisper", "microphone"],
+    "notes": "Audio input for GAIA"
+  },
+  {
+    "task": "Discord Integration",
+    "status": "Open",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["discord.py"],
+    "notes": "Live chat in Discord channels"
+  },
+  {
+    "task": "WireGuard from Phone to WSL",
+    "status": "Open",
+    "urgency": "High",
+    "impact": "Medium",
+    "dependencies": ["Network config"],
+    "notes": "Remote access control"
+  },
+  {
+    "task": "Expose ai.status to UI",
+    "status": "Open",
+    "urgency": "Medium",
+    "impact": "Medium",
+    "dependencies": ["Frontend"],
+    "notes": "System state in UI"
+  },
+  {
+    "task": "Command DSL Expansion",
+    "status": "Open",
+    "urgency": "Low",
+    "impact": "Medium",
+    "dependencies": ["NLP parsing"],
+    "notes": "Natural language commands"
+  },
+  {
+    "task": "Graceful Shutdown Hooks",
+    "status": "Open",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["Signal handling"],
+    "notes": "Save state, logs, embedding on exit"
+  },
+  {
+    "task": "CI/CD Pipeline",
+    "status": "Open",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["Docker", "GitHub Actions"],
+    "notes": "Auto-deploy GAIA updates"
+  },
+  {
+    "task": "Security Analyst Mode",
+    "status": "Open",
+    "urgency": "Medium",
+    "impact": "High",
+    "dependencies": ["System checks"],
+    "notes": "Review + suggest hardening"
+  },
+  {
+    "task": "Web Search + Scrape + Embed",
+    "status": "Open",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["requests", "vector index"],
+    "notes": "External knowledge ingestion"
+  },
+  {
+    "task": "Lite Mode Quick-Reply (quick_thought())",
+    "status": "Open",
+    "urgency": "High",
+    "impact": "Medium",
+    "dependencies": ["process_thought"],
+    "notes": "Fast replies everywhere"
+  },
+  {
+    "task": "Linux Migration (Arch)",
+    "status": "Open",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["Docker", "model loading"],
+    "notes": "Needed for multi-model support"
+  },
+  {
+    "task": "Multi-Model Council Runtime",
+    "status": "Open",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["Linux"],
+    "notes": "Prime, Lite, CodeMind coordination"
+  },
+  {
+    "task": "Council Manager Protocol (MCP)",
+    "status": "Partial",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["council_manager.py"],
+    "notes": "MCP server up; needs testing"
+  },
+  {
+    "task": "Council Voting & Reflection Logic",
+    "status": "Partial",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["MCP", "SelfReflection"],
+    "notes": "Validate multi-model consensus"
+  },
+  {
+    "task": "GAIA's Rescue Helper Sandbox",
+    "status": "Partial",
+    "urgency": "Medium",
+    "impact": "Medium",
+    "dependencies": ["gaia_rescue_helper.py"],
+    "notes": "Extend helper functions"
+  },
+  {
+    "task": "Dev Matrix Autonomy",
+    "status": "Done",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["ai.read", "ai.write"],
+    "notes": "GAIA can self-update dev_matrix.json"
+  },
+  {
+    "task": "Session Memory Support",
+    "status": "Partial",
+    "urgency": "High",
+    "impact": "High",
+    "dependencies": ["ai.status", "session_manager"],
+    "notes": "Functional; needs stress testing"
+  },
+  {
+    "task": "CLI Frontend Polishing",
+    "status": "Open",
+    "urgency": "Low",
+    "impact": "Medium",
+    "dependencies": ["Shell"],
+    "notes": "Status banners, log clarity"
+  },
+  {
+    "task": "Documentation Updates",
+    "status": "Partial",
+    "urgency": "Medium",
+    "impact": "Medium",
+    "dependencies": ["function_map"],
+    "notes": "System documentation, schemas"
+  }
+]

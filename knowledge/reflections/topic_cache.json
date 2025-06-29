@@ -1,0 +1,17 @@
+[
+  {
+    "topic_id": "system_boot_validation",
+    "topic": "Verify system boot sequence",
+    "category": "technical",
+    "subtopics": ["config structure", "LLM startup", "path mapping"],
+    "urgency": 0.9,
+    "emotional_weight": 0.1,
+    "relevance_to_current_context": 1.0,
+    "novelty_score": 0.4,
+    "surface": true,
+    "resolved": false,
+    "last_discussed": null,
+    "parent": null,
+    "source": "system_event"
+  }
+]

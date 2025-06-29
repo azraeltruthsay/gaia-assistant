@@ -1,0 +1,96 @@
+.code-analysis-section,
+.code-upload-view {
+  z-index: 10;
+  position: relative;
+  background-color: #ffffff;
+}
+
+.code-upload-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+}
+
+.code-upload-area {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.directory-input {
+  width: 100%;
+  margin: 1rem 0;
+}
+
+/* Fix for white block issue */
+#code-upload-view {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: white;
+}
+
+/* Better visibility for buttons */
+.btn-primary {
+  background-color: #1e3a8a;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  padding: 0.5rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  cursor: pointer;
+}
+/* Fix for code analysis section display */
+.code-analyzer-container {
+  display: flex;
+  width: 100%;
+  height: 70vh;
+  gap: 1rem;
+}
+
+.code-files-section {
+  flex: 0 0 300px; /* Fixed width for the files section */
+  min-width: 250px;
+}
+
+.code-analysis-section {
+  flex: 1 1 auto; /* This will take remaining space */
+  min-width: 400px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make sure the upload view takes full width */
+#code-upload-view {
+  width: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.code-upload-container {
+  width: 100%;
+}
+
+.code-upload-area {
+  width: 100%;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #ccc;
+  padding: 2rem;
+  margin-bottom: 1rem;
+}

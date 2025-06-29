@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GAIA Web Chat</title>
+    <style>
+        body { font-family: sans-serif; background: #f5f7fa; margin: 0; padding: 2em; }
+        #chatbox { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px #0001; padding: 1.5em; max-width: 700px; margin: 2em auto; }
+        #output { min-height: 5em; border: 1px solid #ccc; padding: 1em; border-radius: 6px; background: #fafcff; margin-bottom: 1em; font-size: 1.1em; }
+        #userinput { width: 80%; padding: 0.7em; font-size: 1em; border-radius: 6px; border: 1px solid #bbb; }
+        #sendbtn { padding: 0.7em 1.2em; font-size: 1em; border-radius: 6px; background: #3366ee; color: #fff; border: none; margin-left: 0.5em; cursor: pointer; }
+        #sendbtn:active { background: #254ab3; }
+    </style>
+</head>
+<body>
+    <div id="chatbox">
+        <h2>GAIA Web Chat</h2>
+        <div id="output"></div>
+        <form id="chatform">
+            <input type="text" id="userinput" autocomplete="off" placeholder="Type a message..." required>
+            <button type="submit" id="sendbtn">Send</button>
+        </form>
+        {% if warning %}<p style="color:red;">{{ warning }}</p>{% endif %}
+    </div>
+    <script>
+        const form = document.getElementById('chatform');
+        const input = document.getElementById('userinput');
+        const output = document.getElementById('output');
+        let controller = null; // To allow aborting the fetch request
+
+        form.onsubmit = async function(e) {
+            e.preventDefault();
+
+            if (controller) {
+                controller.abort(); // Abort previous stream if a new one starts
+            }
+
+            controller = new AbortController();
+            const signal = controller.signal;
+
+            output.textContent = ""; // Clear previous output
+            const userMessage = input.value;
+            input.value = ""; // Clear input field immediately
+            input.disabled = true; // Disable input during streaming
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ message: userMessage }),
+                    signal: signal // Pass the abort signal to fetch
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Get a ReadableStream from the response body
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let buffer = ""; // Buffer to accumulate partial SSE messages
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) {
+                        console.log("Stream finished.");
+                        break;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // Process complete SSE messages from the buffer
+                    // SSE messages are terminated by two newline characters (\n\n)
+                    let lastIndex = 0;
+                    while ((lastIndex = buffer.indexOf('\n\n', lastIndex)) !== -1) {
+                        const message = buffer.substring(0, lastIndex);
+                        buffer = buffer.substring(lastIndex + 2); // Move buffer past the processed message
+
+                        let eventType = 'message'; // Default SSE event type
+                        let eventData = message;
+
+                        // Check for custom event type
+                        if (message.startsWith('event:')) {
+                            const eventLineEnd = message.indexOf('\n');
+                            eventType = message.substring(6, eventLineEnd).trim();
+                            eventData = message.substring(eventLineEnd + 1);
+                        }
+
+                        // Extract data payload (always starts with "data:")
+                        if (eventData.startsWith('data:')) {
+                            eventData = eventData.substring(5).trim();
+                        }
+
+                        if (eventType === 'interruption') {
+                            const parsedData = JSON.parse(eventData);
+                            const reason = parsedData.reason || "Stream interrupted by observer.";
+                            output.innerHTML += `<br><strong style="color: #ff6b6b;">--- ${reason} ---</strong>`;
+                            controller.abort(); // Stop the stream on interruption
+                            break; // Exit the while loop
+                        } else if (eventType === 'error') {
+                            const parsedData = JSON.parse(eventData);
+                            output.textContent += `\n[Server Error: ${parsedData.message}]`;
+                            controller.abort();
+                            break;
+                        } else { // Default 'message' event (for tokens)
+                            const token = JSON.parse(eventData); // Tokens are JSON-encoded strings
+                            output.textContent += token;
+                            // Scroll to bottom to keep new text in view
+                            output.scrollTop = output.scrollHeight;
+                        }
+                        lastIndex = 0; // Reset lastIndex to start search from beginning of new buffer
+                    }
+
+                    if (signal.aborted) break; // Check if the stream was aborted during processing
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') { // Ignore abort errors, they are intentional
+                    output.textContent += `\n[Error: ${error.message}]`; // Display error to user
+                    console.error("Fetch error:", error); // Log detailed error to console
+                }
+            } finally {
+                input.disabled = false; // Re-enable input field
+                input.focus(); // Focus input field for next message
+                controller = null; // Clear the controller
+            }
+        };
+    </script>
+</body>
+</html>
