@@ -1,38 +1,35 @@
-# /app/utils/code_analyzer/file_scanner.py
-
 import os
+from typing import List
 import logging
-from typing import Optional, List, Dict
 
-logger = logging.getLogger("GAIA")
+logger = logging.getLogger("GAIA.FileScanner")
 
+EXCLUDED_DIRS = {".git", "__pycache__", "node_modules", ".venv", "__init__.py"}
+EXCLUDED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".pdf", ".mp4", ".exe", ".zip", ".db"}
 
-def load_code_tree(root_path: str = "/app", extensions: Optional[List[str]] = None) -> Dict[str, str]:
+def scan_code_directory(root: str) -> List[str]:
     """
-    Load source code files from the given directory tree.
+    Recursively scan a directory and return all code file paths.
 
     Args:
-        root_path: Directory to walk from (default: /app)
-        extensions: List of extensions to include (default: common code/doc types)
+        root (str): Root directory to scan
 
     Returns:
-        Dictionary mapping relative paths to file contents.
+        List[str]: Relative paths to candidate code files
     """
-    if extensions is None:
-        extensions = [".py", ".md", ".json", ".yml"]
+    code_files = []
 
-    code_map = {}
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in EXCLUDED_DIRS]
 
-    for dirpath, _, filenames in os.walk(root_path):
-        for fname in filenames:
-            if any(fname.endswith(ext) for ext in extensions):
-                full_path = os.path.join(dirpath, fname)
-                rel_path = os.path.relpath(full_path, root_path)
-                try:
-                    with open(full_path, "r", encoding="utf-8") as f:
-                        code_map[rel_path] = f.read()
-                except Exception as e:
-                    logger.warning(f"Failed to read {full_path}: {e}")
+        for filename in filenames:
+            ext = os.path.splitext(filename)[1].lower()
+            if ext in EXCLUDED_EXTENSIONS:
+                continue
 
-    logger.info(f"Loaded {len(code_map)} code files from {root_path}")
-    return code_map
+            abs_path = os.path.join(dirpath, filename)
+            rel_path = os.path.relpath(abs_path, root)
+            code_files.append(rel_path)
+
+    logger.info(f"🗂️ Scanned {len(code_files)} code files from {root}")
+    return code_files

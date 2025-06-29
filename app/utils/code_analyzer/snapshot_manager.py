@@ -1,60 +1,62 @@
 import os
 import json
 import hashlib
-from typing import Dict, Tuple
-from datetime import datetime
 import logging
+from typing import List
 
-logger = logging.getLogger("GAIA")
+logger = logging.getLogger("GAIA.SnapshotManager")
 
 class SnapshotManager:
-    def __init__(self, snapshot_path="/app/shared/gaia_code_snapshot.json"):
-        self.snapshot_path = snapshot_path
+    """
+    Tracks file state hashes to detect changes between boots or scan cycles.
+    Prevents unnecessary reprocessing of unchanged code.
+    """
+
+    def __init__(self, config):
+        self.snapshot_path = os.path.join(config.system_reference_path("code_summaries"), "snapshot.json")
         self.current_snapshot = {}
-        self.previous_snapshot = self._load_existing_snapshot()
+        self.previous_snapshot = self._load_snapshot()
 
-    def _hash_content(self, content: str) -> str:
-        return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
-    def _load_existing_snapshot(self) -> Dict:
+    def _load_snapshot(self) -> dict:
         if os.path.exists(self.snapshot_path):
             try:
                 with open(self.snapshot_path, "r", encoding="utf-8") as f:
+                    logger.debug("🗃️ Previous snapshot loaded.")
                     return json.load(f)
             except Exception as e:
                 logger.warning(f"⚠️ Failed to load previous snapshot: {e}")
         return {}
 
-    def generate_snapshot(self, code_tree: Dict[str, str], summaries: Dict[str, str]) -> Dict:
-        """Create a new snapshot with hashes and summaries."""
-        snapshot = {}
-        for path, content in code_tree.items():
-            hash_val = self._hash_content(content)
-            snapshot[path] = {
-                "hash": hash_val,
-                "summary": summaries.get(path, ""),
-                "updated": datetime.utcnow().isoformat()
-            }
-        return snapshot
+    def _hash_file(self, path: str) -> str:
+        try:
+            with open(path, "rb") as f:
+                return hashlib.md5(f.read()).hexdigest()
+        except Exception:
+            return ""
 
-    def get_files_to_update(self, code_tree: Dict[str, str]) -> Dict[str, str]:
+    def update_snapshot(self, file_list: List[str], base_path: str = "/app"):
         """
-        Identify files whose content has changed vs previous snapshot.
-        Returns a dictionary: path → content (for changed files only).
+        Generate new hashes and update current snapshot.
         """
-        changed = {}
-        for path, content in code_tree.items():
-            new_hash = self._hash_content(content)
-            prev_hash = self.previous_snapshot.get(path, {}).get("hash")
-            if new_hash != prev_hash:
-                changed[path] = content
-        logger.info(f"🔍 {len(changed)} files changed since last snapshot")
-        return changed
+        self.current_snapshot = {
+            file: self._hash_file(os.path.join(base_path, file))
+            for file in file_list
+        }
 
-    def update_snapshot_file(self, new_snapshot: Dict):
         try:
             with open(self.snapshot_path, "w", encoding="utf-8") as f:
-                json.dump(new_snapshot, f, indent=2)
-            logger.info(f"✅ Snapshot updated: {self.snapshot_path}")
+                json.dump(self.current_snapshot, f, indent=2)
+            logger.info("💾 Snapshot updated.")
         except Exception as e:
-            logger.error(f"❌ Failed to write snapshot file: {e}")
+            logger.error(f"❌ Failed to write snapshot: {e}")
+
+    def get_modified_files(self) -> List[str]:
+        """
+        Compare current vs previous and return only changed file paths.
+        """
+        changed = [
+            file for file, hash_val in self.current_snapshot.items()
+            if self.previous_snapshot.get(file) != hash_val
+        ]
+        logger.debug(f"🔍 Modified files: {len(changed)}")
+        return changed

@@ -1,68 +1,67 @@
-# behavior_creation_manager.py
+import logging
+from typing import Dict, Optional
 
-from app.behavior.manager import BehaviorWriter
-from app.templates.behavior_template import BEHAVIOR_TEMPLATE
+from app.behavior.persona_writer import PersonaWriter
+from app.templates.persona_template import get_blank_persona_template
 
-class BehaviorCreationManager:
-    def __init__(self, vectordb_client, personalities_path="/personalities/"):
-        self.template_structure = BEHAVIOR_TEMPLATE
-        self.filled_fields = {}
-        self.current_field = None
-        self.writer = BehaviorWriter(vectordb_client, personalities_path)
-        self.awaiting_user_response = False
+logger = logging.getLogger("GAIA.CreationManager")
 
-    def start_behavior_creation(self):
-        """Initialize new behavior creation."""
-        self.filled_fields = {}
-        self.current_field = self._find_next_missing_field()
-        self.awaiting_user_response = True
+class PersonaCreationManager:
+    """
+    Interactive or programmatic persona creator. Handles filling templates and passing them to PersonaWriter.
+    Can be used by GAIA to self-generate personas.
+    """
 
-        if self.current_field:
-            return self._generate_question_for_field(self.current_field)
-        else:
-            return "All fields are already filled. Nothing to do!"
+    def __init__(self, vectordb_client, personas_dir="/personas"):
+        self.writer = PersonaWriter(vectordb_client, personas_dir)
 
-    def process_user_response(self, user_input):
-        """Process user input during behavior creation."""
-        # === NEW: Allow graceful cancellation
-        if user_input.lower() in ["cancel", "stop", "nevermind", "abort"]:
-            self.awaiting_user_response = False
-            self.filled_fields = {}
-            self.current_field = None
-            return "🛑 Behavior creation has been canceled as you requested."
-
-        if not self.awaiting_user_response:
-            return "No behavior creation is currently active."
-
-        if user_input.lower() in ["no", "skip", "none", "n/a"]:
-            self.filled_fields[self.current_field] = ""
-        else:
-            self.filled_fields[self.current_field] = user_input
-
-        self.current_field = self._find_next_missing_field()
-
-        if self.current_field:
-            return self._generate_question_for_field(self.current_field)
-        else:
-            self.awaiting_user_response = False
-            return self._finalize_behavior()
-
-    def _find_next_missing_field(self):
-        for field in self.template_structure.keys():
-            if field not in self.filled_fields or not self.filled_fields[field].strip():
-                return field
+    def start_persona_creation(self):
+        """Start interactive creation if CLI or TUI available (placeholder for UI integration)."""
+        logger.info("🚧 Interactive persona creation not implemented yet.")
         return None
 
-    def _generate_question_for_field(self, field_name):
-        field_info = self.template_structure[field_name]
-        question = f"🔹 {field_info['description']}"
-        if field_info.get("example"):
-            question += f"\n(Example: {field_info['example']})"
-        return question
+    def process_user_response(self, input_str: str):
+        """
+        Placeholder for multi-turn chat-driven persona generation workflow.
+        Intended for future GAIA-initiated self-invention.
+        """
+        logger.debug(f"🧠 PersonaCreator received input: {input_str}")
+        return "(Persona creation flow not yet active)"
 
-    def _finalize_behavior(self):
-        success = self.writer.create_behavior_from_template(self.filled_fields)
-        if success:
-            return "🎉 The new behavior has been created and embedded successfully!"
-        else:
-            return "⚠️ Failed to create the behavior. Some fields may have been missing."
+    def create_persona(self, template: Dict, instructions: Optional[Dict[str, str]] = None) -> bool:
+        """
+        Create a persona from a provided template and optional instruction dictionary.
+
+        Args:
+            template: The filled persona template
+            instructions: Optional instruction dict
+
+        Returns:
+            bool: Whether persona was successfully created
+        """
+        logger.info(f"✨ Creating persona: {template.get('name', '[unnamed]')}")
+        return self.writer.create_persona_from_template(template, instructions)
+
+    def generate_persona_from_traits(self, name: str, tone: str, context: str, traits: Optional[Dict[str, str]] = None, instructions: Optional[Dict[str, str]] = None) -> bool:
+        """
+        Create a persona using name, tone, context, and trait overrides.
+
+        Args:
+            name: Persona identifier
+            tone: Primary tone descriptor
+            context: Primary usage domain
+            traits: Optional traits to override
+            instructions: Optional instruction overlays
+
+        Returns:
+            bool: True if successful
+        """
+        template = get_blank_persona_template(name)
+        template["tone"] = tone
+        template["context"] = context
+
+        if traits:
+            template["traits"].update(traits)
+
+        logger.info(f"🧬 Generating persona '{name}' with tone='{tone}' and context='{context}'")
+        return self.create_persona(template, instructions)

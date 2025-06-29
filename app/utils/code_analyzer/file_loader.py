@@ -4,52 +4,37 @@ file_loader.py
 Handles loading code files and checking for text files.
 """
 
-import os
 import logging
+import os
 
-logger = logging.getLogger("GAIA")
+logger = logging.getLogger("GAIA.FileLoader")
 
-class FileLoader:
-    def __init__(self):
-        pass
+def load_file_safely(path: str) -> str:
+    """
+    Safely read file contents as text, skipping binaries or unreadable files.
 
-    def load_code_file(self, filepath: str) -> str:
-        """
-        Load a code file's content.
+    Args:
+        path (str): Absolute file path
 
-        Args:
-            filepath: Path to the code file
+    Returns:
+        str: File content or empty string
+    """
+    try:
+        if not os.path.exists(path):
+            logger.warning(f"❗ File not found: {path}")
+            return ""
 
-        Returns:
-            File content as string or None if loading fails
-        """
-        try:
-            with open(filepath, 'r', encoding='utf-8') as f:
-                return f.read()
-        except UnicodeDecodeError:
-            try:
-                with open(filepath, 'r', encoding='latin-1') as f:
-                    return f.read()
-            except Exception as e:
-                logger.error(f"Error loading file with latin-1 encoding: {e}")
-                return None
-        except Exception as e:
-            logger.error(f"Error loading code file {filepath}: {e}")
-            return None
+        if os.path.isdir(path):
+            logger.debug(f"🚫 Skipping directory: {path}")
+            return ""
 
-    def is_text_file(self, filepath: str) -> bool:
-        """
-        Check if a file is a text file.
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
 
-        Args:
-            filepath: Path to the file
+    except UnicodeDecodeError:
+        logger.warning(f"⚠️ Skipping binary or non-UTF-8 file: {path}")
+        return ""
 
-        Returns:
-            True if text file, False otherwise
-        """
-        try:
-            with open(filepath, 'r', encoding='utf-8') as f:
-                f.read(1024)
-            return True
-        except:
-            return False
+    except Exception as e:
+        logger.error(f"❌ Error reading file {path}: {e}", exc_info=True)
+        return ""

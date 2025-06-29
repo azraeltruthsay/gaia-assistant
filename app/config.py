@@ -1,103 +1,112 @@
-"""
-Configuration module for GAIA D&D Campaign Assistant.
-Manages environment variables and settings.
-"""
-
 import os
+import json
+from pathlib import Path
 import logging
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("logs/gaia.log"),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger("GAIA")
+logger = logging.getLogger("GAIA.Config")
+
+BASE_DIR = Path(__file__).parent.parent
+KNOWLEDGE_DIR = BASE_DIR / "knowledge"
+PROJECTS_DIR = KNOWLEDGE_DIR / "projects"
+PERSONAS_DIR = KNOWLEDGE_DIR / "personas"
+LOGS_DIR = KNOWLEDGE_DIR / "logs"
+ARTIFACTS_DIR = KNOWLEDGE_DIR / "artifacts"
+VECTORDB_DIR = KNOWLEDGE_DIR / "vectordb"
+COREDOCS_DIR = KNOWLEDGE_DIR / "core_docs"
+SYSTEM_REF_DIR = KNOWLEDGE_DIR / "system_reference"
+REFLECTIONS_DIR = KNOWLEDGE_DIR / "reflections"
+CONSTANTS_PATH = BASE_DIR / "app" / "gaia_constants.json"
 
 class Config:
-    """Configuration class to manage environment variables and settings."""
+    def __init__(self, persona=None, override_path=None):
+        self._load_constants(override_path)
+        self.BASE_DIR = BASE_DIR
+        self.KNOWLEDGE_DIR = KNOWLEDGE_DIR
+        self.PERSONAS_DIR = PERSONAS_DIR
+        self.PROJECTS_DIR = PROJECTS_DIR
+        self.LOGS_DIR = LOGS_DIR
+        self.ARTIFACTS_DIR = ARTIFACTS_DIR
+        self.VECTORDB_DIR = VECTORDB_DIR
+        self.COREDOCS_DIR = COREDOCS_DIR
+        self.SYSTEM_REF_DIR = SYSTEM_REF_DIR
+        self.REFLECTIONS_DIR = REFLECTIONS_DIR
+        self.persona_name = persona or self.constants.get("persona_defaults", {}).get("name", "prime")
+        self.identity = self.constants.get("identity", "GAIA - Artisanal Intelligence")
+        self.identity_intro = self.constants.get("identity_intro", "")
+        self.temperature = self.constants.get("temperature", 0.7)
+        self.top_p = self.constants.get("top_p", 0.95)
+        self.max_tokens = self.constants.get("max_tokens", 512)
+        self.n_gpu_layers = self.constants.get("n_gpu_layers", 0)
+        self.primitives = self.constants.get("primitives", ["read", "write", "vector_query", "shell"])
+        self.SAFE_EXECUTE_FUNCTIONS = self.constants.get("SAFE_EXECUTE_FUNCTIONS", [])
+        self.reflection_guidelines = self.constants.get("reflection_guidelines", [])
+        self.persona_defaults = self.constants.get("persona_defaults", {})
+        self.AUTO_WRITE = self.constants.get("AUTO_WRITE", False)
+        self.prompt_config = self.constants.get("prompt_config", {})
+        self.n_threads = self.constants.get("n_threads", 4)
+        self.model_path = self.constants.get("model_paths", {}).get("Prime", None)
+        self.lite_model_path = self.constants.get("model_paths", {}).get("Lite", None)
+        self.EMBEDDING_MODEL_PATH = self.constants.get("model_paths", {}).get("Embedding", os.getenv("EMBEDDING_MODEL_PATH"))
+        self.status_file = self.constants.get("status_file", None)
+        self.llm_backend = self.constants.get("llm_backend", None)
+        self.lite_backend = self.constants.get("lite_backend", None)
+        self.OBSERVER_TOKEN_THRESHOLD = self.constants.get("OBSERVER_TOKEN_THRESHOLD", 10)
+        self.LOGICAL_STOP_PUNCTUATION = self.constants.get("LOGICAL_STOP_PUNCTUATION", [".", "!", "?", "\n"])
 
-    # Global limits and constants
-    MAX_HISTORY_LENGTH = int(os.environ.get("MAX_HISTORY_LENGTH", 50))
-    CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE", 1000))
-    CHUNK_OVERLAP = int(os.environ.get("CHUNK_OVERLAP", 100))
-    PORT = int(os.environ.get("PORT", 7860))  # <-- added to fix Flask startup
-    DEBUG_MODE = os.environ.get("FLASK_DEBUG", "False").lower() == "true"
-
-    def __init__(self):
-        """Initialize configuration from environment variables with defaults."""
-
-        # Data and document paths
-        self.data_path = os.environ.get("DATA_PATH", "./campaign-data/core-documentation/")
-        self.raw_data_path = os.environ.get("RAW_DATA_PATH", "./campaign-data/raw-data/")
-        self.output_path = os.environ.get("OUTPUT_PATH", "./campaign-data/converted_raw/")
-        self.vector_db_path = os.environ.get("VECTOR_DB_PATH", "./chroma_db")
-
-        # Model settings
-        self.model_path = os.environ.get("MODEL_PATH", "./model.gguf")
-        self.n_gpu_layers = int(os.environ.get("N_GPU_LAYERS", 0))
-        self.n_batch = int(os.environ.get("N_BATCH", 768))
-        self.n_ctx = int(os.environ.get("N_CTX", 8192))
-        self.n_threads = int(os.environ.get("N_THREADS", 6))
-
-        # Personalities
-        self.default_personality_file = os.environ.get("DEFAULT_PERSONALITY_FILE", "./personalities/default_personality.json")
-        self.personalities_path = os.environ.get("PERSONALITIES_PATH", "./personalities")
-
-
-        # Code analysis
-        self.code_project_path = os.path.join(
-            os.environ.get("PROJECTS_DIR", "./shared"),
-            "../projects/code-assistant/files"
+    def _load_constants(self, override_path=None):
+        path = Path(override_path) if override_path else CONSTANTS_PATH
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                self.constants = json.load(f)
+            logger.info(f"Loaded GAIA constants from {path}")
+        except Exception as e:
+            logger.error(f"Failed to load GAIA constants: {e}")
+            self.constants = {}
+    def reload(self, override_path=None):
+        self._load_constants(override_path)
+        logger.info("GAIA Config reloaded.")
+    def get_persona_instructions(self):
+        return (
+            self.constants.get("persona_defaults", {}).get("instructions")
+            or self.identity_intro
+            or "Assist with integrity and care."
         )
-        self.task_status_path = os.path.join(self.data_path, "../background_tasks.json")
+    def as_dict(self):
+        return {
+            "identity": self.identity,
+            "identity_intro": self.identity_intro,
+            "temperature": self.temperature,
+            "top_p": self.top_p,
+            "max_tokens": self.max_tokens,
+            "primitives": self.primitives,
+            "SAFE_EXECUTE_FUNCTIONS": self.SAFE_EXECUTE_FUNCTIONS,
+            "reflection_guidelines": self.reflection_guidelines,
+            "persona_name": self.persona_name,
+            "persona_defaults": self.persona_defaults,
+            "AUTO_WRITE": self.AUTO_WRITE,
+            "prompt_config": self.prompt_config,
+            "n_threads": self.n_threads,
+            "llm_backend": self.llm_backend,
+            "lite_backend": self.lite_backend,
+            "paths": {
+                "KNOWLEDGE_DIR": str(self.KNOWLEDGE_DIR),
+                "PERSONAS_DIR": str(self.PERSONAS_DIR),
+                "PROJECTS_DIR": str(self.PROJECTS_DIR),
+                "LOGS_DIR": str(self.LOGS_DIR),
+                "ARTIFACTS_DIR": str(self.ARTIFACTS_DIR),
+                "VECTORDB_DIR": str(self.VECTORDB_DIR),
+                "COREDOCS_DIR": str(self.COREDOCS_DIR),
+                "SYSTEM_REF_DIR": str(self.SYSTEM_REF_DIR),
+                "REFLECTIONS_DIR": str(self.REFLECTIONS_DIR),
+            },
+        }
 
-        # TTS and UI
-        self.ENABLE_TTS = os.environ.get("ENABLE_TTS", "True").lower() == "true"
-        self.skip_tts_selection = os.environ.get("SKIP_TTS_SELECTION", "true").lower() == "true"
-        self.debug_mode = os.environ.get("DEBUG_MODE", "False").lower() == "true"
+def load_constants():
+    try:
+        with open(CONSTANTS_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"[GAIA Config] Error loading gaia_constants.json: {e}")
+        return {}
 
-        # Create required directories if they don't exist
-        for path in [self.data_path, self.raw_data_path, self.output_path,
-                     self.vector_db_path, self.code_project_path]:
-            os.makedirs(path, exist_ok=True)
-
-    def __repr__(self):
-        return f"""
-        GAIA Configuration:
-        -------------------
-        Data Path: {self.data_path}
-        Raw Data Path: {self.raw_data_path}
-        Output Path: {self.output_path}
-        Vector DB Path: {self.vector_db_path}
-        Personality File: {self.default_personality_file}
-        Model Path: {self.model_path}
-
-        Code Analysis:
-        Code Path: {self.code_project_path}
-        Task Status Path: {self.task_status_path}
-
-        Model Settings:
-        GPU Layers: {self.n_gpu_layers}
-        Batch Size: {self.n_batch}
-        Context Window: {self.n_ctx}
-        Threads: {self.n_threads}
-
-        UI Settings:
-        TTS Enabled: {self.ENABLE_TTS}
-        Skip TTS Selection: {self.skip_tts_selection}
-        Debug Mode: {self.debug_mode}
-
-        Text Processing:
-        Chunk Size: {self.CHUNK_SIZE}
-        Overlap: {self.CHUNK_OVERLAP}
-
-        History:
-        Max Entries: {self.MAX_HISTORY_LENGTH}
-
-        Server:
-        Port: {self.PORT}
-        """
+constants = load_constants()

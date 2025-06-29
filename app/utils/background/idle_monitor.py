@@ -5,71 +5,53 @@ Handles idle time and overnight period detection for GAIA background processing.
 """
 
 import time
-import datetime
 import logging
+from pathlib import Path
+from app.commands.self_analysis_trigger import run_self_analysis
+from app.status_tracker import get_idle_duration
 
-logger = logging.getLogger("GAIA")
+logger = logging.getLogger("GAIA.IdleMonitor")
 
 class IdleMonitor:
-    def __init__(self, config):
-        """
-        Initialize the Idle Monitor.
+    """
+    Monitors system activity to determine whether GAIA is idle.
+    Used to trigger background tasks like summarization and memory cleanup.
+    """
 
-        Args:
-            config: Configuration object with idle settings.
-        """
-        self.config = config
-        self.last_activity_time = time.time()
+    def __init__(self, idle_seconds=600):
+        self.last_active_time = time.time()
+        self.idle_threshold = idle_seconds
 
-    def register_activity(self) -> None:
-        """
-        Register user activity to reset the idle timer.
-        """
-        self.last_activity_time = time.time()
+    def mark_active(self):
+        """Update the last active time to now."""
+        self.last_active_time = time.time()
+        logger.debug("⏱️ GAIA marked as active.")
 
-    def is_idle(self) -> bool:
+    def is_system_idle(self) -> bool:
         """
-        Check if the system has been idle longer than the configured threshold.
+        Check if the system has been idle long enough to run background tasks.
 
         Returns:
-            True if idle, False otherwise.
+            bool: True if system is idle
         """
-        idle_threshold = getattr(self.config, 'idle_threshold', 300)  # Default 5 minutes
-        idle_duration = time.time() - self.last_activity_time
-        logger.debug(f"Idle time check: {idle_duration:.2f}s (threshold: {idle_threshold}s)")
-        return idle_duration > idle_threshold
+        idle_time = time.time() - self.last_active_time
+        if idle_time > self.idle_threshold:
+            logger.debug(f"🌙 System idle for {idle_time:.1f} seconds.")
+            return True
+        return False
 
-    def is_long_idle(self) -> bool:
+
+    def idle_check(self, ai_manager):
         """
-        Check if the system has been idle longer than the long idle threshold.
-
-        Returns:
-            True if long idle, False otherwise.
+        Run background task if idle long enough and summary not present.
         """
-        long_idle_threshold = getattr(self.config, 'long_idle_threshold', 1800)  # Default 30 minutes
-        idle_duration = time.time() - self.last_activity_time
-        logger.debug(f"Long idle time check: {idle_duration:.2f}s (threshold: {long_idle_threshold}s)")
-        return idle_duration > long_idle_threshold
+        idle_time = get_idle_duration()
+        if idle_time > self.idle_threshold and not summary_exists():
+            logger.info("🤖 Initiating self-analysis during idle period.")
+            run_self_analysis(ai_manager)
 
-    def is_overnight_period(self) -> bool:
-        """
-        Check if the current time falls within the overnight processing window.
-
-        Returns:
-            True if within overnight hours, False otherwise.
-        """
-        if not getattr(self.config, 'overnight_processing', False):
-            return False
-
-        current_hour = datetime.datetime.now().hour
-        start_hour = getattr(self.config, 'overnight_start_hour', 22)
-        end_hour = getattr(self.config, 'overnight_end_hour', 6)
-
-        if start_hour > end_hour:
-            # Overnight window crosses midnight
-            in_window = current_hour >= start_hour or current_hour < end_hour
-        else:
-            in_window = start_hour <= current_hour < end_hour
-
-        logger.debug(f"Overnight period check: {'YES' if in_window else 'NO'} (Current hour: {current_hour})")
-        return in_window
+def summary_exists():
+    return (
+        Path("/app/knowledge/system_reference/code_summaries/code_summary.md").exists()
+        and Path("/app/knowledge/system_reference/code_summaries/function_map.md").exists()
+    )

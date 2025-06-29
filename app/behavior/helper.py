@@ -1,17 +1,17 @@
-# behavior_helper.py
+# helper.py
 
-def complete_behavior_template_interactively(template_structure, partially_filled=None):
+def complete_persona_template_interactively(template_structure, partially_filled=None):
     if partially_filled is None:
         partially_filled = {}
     """
-    Completes a behavior template by asking the user for missing fields.
+    Completes a persona template by asking the user for missing fields.
     
     Args:
-        template_structure (dict): The master behavior template (with descriptions).
+        template_structure (dict): The master persona template (with descriptions).
         partially_filled (dict): Fields already provided (optional).
     
     Returns:
-        dict: Completed behavior template
+        dict: Completed persona template
     """
     completed = partially_filled.copy()
 

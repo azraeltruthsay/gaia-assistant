@@ -1,45 +1,58 @@
 services:
   campaign_llm:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gaia-assistant
+    command: python runserver.py
+    stdin_open: true
+    tty: true
+    logging:
+      driver: json-file
     ports:
-      - "7860:7860"
+      - "6414:6414"
     volumes:
-      - ./projects:/app/projects:rw
-      - ./personalities:/app/personalities:rw
-      - ./shared:/app/shared:rw
-      - ../gaia-models/Hermes-3-Llama-3.2-3B.Q4_K_M.gguf:/app/model.gguf:ro
-      - ../gaia-models/qwen2.5-coder-14b-instruct-q2_k.gguf.gguf:/app/model-c.gguf:ro
-      - ./logs:/app/logs:rw
+      - ./app:/gaia-assistant/app:rw
+      - ../gaia-models/Hermes-2-Pro-Mistral-7B.Q3_K_L.gguf:/models/gaia-prime.gguf:ro
+      - ../gaia-models/all-MiniLM-L6-v2:/models/all-MiniLM-L6-v2:ro
+      - ../gaia-models/Hermes-3-Llama-3.2-3B.Q4_K_M.gguf:/models/gaia-lite.gguf:ro
+      - ./projects:/gaia-assistant/projects:rw
+      - ./shared:/gaia-assistant/shared:rw
+      - ./knowledge:/gaia-assistant/knowledge:rw
+      - ./logs:/gaia-assistant/logs:rw
+      - ./runserver.py:/gaia-assistant/runserver.py:ro
+      - ./main.py:/gaia-assistant/main.py:ro
+      - ./gaia_rescue.py:/gaia-assistant/gaia_rescue.py:ro
+      - /tmp/gaia_chat_in:/tmp/gaia_chat_in
+      - /tmp/gaia_chat_out:/tmp/gaia_chat_out
+      - /tmp/gaia_chat_ctrl:/tmp/gaia_chat_ctrl  
     environment:
-      # Model paths
-      MODEL_PATH: /app/model.gguf
-      CODE_MODEL_PATH: /app/model-c.gguf
-      DEFAULT_PERSONALITY_FILE: /app/personalities/default_personality.json
-      PERSONALITIES_PATH: /app/personalities
-      # Now using project-relative paths
-      DATA_PATH: /app/projects/dnd-campaign/core-documentation
-      RAW_DATA_PATH: /app/projects/dnd-campaign/raw-data
-      OUTPUT_PATH: /app/projects/dnd-campaign/converted_raw
-      VECTOR_DB_PATH: /app/shared/chroma_db
-      PROJECTS_DIR: /app/shared
-      N_GPU_LAYERS: 0
-      N_THREADS: 8
-      N_BATCH: 128
-      N_CTX: 2048
-      SKIP_TTS_SELECTION: 'true'
-      ENABLE_TTS: 'true'
-      FLASK_ENV: 'production'
-      DEBUG_MODE: 'false'
-      PORT: 7860
-      SECRET_KEY: Thanks_GPT_123!!!
-      EMBEDDING_MODEL: all-mpnet-base-v2
-      # Background Processor Configuration
-      BG_IDLE_THRESHOLD: 300
-      BG_LONG_IDLE_THRESHOLD: 1800
-      BG_ENABLE_LORA: 'false'
-      BG_OVERNIGHT: 'true'
-      BG_OVERNIGHT_START: 22
-      BG_OVERNIGHT_END: 6
+      - PROJECTS_DIR=/gaia-assistant/projects
+      - KNOWLEDGE_ROOT=/gaia-assistant/knowledge
+      - VECTOR_DB_PATH=/gaia-assistant/shared/chroma_db
+      - MODEL_PATH=/models/gaia-prime.gguf
+      - LITE_MODEL_PATH=/models/gaia-lite.gguf
+      - EMBEDDING_MODEL_PATH=/models/all-MiniLM-L6-v2
+      - DATA_PATH=/gaia-assistant/projects/dnd-campaign/core-documentation
+      - RAW_DATA_PATH=/gaia-assistant/projects/dnd-campaign/raw-data
+      - OUTPUT_PATH=/gaia-assistant/projects/dnd-campaign/converted_raw
+      - ENABLE_TTS=true
+      - SKIP_TTS_SELECTION=true
+      - DEBUG_MODE=false
+      - FLASK_ENV=production
+      - PORT=6414
+      - SECRET_KEY=#########
+      - N_GPU_LAYERS=0
+      - N_THREADS=8
+      - N_BATCH=128
+      - N_CTX=2048
+      - BG_IDLE_THRESHOLD=300
+      - BG_LONG_IDLE_THRESHOLD=1800
+      - BG_ENABLE_LORA=false
+      - BG_OVERNIGHT=true
+      - BG_OVERNIGHT_START=22
+      - BG_OVERNIGHT_END=6
+      - PYTHONUNBUFFERED=1
     deploy:
       resources:
         limits:
@@ -47,7 +60,7 @@ services:
           cpus: '6'
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7860/"]
+      test: ["CMD", "curl", "-f", "http://localhost:6414/"]
       interval: 30s
       timeout: 10s
       retries: 3

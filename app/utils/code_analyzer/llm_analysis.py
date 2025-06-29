@@ -4,83 +4,39 @@ llm_analysis.py
 Handles code analysis using an LLM (Large Language Model).
 """
 
-import re
-import json
 import logging
-from typing import Optional
+from typing import List, Dict
+from app.cognition.inner_monologue import process_thought
+from app.config import Config
 
-logger = logging.getLogger("GAIA")
+logger = logging.getLogger("GAIA.LLMAnalysis")
 
+def summarize_chunks(chunks: List[Dict], llm, reflect: bool = True) -> str:
+    """
+    Generate a natural language summary of code chunks using the provided LLM.
+    """
+    try:
+        cfg = Config()
+        persona = "technical summarizer"
+        instructions = "Review the provided code functions and summarize their purpose in plain English."
 
-class LLMAnalyzer:
-    """Performs LLM-driven analysis of code files."""
+        messages = [chunk["content"] for chunk in chunks if chunk["type"] in ("function", "class")]
+        payload = "\n\n".join(messages).strip()
 
-    def __init__(self, llm=None):
-        """
-        Initialize the analyzer.
+        if not payload:
+            logger.warning("LLMAnalysis received an empty code chunk payload. Skipping summarization.")
+            return "(Empty prompt — no summary generated.)"
 
-        Args:
-            llm: Optional LLM instance for code analysis
-        """
-        self.llm = llm
-    
-    def _extract_json(self, text: str) -> dict:
-        """
-        Extract and parse JSON object from a possibly noisy LLM response.
-        """
-        try:
-            # Try to extract the first JSON-like block in the response
-            json_match = re.search(r"\{.*\}", text, re.DOTALL)
-            if json_match:
-                return json.loads(json_match.group(0))
-            return {}
-        except Exception as e:
-            logging.warning(f"⚠️ Failed to parse LLM JSON response: {e}")
-            return {}
-    
-    def analyze_code(self, filepath: str, content: str, language: str) -> dict:
-        """
-        Analyze code using an LLM and return structured insights.
+        summary = process_thought(
+            task_type="code_summary",
+            persona=persona,
+            instructions=instructions,
+            payload=payload,
+            llm=llm,
+            reflect=reflect
+        )
+        return summary
 
-        Args:
-            filepath: Path to the code file
-            content: Code content
-            language: Detected programming language
-
-        Returns:
-            Dictionary containing analysis results
-        """
-        if not self.llm or not content:
-            logger.warning("LLM not available or content empty")
-            return {}
-
-        try:
-            prompt = self._build_prompt(filepath, content, language)
-            response_text = self.llm(prompt)
-
-            json_data = self._extract_json(response_text)
-
-            if json_data:
-                return json_data
-
-            # Fallback if no clean JSON was extracted
-            return {
-                'summary': (response_text[:200] + '...') if len(response_text) > 200 else response_text,
-                'components': [],
-                'improvements': [],
-                'issues': [],
-                'complexity_rating': 5  # Default neutral score
-            }
-        except Exception as e:
-            logger.error(f"Error during LLM code analysis: {e}", exc_info=True)
-            return {}
-
-    def _build_prompt(self, filepath: str, content: str, language: str) -> str:
-        """Builds the LLM prompt for code analysis."""
-        return f"""Analyze the following code file and provide structured insights:
-
-File: {filepath}
-Language: {language}
-
-```{language}
-{content}"""
+    except Exception as e:
+        logger.error(f"❌ LLM summarization failed: {e}", exc_info=True)
+        return "(Failed to summarize code.)"

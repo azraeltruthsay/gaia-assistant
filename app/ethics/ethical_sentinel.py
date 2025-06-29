@@ -4,63 +4,89 @@ ethics/ethical_sentinel.py
 The Ethical Sentinel monitors system health and cognitive strain for GAIA.
 """
 
-import time
-import psutil  # lightweight system monitor
+import logging
+import psutil
+import traceback
+
+logger = logging.getLogger("GAIA.EthicalSentinel")
 
 class EthicalSentinel:
-    def __init__(self, ai_manager=None, cpu_threshold=85, memory_threshold=85, loop_threshold=5, error_threshold=10):
+    """
+    Monitors system health, loop safety, error logs, and optionally Tier I identity violations.
+    Works alongside GAIA's core_identity_guardian to enforce ethical and operational boundaries.
+    """
+
+    def __init__(self, identity_guardian=None):
+        self.identity_guardian = identity_guardian
+        self.loop_counter = 0
+        self.error_log = []
+        self.loop_threshold = 50  # can be lowered for high-alert conditions
+        self.cpu_limit = 95.0
+        self.memory_limit = 90.0
+
+    def check_system_resources(self) -> bool:
+        """Check CPU and memory usage. Return True if under safe thresholds."""
+        cpu = psutil.cpu_percent()
+        mem = psutil.virtual_memory().percent
+        logger.debug(f"🧠 CPU: {cpu}%, Memory: {mem}%")
+
+        if cpu > self.cpu_limit:
+            logger.warning(f"⚠️ CPU usage high: {cpu}%")
+        if mem > self.memory_limit:
+            logger.warning(f"⚠️ Memory usage high: {mem}%")
+
+        return cpu < self.cpu_limit and mem < self.memory_limit
+
+    def check_loop_counter(self) -> bool:
+        """Ensure GAIA is not looping uncontrollably."""
+        self.loop_counter += 1
+        logger.debug(f"🔁 Loop Count: {self.loop_counter}")
+
+        if self.loop_counter > self.loop_threshold:
+            logger.error("⛔ GAIA loop threshold exceeded!")
+            return False
+        return True
+
+    def check_recent_errors(self) -> bool:
+        """Check if recent unhandled errors have accumulated."""
+        if len(self.error_log) > 3:
+            logger.warning(f"🚨 Too many internal errors: {len(self.error_log)}")
+            return False
+        return True
+
+    def register_error(self, exc: Exception):
+        """Track unhandled exception information."""
+        err_str = f"{type(exc).__name__}: {str(exc)}"
+        self.error_log.append(err_str)
+        if len(self.error_log) > 5:
+            self.error_log.pop(0)  # Keep recent 5
+        logger.error(f"❌ Exception tracked: {err_str}")
+        logger.debug(traceback.format_exc())
+
+    def reset_loop(self):
+        self.loop_counter = 0
+        logger.debug("🔄 Loop counter reset.")
+
+    def run_full_safety_check(self, persona_traits=None, instructions=None, prompt=None) -> bool:
         """
-        Initialize the Ethical Sentinel.
-
-        Args:
-            ai_manager: Optional AI manager reference.
-            cpu_threshold: % CPU usage considered critical.
-            memory_threshold: % memory usage considered critical.
-            loop_threshold: Max retries before considering an operation stuck.
-            error_threshold: Max unhandled errors before alerting.
+        Runs full operational and ethical review.
+        Returns True only if all checks pass.
         """
-        self.ai_manager = ai_manager
-        self.cpu_threshold = cpu_threshold
-        self.memory_threshold = memory_threshold
-        self.loop_threshold = loop_threshold
-        self.error_threshold = error_threshold
-        self.loop_counts = {}
-        self.error_counts = 0
+        sys_ok = self.check_system_resources()
+        loop_ok = self.check_loop_counter()
+        err_ok = self.check_recent_errors()
 
-    def monitor_resources(self):
-        cpu = psutil.cpu_percent(interval=1)
-        memory = psutil.virtual_memory().percent
+        id_ok = True
+        if self.identity_guardian and prompt:
+            try:
+                id_ok = self.identity_guardian.validate_prompt_stack(
+                    persona_traits or {},
+                    instructions or [],
+                    prompt
+                )
+            except Exception as e:
+                logger.error(f"❌ Identity check failed: {e}")
+                id_ok = False
 
-        if cpu > self.cpu_threshold:
-            self.alert(f"High CPU usage detected: {cpu}%")
-        
-        if memory > self.memory_threshold:
-            self.alert(f"High memory usage detected: {memory}%")
+        return sys_ok and loop_ok and err_ok and id_ok
 
-    def monitor_loops(self, loop_id):
-        """
-        Track loops or task retries.
-        """
-        if loop_id not in self.loop_counts:
-            self.loop_counts[loop_id] = 0
-        self.loop_counts[loop_id] += 1
-
-        if self.loop_counts[loop_id] > self.loop_threshold:
-            self.alert(f"Possible infinite loop or cognitive jam detected at {loop_id}")
-
-    def monitor_errors(self):
-        self.error_counts += 1
-        if self.error_counts > self.error_threshold:
-            self.alert(f"High error rate detected: {self.error_counts} unhandled errors")
-
-    def reset_loop(self, loop_id):
-        if loop_id in self.loop_counts:
-            del self.loop_counts[loop_id]
-
-    def reset_errors(self):
-        self.error_counts = 0
-
-    def alert(self, message):
-        print(f"[🛡️ Ethical Sentinel Alert] {message}")
-        if self.ai_manager:
-            self.ai_manager.handle_ethical_alert(message)

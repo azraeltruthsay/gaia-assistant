@@ -83,6 +83,10 @@ def switch_project(project_id):
         logger.error(f"Error switching projects: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
+@projects_bp.route('/api/projects/list', methods=['GET'])
+def list_projects_alias():
+    return list_projects()
+
 @projects_bp.route('/api/projects/create', methods=['POST'])
 def create_project():
     """Create a new project."""

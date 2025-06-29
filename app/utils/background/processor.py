@@ -4,117 +4,83 @@ background/processor.py
 BackgroundProcessor handles idle-time and overnight-time task processing.
 """
 
-import time
-import datetime
-import logging
 import threading
-from .task_queue import TaskQueue
-from .idle_monitor import IdleMonitor
-from .background_tasks import BackgroundTasks
+import time
+import logging
 
-logger = logging.getLogger("GAIA")
+from app.utils.background.task_queue import TaskQueue
+from app.utils.background.background_tasks import BackgroundTask
+from app.utils.background.idle_monitor import IdleMonitor
+from app.cognition.initiative_handler import gil_check_and_generate
+
+logger = logging.getLogger("GAIA.BackgroundProcessor")
 
 class BackgroundProcessor:
-    def __init__(self, config, ai_manager=None):
+    """
+    Runs in the background and monitors idle conditions to process queued tasks.
+    Coordinates summarization, embedding, artifact generation, code analysis, and initiative prompting.
+    """
+
+    def __init__(self, config):
         self.config = config
-        self.ai_manager = ai_manager
-        self.task_queue = TaskQueue(status_file=config.task_status_path)
-        self.idle_monitor = IdleMonitor(config)
-        self.task_handler = BackgroundTasks(ai_manager)
-        self.is_running = False
+        self.task_queue = TaskQueue()
+        self.task_handler = BackgroundTask()
+        self.idle_monitor = IdleMonitor()
+        self.thread = None
+        self.running = False
+
+        # Injected externally after init
+        self.ai_manager = None
+        self.conversation_manager = None
+        self.vector_store_manager = None
+        self.vector_store = None
+        self.doc_processor = None
 
     def start(self):
-        if not self.is_running:
-            self.is_running = True
-            logger.info("🚀 BackgroundProcessor started")
-            thread = threading.Thread(target=self._worker_loop, daemon=True)
-            thread.start()
+        """Starts the background processor in a new thread."""
+        if not self.thread:
+            self.running = True
+            self.thread = threading.Thread(target=self.run, daemon=True)
+            self.thread.start()
+            logger.info("🌀 Background thread launched.")
 
     def stop(self):
-        self.is_running = False
-        logger.info("🛑 BackgroundProcessor stopped")
+        """Signals the thread to stop gracefully."""
+        self.running = False
+        if self.thread and self.thread.is_alive():
+            self.thread.join(timeout=5)
+            logger.info("🛑 Background thread stopped.")
 
-    def register_activity(self):
-        self.idle_monitor.register_activity()
-        logger.debug("🔄 User activity registered, idle timer reset")
+    def run(self):
+        """
+        Background loop that checks for idle time and processes tasks.
+        """
+        logger.info("📡 Background processor running.")
 
-    def _worker_loop(self):
-        logger.info("🌀 Entering BackgroundProcessor worker loop")
-        while self.is_running:
+        while self.running:
             try:
-                should_process = self.idle_monitor.is_idle() or self.idle_monitor.is_overnight_period()
-                long_idle = self.idle_monitor.is_long_idle()
-
-                if not should_process:
-                    logger.debug("💤 System not idle or overnight, sleeping for 60s")
-                    time.sleep(60)
+                if not self.idle_monitor.is_system_idle():
+                    time.sleep(5)
                     continue
 
-                next_task_info = self.task_queue.get_next_task(long_idle=long_idle)
-                if not next_task_info:
-                    logger.debug("📭 No pending tasks found, sleeping for 60s")
-                    time.sleep(60)
-                    continue
-
-                priority, task = next_task_info
-                logger.info(f"📌 Processing task {task['id']} of type '{task['type']}' (attempt {task['attempts'] + 1})")
-
-                result = self._process_task(task)
-
-                if result.get("success"):
-                    logger.info(f"✅ Task {task['id']} completed successfully")
-                    self.task_queue.task_status["pending_tasks"] = [t for t in self.task_queue.task_status["pending_tasks"] if t["id"] != task["id"]]
-                    self.task_queue.task_status["completed_tasks"].append(task)
+                task = self.task_queue.pop_next_task()
+                if task:
+                    logger.info(f"📥 Running background task: {task.get('type')} :: {task.get('tag')}")
+                    task_result = self.task_handler.process_conversation_task(task)
+                    logger.info(f"✅ Task completed: {task_result}")
                 else:
-                    task["error"] = result.get("error", "Unknown error")
-                    max_retries = getattr(self.config, 'max_retries', 3)
-                    if task["attempts"] >= max_retries:
-                        logger.warning(f"❌ Task {task['id']} failed after {task['attempts']} attempts")
-                        self.task_queue.task_status["pending_tasks"] = [t for t in self.task_queue.task_status["pending_tasks"] if t["id"] != task["id"]]
-                        self.task_queue.task_status["failed_tasks"].append(task)
-                    else:
-                        logger.info(f"🔁 Requeuing task {task['id']} (attempt {task['attempts']})")
-                        self.task_queue.requeue_task_with_backoff(task, priority, task["attempts"])
+                    # Periodic idle checks like reflection or summaries
+                    if self.ai_manager and self.ai_manager.self_reflection:
+                        self.ai_manager.self_reflection.idle_time_check()
 
-                self.task_queue.save_status()
-                logger.debug("⏳ Task queue status saved, sleeping 5s before next loop")
-                time.sleep(5)
+                    # Initiative prompt check using config-based pathing
+                    idle_minutes = self.idle_monitor.get_idle_minutes()
+                    gil_check_and_generate(user_idle_minutes=idle_minutes, config=self.config)
+                    if initiative_message and self.conversation_manager:
+                        self.conversation_manager.post_ai_message(initiative_message)
+
+                time.sleep(10)
 
             except Exception as e:
-                logger.error(f"🔥 Worker loop error: {e}", exc_info=True)
-                time.sleep(60)
-
-    def _process_task(self, task):
-        task["attempts"] += 1
-        task["last_attempt"] = datetime.datetime.now().isoformat()
-
-        try:
-            if task["type"] == "summarize_conversation":
-                return self.task_handler.process_conversation_task(task)
-            elif task["type"] == "embed_document":
-                return self.task_handler.process_embedding_task(task)
-            elif task["type"] == "lora_training":
-                return self.task_handler.process_lora_task(task, self.config)
-            else:
-                logger.warning(f"⚠️ Unknown task type: {task['type']}")
-                return {"success": False, "error": "Unknown task type"}
-        except Exception as e:
-            logger.error(f"❌ Exception while processing task {task['id']}: {e}", exc_info=True)
-            return {"success": False, "error": str(e)}
-
-    def get_task_status(self):
-        """Return live status of task queue."""
-        try:
-            return {
-                "status": "running" if self.is_running else "stopped",
-                "pending": len(self.task_queue.task_status.get("pending_tasks", [])),
-                "completed": len(self.task_queue.task_status.get("completed_tasks", [])),
-                "failed": len(self.task_queue.task_status.get("failed_tasks", [])),
-                "active_task_queue": self.task_queue.task_status
-            }
-        except Exception as e:
-            logger.error(f"Error retrieving background task status: {e}", exc_info=True)
-            return {
-                "status": "error",
-                "message": str(e)
-            }
+                logger.error(f"❌ Error in background processor: {e}", exc_info=True)
+                time.sleep(15)

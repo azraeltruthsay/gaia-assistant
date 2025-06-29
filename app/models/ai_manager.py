@@ -1,252 +1,182 @@
-"""
-AI Manager module for GAIA Assistant.
-Core component that handles AI interaction, query processing, and artifact generation.
-"""
-
-import os
-import json
 import logging
 from datetime import datetime
-from typing import Optional, List
+from llama_cpp import Llama
 
-from langchain_community.llms import LlamaCpp
-from langchain_core.documents import Document
-
-from app.models.document import DocumentProcessor
-from app.models.vector_store import VectorStoreManager
-from app.models.tts import SpeechManager
-from app.utils.hardware_optimization import detect_hardware, optimize_config
-from app.utils.conversation.manager import ConversationManager
+from app.config import Config
+from app.cognition.inner_monologue import process_thought
+from app.utils.project_manager import ProjectManager
+from app.memory.status_tracker import GAIAStatus
 from app.utils.code_analyzer import CodeAnalyzer
-from app.utils.background.processor import BackgroundProcessor
-from app.utils.helpers import clean_response
-from app.utils.status_tracker import GAIA_STATUS
+from app.utils.background.background_tasks import BackgroundTask
+from app.utils.background.task_queue import TaskQueue
+from app.memory.conversation.manager import ConversationManager
+from app.behavior.persona_manager import PersonaManager
+from app.behavior.persona_adapter import PersonaAdapter
+from app.memory.session_manager import SessionManager
+from app.commands.self_analysis_trigger import run_self_analysis
+from app.models.vector_store import VectorStoreManager
+from app.models.document import DocumentProcessor
+from app.ethics.ethical_sentinel import EthicalSentinel
+from app.cognition.self_reflection import run_self_reflection
+from app.ethics.core_identity_guardian import CoreIdentityGuardian
+from app.utils.context import get_context_for_task
 
 logger = logging.getLogger("GAIA")
 
-
 class AIManager:
-    def __init__(self, config):
+    def __init__(self, config, minimal=False):
         self.config = config
+        if minimal:
+            logger.warning("⚠️ GAIA initialized in MINIMAL (rescue) mode.")
+            self.project_manager = ProjectManager(config)
+            return
+
+        self.persona_manager = PersonaManager(self.config.personas_dir)
+        self.vector_store_manager = VectorStoreManager(config=self.config)
+        self.doc_processor = DocumentProcessor(self.vector_store_manager)
+        self.code_analyzer = CodeAnalyzer(config=self.config)
+        self.background_processor = BackgroundTask(self)
+        self.self_reflection = run_self_reflection(config)
+        self.conversation_manager = ConversationManager(config=self.config)
+        self.session_manager = SessionManager(self.config)
+        self.project_manager = ProjectManager(config)
+        self.identity_guardian = CoreIdentityGuardian(config)
+        self.ethical_sentinel = EthicalSentinel(self.identity_guardian)
         self.llm = None
-        self.vector_store = None
-        self.doc_processor = None
-        self.vector_store_manager = None
-        self.speech_manager = None
-        self.conversation_manager = None
-        self.code_analyzer = None
-        self.background_processor = None
-        self.conversation_history = []
-        self.personality = None
+        self.current_persona_name = None
+        self.current_persona = None
+        self.status = {"initialized": False}
+        self.task_queue = TaskQueue()
         self.initialized = False
 
-    def initialize(self) -> bool:
-        logger.info("🔧 Starting AI Manager initialization")
-        GAIA_STATUS.update("Loading default personality...", 5)
+    def generate_response(self, user_prompt: str) -> str:
+        if not self.llm:
+            logger.warning("🛑 LLM not loaded.")
+            return "I'm still initializing..."
 
+        if not self.current_persona:
+            logger.warning("🛑 No active persona set.")
+            return "I'm missing my persona setup."
+
+        persona = self.current_persona
+        instructions = persona.instructions if hasattr(persona, "instructions") else []
+        traits = persona.traits if hasattr(persona, "traits") else {}
+
+        gil_response = self.initiative_loop.check_topics_and_generate(user_prompt)
+        if gil_response:
+            logger.info("🔁 [GIL] Responding to active initiative topic")
+            return gil_response
+
+        if not self.ethical_sentinel.run_full_safety_check(traits, instructions, user_prompt):
+            return "⚠️ Request denied due to safety or identity constraints."
+
+        logger.info("🧠 Invoking inner_monologue for prompt generation")
+        return process_thought(
+            task_type="chat",
+            persona=self.current_persona_name or "unknown",
+            instructions=instructions,
+            payload=user_prompt,
+            identity_intro=self.identity_guardian.identity.get("preamble", ""),
+            llm=self.llm,
+            reflect=True,
+            context=get_context_for_task("chat", config=self.config),
+            config=self.config
+        )
+
+    def initialize(self):
+        logger.info("Initializing AIManager components...")
         try:
-            logger.info("📜 Loading default personality...")
-            self.personality = self._load_default_personality()
-            logger.info("✅ Default personality loaded")
+            project_name = self.config.default_project_name
+            persona_name = self.config.default_persona_name
 
-            GAIA_STATUS.update("Optimizing hardware...", 10)
-            logger.info("🧰 Detecting hardware and optimizing config...")
-            hardware_info = detect_hardware()
-            optimize_config(self.config, hardware_info)
-            logger.info("✅ Hardware optimization complete")
+            self.project_manager.set_active_project(project_name)
+            logger.info(f"📁 Project initialized: {self.project_manager.active_project}")
 
-            GAIA_STATUS.update("Loading LLM model...", 20)
-            logger.info("📦 Setting up LLM...")
-            self.llm = self._initialize_llm()
-            logger.info("✅ LLM initialized")
+            loaded_persona = self.persona_manager.set_persona(persona_name)
+            if not loaded_persona:
+                raise RuntimeError("Failed to load current persona.")
+            self.current_persona = PersonaAdapter(loaded_persona, self.config)
+            self.current_persona_name = self.persona_manager.get_current_persona_name()
+            logger.info(f"✅ Persona loaded: {self.current_persona_name}")
 
-            GAIA_STATUS.update("Initializing document processor...", 35)
-            logger.info("🗂 Setting up document processor...")
-            self.doc_processor = DocumentProcessor(self.config, self.llm)
-            logger.info("✅ Document processor initialized")
-            
-            # ✅ Safe to load system reference docs now
+            if not hasattr(self.current_persona, "traits") or not hasattr(self.current_persona, "instructions"):
+                logger.debug(f"[DEBUG] Loaded persona keys: {self.current_persona.__dict__.keys()}")
+                raise RuntimeError("PersonaAdapter missing required attributes.")
+
+            self.session_manager.initialize_session(persona_name)
+            logger.info("✅ Session initialized")
+
+            self.doc_processor.load_and_preprocess_data(self.config.core_docs_path)
+            logger.info("✅ Core docs loaded and embedded")
+
             try:
-                logger.info("📚 Loading system reference documents...")
-                system_doc_path = "/app/knowledge/system_reference"
-                self.doc_processor.process_documents(system_doc_path, tier="0_system_reference")
-                logger.info("✅ System reference documents loaded")
+                self.llm = Llama(
+                    model_path=self.config.model_path,
+                    n_gpu_layers=self.config.n_gpu_layers,
+                    n_ctx=self.config.max_tokens,
+                    n_batch=self.config.n_batch,
+                    use_mlock=True,
+                    verbose=True
+                )
+                logger.info("🧠 Hermes (llama.cpp) model loaded successfully.")
+
+                self.vector_store_manager.initialize_store()
+                self.vector_store = self.vector_store_manager.vector_store
+                logger.info("✅ Vector store initialized and assigned.")
+
             except Exception as e:
-                logger.warning(f"⚠️ Failed to load system reference docs: {e}")
-            
-                        
-            GAIA_STATUS.update("Initializing vector store...", 50)
-            logger.info("🧠 Setting up vector store manager...")
-            self.vector_store_manager = VectorStoreManager(self.config)
-            logger.info("✅ Vector store manager ready")
+                logger.exception(f"❌ Failed to load Hermes model: {e}")
 
-            logger.info("🎙 Trying to initialize speech manager...")
-            self.speech_manager = self._try_initialize_component(SpeechManager)
-            if self.speech_manager:
-                logger.info("✅ Speech manager initialized")
-            else:
-                logger.warning("⚠️ Speech manager failed to initialize (optional)")
-
-            GAIA_STATUS.update("Initializing conversation manager...", 65)
-            logger.info("💬 Setting up conversation manager...")
-            self.conversation_manager = ConversationManager(self.config, self.llm)
-            logger.info("✅ Conversation manager ready")
-
-            GAIA_STATUS.update("Initializing code analyzer...", 75)
-            logger.info("🧪 Setting up code analyzer...")
-            self.code_analyzer = CodeAnalyzer(self.config, self.llm)
-
-            logger.info("📂 Refreshing live code tree...")
-            self.code_analyzer.refresh_code_tree("/app")
-
-            logger.info("🔍 Reviewing codebase for changes...")
-            changed_count = self.code_analyzer.review_codebase()
-            logger.info(f"🧠 GAIA introspected {changed_count} changed file(s) this session.")
-
-            logger.info("✅ Code analyzer ready")
-
-            GAIA_STATUS.update("Processing documents...", 85)
-            logger.info("📑 Setting up background processor...")
-            self.background_processor = BackgroundProcessor(self.config)
-            logger.info("✅ Background processor created")
-
-            logger.info("📁 Processing raw data...")
-            self.doc_processor.process_raw_data()
-            logger.info("✅ Raw data processed")
-
-            logger.info("📄 Loading and preprocessing documents...")
-            documents = self.doc_processor.load_and_preprocess_data(self.config.data_path)
-            if not documents:
-                logger.warning("⚠️ No documents found to process")
-
-            logger.info("📦 Initializing vector store...")
-            if os.path.exists(self.config.vector_db_path) and os.listdir(self.config.vector_db_path):
-                logger.info("🔁 Loading existing vector store...")
-                self.vector_store = self.vector_store_manager.load_vector_store()
-            else:
-                logger.warning("📦 No existing vector store found, creating new one...")
-                self.vector_store = self.vector_store_manager.create_vector_store(documents) if documents else self.create_empty_vector_store()
-
-            if self.vector_store is None:
-                logger.error("❌ Vector store failed to initialize")
-                raise RuntimeError("Failed to initialize vector store")
-
-            GAIA_STATUS.update("Starting background processor...", 95)
-            logger.info("🔄 Starting background processor...")
-            self.initialize_background_processor()
-
-            GAIA_STATUS.update("Initialization complete", 100)
+            self.status["initialized"] = True
             self.initialized = True
-            logger.info("✅ AI Manager fully initialized")
+            logger.info(f"🎯 Initialization complete. Persona: {self.current_persona_name}, Project: {self.project_manager.active_project}")
+            self.initiative_loop.start()
             return True
-
         except Exception as e:
-            logger.error(f"🔥 Critical error during AI Manager initialization: {e}", exc_info=True)
-            self.initialized = False
+            logger.exception(f"❌ AIManager failed to initialize: {e}")
             return False
 
-    def _load_default_personality(self) -> dict:
-        try:
-            with open(self.config.default_personality_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception as e:
-            logger.error(f"❌ Failed to load default personality: {e}", exc_info=True)
-            raise
+    def set_persona(self, persona_name):
+        persona = self.persona_manager.set_persona(persona_name)
+        if persona:
+            self.current_persona = PersonaAdapter(persona, self.config)
+            self.current_persona_name = persona_name
+            logger.info(f"✅ Persona switched to: {persona_name}")
+            return True
+        logger.warning(f"⚠️ Failed to switch to persona: {persona_name}")
+        return False
 
-    def _initialize_llm(self):
-        try:
-            llm = LlamaCpp(
-                model_path=self.config.model_path,
-                n_gpu_layers=self.config.n_gpu_layers,
-                n_ctx=self.config.n_ctx,
-                n_threads=self.config.n_threads,
-                verbose=False,
-            )
-            logger.info(f"✅ LLM loaded from {self.config.model_path}")
-            return llm
-        except Exception as e:
-            logger.error(f"❌ Error initializing LLM: {e}", exc_info=True)
-            raise
+    def get_persona(self):
+        return self.current_persona
 
-    def _try_initialize_component(self, component_class):
-        try:
-            return component_class(self.config)
-        except Exception as e:
-            logger.warning(f"⚠️ Optional component {component_class.__name__} failed to initialize: {e}")
-            return None
+    def summarize_conversation(self):
+        logger.info("Triggering conversation summarization...")
+        return self.background_processor.process_conversation_task({"action": "summarize"})
 
-    def initialize_background_processor(self) -> None:
-        if self.background_processor:
-            try:
-                self.background_processor.ai_manager = self
-                self.background_processor.conversation_manager = getattr(self, 'conversation_manager', None)
-                self.background_processor.vector_store_manager = getattr(self, 'vector_store_manager', None)
-                self.background_processor.vector_store = getattr(self, 'vector_store', None)
-                self.background_processor.doc_processor = getattr(self, 'doc_processor', None)
-                self.background_processor.start()
-                logger.info("✅ Background processor started")
-            except Exception as e:
-                logger.error(f"❌ Error starting background processor: {e}", exc_info=True)
-    
-    def process_query(self, query_text: str) -> str:
-        logger.info(f"📨 Processing query: {query_text}")
-        try:
-            response = self.query_campaign_world(query_text)
-            cleaned_response = clean_response(response)
-            self.conversation_manager.add_message("user", query_text)
-            self.conversation_manager.add_message("assistant", cleaned_response)
-            return cleaned_response
-        except Exception as e:
-            logger.error(f"❌ Error processing query: {e}", exc_info=True)
-            return f"I encountered an error processing your request: {e}"
+    def embed_documents(self, doc_paths):
+        logger.info("Embedding documents via DocumentProcessor...")
+        return self.doc_processor.embed_documents(doc_paths)
 
-    def query_campaign_world(self, query_text: str) -> str:
-        try:
-            documents = self._get_relevant_documents(query_text)
-            response = self._generate_response(query_text, documents)
-            return response
-        except Exception as e:
-            logger.error(f"❌ Error in query_campaign_world: {e}", exc_info=True)
-            return "I encountered an error processing your request."
+    def analyze_codebase(self):
+        logger.info("Initiating code analysis task...")
+        return self.code_analyzer.analyze_codebase()
 
-    def _get_relevant_documents(self, query: str) -> List[Document]:
-        if not self.vector_store:
-            logger.warning("⚠️ Vector store not initialized")
-            return []
-    
-        try:
-            # Example: prioritize system reference knowledge + project documents
-            filter_by = {"tier": {"$in": ["0_system_reference", "2_structured"]}}
-            docs = self.vector_store_manager.get_relevant_documents(
-                vector_store=self.vector_store,
-                query=query,
-                k=5,
-                filter_by=filter_by
-            )
-            logger.info(f"🔍 Found {len(docs)} relevant documents (filtered)")
-            return docs
-        except Exception as e:
-            logger.error(f"❌ Error fetching documents: {e}", exc_info=True)
-            return []
+    def handle_intent(self, intent: str, message: str = None) -> str:
+        if intent == "create_behavior":
+            return "Sure! Let's define a new persona together."
+        elif intent == "trigger_code_analysis":
+            logger.info("🧠 Running self-analysis triggered by user.")
+            return run_self_analysis(self)
+        return "I'm not sure what to do with that yet — want to rephrase or try another request?"
 
-    def _generate_response(self, query: str, documents: List[Document]) -> str:
-        context = "\n".join(doc.page_content for doc in documents)
-        prompt = f"{self.personality['system_prompt']}\nContext: {context}\nUser: {query}\nGAIA:"
-        try:
-            response = self.llm(prompt)
-            return clean_response(response)
-        except Exception as e:
-            logger.error(f"❌ Error generating response: {e}", exc_info=True)
-            return "I encountered an error generating a response."
+    def update_background_status(self):
+        self.background_status = {
+            "status": "running",
+            "last_check": datetime.utcnow().isoformat(),
+            "active_tasks": self.task_queue.list_tasks() if hasattr(self.task_queue, "list_tasks") else []
+        }
 
-    
-    def shutdown(self) -> None:
-        if self.speech_manager:
-            self.speech_manager.stop()
-        if self.background_processor:
-            self.background_processor.stop()
-            logger.info("⛔ Background processor stopped")
-        if self.conversation_manager:
-            self.conversation_manager.summarize_and_archive()
-            logger.info("💾 Final conversation archived on shutdown")
-        logger.info("🔻 AI Manager shutdown complete")
+    def shutdown(self):
+        logger.info("Shutting down AIManager...")
+        self.vector_store_manager.persist()
+        logger.info("Shutdown complete.")

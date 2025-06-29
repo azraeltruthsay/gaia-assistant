@@ -4,95 +4,71 @@ structure_extractor.py
 Handles extracting code structure like imports, classes, functions, and variables.
 """
 
-import re
 import ast
 import logging
+from typing import List, Dict
 
-logger = logging.getLogger("GAIA")
+logger = logging.getLogger("GAIA.StructureExtractor")
 
-class StructureExtractor:
-    """Extracts structural information from code content."""
+def extract_structure(code: str, language: str = "python") -> Dict[str, List[Dict]]:
+    """
+    Extract high-level structure of the code (functions, classes).
 
-    def extract_structure(self, content: str, language: str) -> dict:
-        """
-        Extract code structure based on language.
+    Args:
+        code (str): Source code text
+        language (str): Programming language (default: python)
 
-        Args:
-            content: Code content
-            language: Detected language
+    Returns:
+        dict: Structure dictionary with line numbers
+    """
+    if language.lower() != "python":
+        logger.warning("⚠️ Structure extraction not implemented for non-Python.")
+        return {"functions": [], "classes": []}
 
-        Returns:
-            Dictionary with structure information
-        """
-        if language == 'python':
-            return self._extract_python_structure(content)
-        elif language in ['javascript', 'typescript']:
-            return self._extract_js_structure(content)
-        else:
-            return self._extract_generic_structure(content, language)
+    structure = {"functions": [], "classes": []}
 
-    def _extract_python_structure(self, content: str) -> dict:
-        """Extracts imports, classes, functions, and variables from Python code."""
-        structure = {
-            'imports': [],
-            'classes': [],
-            'functions': [],
-            'variables': []
-        }
+    try:
+        tree = ast.parse(code)
+        lines = code.splitlines()
 
-        try:
-            tree = ast.parse(content)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                structure["functions"].append({
+                    "type": "function",
+                    "name": node.name,
+                    "line_start": node.lineno - 1,
+                    "line_end": _get_end_line(node, lines)
+                })
+            elif isinstance(node, ast.ClassDef):
+                structure["classes"].append({
+                    "type": "class",
+                    "name": node.name,
+                    "line_start": node.lineno - 1,
+                    "line_end": _get_end_line(node, lines)
+                })
 
-            for node in ast.walk(tree):
-                if isinstance(node, ast.Import):
-                    for name in node.names:
-                        structure['imports'].append(name.name)
-                elif isinstance(node, ast.ImportFrom):
-                    module = node.module or ''
-                    for name in node.names:
-                        structure['imports'].append(f"{module}.{name.name}")
-                elif isinstance(node, ast.ClassDef):
-                    structure['classes'].append({
-                        'name': node.name,
-                        'methods': [m.name for m in node.body if isinstance(m, ast.FunctionDef)]
-                    })
-                elif isinstance(node, ast.FunctionDef):
-                    structure['functions'].append(node.name)
-                elif isinstance(node, ast.Assign):
-                    for target in node.targets:
-                        if isinstance(target, ast.Name):
-                            structure['variables'].append(target.id)
+        logger.debug("🧱 Structure parsed from code.")
 
-        except Exception as e:
-            logger.warning(f"Python AST parsing failed: {e}")
+    except Exception as e:
+        logger.error(f"❌ Failed to extract structure: {e}", exc_info=True)
 
-        return structure
+    return structure
 
-    def _extract_js_structure(self, content: str) -> dict:
-        """Extracts imports, classes, functions, and variables from JS/TS code."""
-        structure = {
-            'imports': [],
-            'classes': [],
-            'functions': [],
-            'variables': []
-        }
-
-        try:
-            structure['imports'] = re.findall(r'import\s+(?:{[^}]*}|[^{;]*)\s+from\s+[\'"]([^\'"]+)[\'"]', content)
-            structure['classes'] = [{'name': name, 'methods': []}
-                                    for name in re.findall(r'class\s+(\w+)', content)]
-            structure['functions'] = (re.findall(r'function\s+(\w+)', content) +
-                                      re.findall(r'const\s+(\w+)\s*=\s*\([^)]*\)\s*=>', content))
-            structure['variables'] = re.findall(r'(?:const|let|var)\s+(\w+)\s*=', content)
-        except Exception as e:
-            logger.warning(f"JS/TS structure parsing failed: {e}")
-
-        return structure
-
-    def _extract_generic_structure(self, content: str, language: str) -> dict:
-        """Provides basic stats for unknown languages."""
-        return {
-            'line_count': len(content.splitlines()),
-            'size_bytes': len(content.encode('utf-8')),
-            'language': language
-        }
+def _get_end_line(node, lines: List[str]) -> int:
+    """
+    Estimate end line by walking to the next sibling or end of file.
+    This is a best-effort guess due to AST limitations.
+    """
+    try:
+        start = node.lineno - 1
+        indent = len(lines[start]) - len(lines[start].lstrip())
+        for i in range(start + 1, len(lines)):
+            line = lines[i]
+            if line.strip() == "":
+                continue
+            current_indent = len(line) - len(line.lstrip())
+            if current_indent <= indent:
+                return i
+        return len(lines)
+    except Exception:
+        return start + 1

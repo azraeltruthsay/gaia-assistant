@@ -1,48 +1,54 @@
-import os
+import logging
 from flask import Flask
-from app.web.routes import web_bp
-from app.config import Config  # or whatever your config class is named
-from app.web.archives import archives_bp
+from app.models.ai_manager import AIManager
+from app.memory.session_manager import SessionManager
+from app.web.routes import web_bp, set_ai_manager
+from app.web.project_routes import projects_bp  # ✅ NEW
 
+# Optional: You could eventually pull this from a config file/env
+PORT = 6414
+DEBUG_MODE = False
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("GAIA_WEB")
+
+# Shared config object (singleton style)
+from app.config import Config
 config = Config()
 
 def create_app():
-    # Calculate base directory from this file's location
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    template_dir = os.path.join(base_dir, 'templates')
-    static_dir = os.path.join(base_dir, 'static')
+    app = Flask(__name__)
 
-    # Explicitly assign template and static paths
-    app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+    logger.info("🧪 Entered create_app()")
+    ai_manager = AIManager(config=config)
 
-    # Register blueprints
+    if not ai_manager.initialize():
+        raise RuntimeError("Failed to initialize AIManager")
+
+    logger.info("✅ AIManager initialized successfully.")
+    app.config["AI_MANAGER"] = ai_manager  # 🔧 For use in /api/projects/list
+
+    # Attach to route module
+    set_ai_manager(ai_manager)
+
+    # Perform session syncing, etc.
+    session_manager: SessionManager = ai_manager.session_manager
+    session_manager.sync_personas_with_behavior()
+
+    # Register web routes
     app.register_blueprint(web_bp)
-    app.register_blueprint(archives_bp)
+    app.register_blueprint(projects_bp)  # ✅ NEW
+
+    # Final debug info
+    logger.info("🚀 GAIA Web App initialized successfully")
+    logger.info(f"🧠 Active persona: {ai_manager.current_persona}\n")
+    logger.info("🧬 Tier I Identity Guardian and Knowledge Index loaded")
 
     return app
 
-
-def init_ai(app):
-    from app.models.ai_manager import AIManager
-    from app.behavior.session import SessionManager
-
-    app.logger.info("­ЪДа Creating AIManager...")
-    ai_manager = AIManager(config)
-
-    success = ai_manager.initialize()
-    
-    
-    if success:
-        app.config['AI_MANAGER_OBJECT'] = ai_manager
-        app.config['AI_MANAGER'] = ai_manager
-        session_manager = SessionManager(ai_manager)
-        app.config['GAIA_SESSION_MANAGER'] = session_manager
-        session_manager.sync_behaviors()
-        app.logger.info(f"­ЪДа Behavior Profile: {session_manager.report_current_personality()}")
-        app.config['GAIA_STATUS'] = {"initialized": True}
-        app.logger.info("✅ GAIA_STATUS set to initialized")
-        return True
-    else:
-        app.config['INIT_ERROR'] = "AI failed to initialize"
-        return False
-
+def start_app():
+    app = create_app()
+    logger.info("🧪 Entered start_app()")
+    logger.info(f"🌐 Starting Flask app on port {config.PORT}")
+    app.run(debug=config.DEBUG_MODE, host='0.0.0.0', port=config.PORT)

@@ -1,45 +1,94 @@
 # === Python ===
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*$py.class
+
+# C extensions
 *.so
 
+
 # === Environments ===
+# Virtual environment directories
 .venv/
+venv/
+env/
+ENV/
+
+# Environment variable files
 .env
 *.env
 
-# === OS/System Junk ===
-.DS_Store
-Thumbs.db
-desktop.ini
 
-# === Editor files ===
-.vscode/
-.idea/
+# === Distribution / Packaging ===
+# Build artifacts from tools like setuptools, wheel, etc.
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+
+# === Testing & Coverage ===
+# Reports and caches from testing frameworks
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
 
 # === LLM Models & Snapshots ===
+# Local model files and large data snapshots
 /app/model.gguf
-/app/shared/chroma_db/
 *.gguf
 *.ckpt
 *.pt
 *.pth
 *.bin
 
+
 # === Vector DB / Memory Artifacts ===
+# ChromaDB storage, generated summaries, and logs
+/app/shared/chroma_db/
 /app/knowledge/system-reference/code_summaries/
-/app/knowledge/system-reference/*.md
 /app/shared/gaia_code_snapshot.json
 /app/conversation_logs/
+/logs/
 *.log
 
-# === Compiled JS/CSS (if built locally) ===
-*.min.js
-*.min.css
 
-# === Other Caches ===
+# === OS & Editor Specific ===
+# System-generated metadata and IDE settings
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+
+
+# === Other Caches & Temporary Files ===
 *.sqlite
 *.sqlite3
 *.db
