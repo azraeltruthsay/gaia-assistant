@@ -1,0 +1,107 @@
+
+# GAIA Rescue-Shell Hardening Patch (2025-06-29)
+# ---------------------------------------------------------------------------
+# ① Snapshot step (run in your repo *before* applying this patch)
+#    git checkout -b rescue-shell-baseline
+#    git add -A && git commit -m "Snapshot before Geppitti hardening (2025-06-29)"
+#    # then create the working branch:
+#    git checkout -b rescue-shell-hardening
+# ---------------------------------------------------------------------------
+
+##############################################################################
+## gaia_rescue.py  –  add crash diagnostics & prompt logging               ##
+##############################################################################
+@@
+  1  \"\"\"GAIA minimal rescue shell.\"\"\"
++  2  # PATCH-2025-06-29 — diagnostic hardening
++  3  import faulthandler                # enable C-level crash tracebacks
+   4  import argparse, code, logging, sys
+@@
+   8  # ----------------------------------------------------------------------------
+   9  # Initialise logging & crash dump
+  10  faulthandler.enable()               # <-- new: seg-faults now print stack
+  11  logging.basicConfig(
+  12      level=logging.INFO,
+  13      format=\"%(levelname)s:%(name)s:%(message)s\",
+  14  )
+  15  logger = logging.getLogger(\"GAIA.Rescue\")
+@@
+  57              prompt = input(\"You > \").strip()
+@@
+  61              logger.info(\"↳ prompt=%r\", prompt)   # PATCH: log user prompt
+  62              try:
+- 63                  for token in ai.generate_response(prompt, stream_output=True):
+- 64                      sys.stdout.write(token)
+- 65                      sys.stdout.flush()
++ 63                  # PATCH: wrap generation in helper that logs ctx/tokens
++ 64                  from app.gaia_core.llm_wrappers import safe_generate
++ 65                  for token in safe_generate(ai.llm, prompt, stream_output=True):
++ 66                      sys.stdout.write(token)
++ 67                      sys.stdout.flush()
+  66              except Exception as e:               # catches Python-level errs
+@@
+  70                  print(\"\\n[ERROR]\", e)
+
+##############################################################################
+## app/gaia_core/llm_wrappers.py  – NEW FILE                               ##
+##############################################################################
+  1  \"\"\"Thin wrappers that add debug logging around llama-cpp calls.\"\"\"  # noqa: D400
+  2  # PATCH-2025-06-29 — diagnostic helper
+  3  import logging, time
+  4
+  5  logger = logging.getLogger(\"GAIA.LLM\")
+  6
+  7  def safe_generate(llm, *args, **kwargs):
+  8      \"\"\"Call `llm.create_completion` with context-size diagnostics.\"\"\"  # noqa: D401
+  9      ctx_size = getattr(llm, \"n_ctx\", getattr(llm, \"ctx_size\", \"?\"))  # llama-cpp attr
+ 10      logger.info(\"LLM call: ctx_size=%s, max_tokens=%s\", ctx_size, kwargs.get(\"max_tokens\"))
+ 11      start = time.perf_counter()
+ 12      try:
+ 13          return llm.create_completion(*args, **kwargs)
+ 14      finally:
+ 15          logger.info(\"LLM call completed in %.2fs\", time.perf_counter() - start)
+
+##############################################################################
+## tests/test_rescue_shell.py  – NEW FILE                                 ##
+##############################################################################
+  1  \"\"\"Smoke tests that guard the current working behaviour.\"\"\"  # noqa: D400
+  2  # Run with:  pytest -q
+  3  import subprocess, sys, pathlib
+  4
+  5  ROOT = pathlib.Path(__file__).resolve().parent.parent
+  6  RESCUE = ROOT / \"gaia_rescue.py\"
+  7
+  8  def _run(cmd: str, timeout: int = 40):
+  9      proc = subprocess.run(
+ 10          cmd.split(),
+ 11          stdout=subprocess.PIPE,
+ 12          stderr=subprocess.STDOUT,
+ 13          text=True,
+ 14          timeout=timeout,
+ 15      )
+ 16      return proc.returncode, proc.stdout
+ 17
+ 18  def test_boot_ok():
+ 19      code, out = _run(f\"{sys.executable} {RESCUE} --cmd ping\")
+ 20      assert code == 0 and \"GAIA\" in out
+ 21
+ 22  def test_self_reflect_once():
+ 23      code, out = _run(f\"{sys.executable} {RESCUE} --cmd \\\"Reflect\\\"\")
+ 24      assert code == 0
+
+##############################################################################
+## ai_manager.py  – swap direct llama call for safe_generate               ##
+##############################################################################
+@@
+-     output = self.llm.create_completion(**kwargs)
++     from app.gaia_core.llm_wrappers import safe_generate  # PATCH-2025-06-29
++     output = safe_generate(self.llm, **kwargs)
+@@
+
+# ---------------------------------------------------------------------------
+# ③ After patching
+#    • Activate venv ➜  pip install pytest
+#    • Run        ➜  pytest -q
+#    • Reproduce  ➜  python gaia_rescue.py --cmd \"Self-reflect on ping\"
+#      Crash logs will now show ctx/tokens and C-traceback if llama-cpp seg-faults.
+# ---------------------------------------------------------------------------
