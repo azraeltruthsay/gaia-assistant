@@ -17,7 +17,7 @@ def fast_intent_check(text):
     # Reflexes—no model call
     if text in {"exit", "quit", "bye"}:
         return "exit"
-    if text.startswith("help") or text in {"?", "h"}:
+    if text.startswith("help") or text in {"", "h"}:
         return "help"
     if text.startswith("ls ") or text.startswith("cat ") or text.startswith("pwd"):
         return "shell"

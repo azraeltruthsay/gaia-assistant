@@ -3,7 +3,7 @@ import logging
 from flask import Blueprint, request, jsonify, current_app, render_template
 
 from app.models.ai_manager import AIManager
-from app.behavior.intent_detection import detect_intent
+from app.cognition.nlu.intent_detection import detect_intent
 from app.memory.session_manager import SessionManager
 from app.ethics.core_identity_guardian import CoreIdentityGuardian
 from app.ethics.ethical_sentinel import EthicalSentinel

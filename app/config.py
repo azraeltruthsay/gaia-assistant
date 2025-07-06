@@ -9,7 +9,8 @@ BASE_DIR = Path(__file__).parent.parent
 KNOWLEDGE_DIR = BASE_DIR / "knowledge"
 PROJECTS_DIR = KNOWLEDGE_DIR / "projects"
 PERSONAS_DIR = KNOWLEDGE_DIR / "personas"
-LOGS_DIR = KNOWLEDGE_DIR / "logs"
+LOGS_DIR = BASE_DIR / "logs"
+TS_DIR = KNOWLEDGE_DIR / "logs" / "thoughtstreams"
 ARTIFACTS_DIR = KNOWLEDGE_DIR / "artifacts"
 VECTORDB_DIR = KNOWLEDGE_DIR / "vectordb"
 COREDOCS_DIR = KNOWLEDGE_DIR / "core_docs"
@@ -25,6 +26,7 @@ class Config:
         self.PERSONAS_DIR = PERSONAS_DIR
         self.PROJECTS_DIR = PROJECTS_DIR
         self.LOGS_DIR = LOGS_DIR
+        self.TS_DIR = TS_DIR
         self.ARTIFACTS_DIR = ARTIFACTS_DIR
         self.VECTORDB_DIR = VECTORDB_DIR
         self.COREDOCS_DIR = COREDOCS_DIR
@@ -37,9 +39,15 @@ class Config:
         self.top_p = self.constants.get("top_p", 0.95)
         self.max_tokens = self.constants.get("max_tokens", 512)
         self.n_gpu_layers = self.constants.get("n_gpu_layers", 0)
+        self.SHARED_DIR = "app/shared"
+        self.SESSIONS_FILE = os.path.join(self.SHARED_DIR, "sessions.json")
+        self.TOPIC_CACHE_FILE = os.path.join(self.SHARED_DIR, "topic_cache.json")
+        self.LAST_ACTIVITY_FILE = os.path.join(self.SHARED_DIR, "last_activity.timestamp")
         self.primitives = self.constants.get("primitives", ["read", "write", "vector_query", "shell"])
         self.SAFE_EXECUTE_FUNCTIONS = self.constants.get("SAFE_EXECUTE_FUNCTIONS", [])
         self.reflection_guidelines = self.constants.get("reflection_guidelines", [])
+        self.reflection_max_iterations = self.constants.get("reflection_max_iterations", 3)
+        self.reflection_confidence_threshold = self.constants.get("reflection_confidence_threshold", 90)
         self.persona_defaults = self.constants.get("persona_defaults", {})
         self.AUTO_WRITE = self.constants.get("AUTO_WRITE", False)
         self.prompt_config = self.constants.get("prompt_config", {})
@@ -52,6 +60,11 @@ class Config:
         self.lite_backend = self.constants.get("lite_backend", None)
         self.OBSERVER_TOKEN_THRESHOLD = self.constants.get("OBSERVER_TOKEN_THRESHOLD", 10)
         self.LOGICAL_STOP_PUNCTUATION = self.constants.get("LOGICAL_STOP_PUNCTUATION", [".", "!", "?", "\n"])
+        self.identity_file_path = self.SYSTEM_REF_DIR / "core_identity.json"
+
+        # Compatibility shims
+        self.MAX_TOKENS = self.max_tokens
+        self.RESPONSE_BUFFER = self.constants.get("response_buffer", 256)
 
     def _load_constants(self, override_path=None):
         path = Path(override_path) if override_path else CONSTANTS_PATH
@@ -93,6 +106,7 @@ class Config:
                 "PERSONAS_DIR": str(self.PERSONAS_DIR),
                 "PROJECTS_DIR": str(self.PROJECTS_DIR),
                 "LOGS_DIR": str(self.LOGS_DIR),
+                "TS_DIR": str(self.TS_DIR),
                 "ARTIFACTS_DIR": str(self.ARTIFACTS_DIR),
                 "VECTORDB_DIR": str(self.VECTORDB_DIR),
                 "COREDOCS_DIR": str(self.COREDOCS_DIR),

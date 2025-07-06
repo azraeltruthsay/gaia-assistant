@@ -4,126 +4,223 @@
     <meta charset="UTF-8">
     <title>GAIA Web Chat</title>
     <style>
-        body { font-family: sans-serif; background: #f5f7fa; margin: 0; padding: 2em; }
-        #chatbox { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px #0001; padding: 1.5em; max-width: 700px; margin: 2em auto; }
-        #output { min-height: 5em; border: 1px solid #ccc; padding: 1em; border-radius: 6px; background: #fafcff; margin-bottom: 1em; font-size: 1.1em; }
-        #userinput { width: 80%; padding: 0.7em; font-size: 1em; border-radius: 6px; border: 1px solid #bbb; }
-        #sendbtn { padding: 0.7em 1.2em; font-size: 1em; border-radius: 6px; background: #3366ee; color: #fff; border: none; margin-left: 0.5em; cursor: pointer; }
-        #sendbtn:active { background: #254ab3; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #chatbox {
+            width: 90%;
+            max-width: 800px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #252526;
+            border: 1px solid #3c3c3c;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+        h2 {
+            text-align: center;
+            padding: 1rem;
+            margin: 0;
+            border-bottom: 1px solid #3c3c3c;
+            background-color: #333333;
+        }
+        #output {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            word-wrap: break-word;
+        }
+        .message {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .user-message {
+            color: #9cdcfe;
+            font-weight: bold;
+        }
+        .gaia-message {
+            color: #ce9178;
+        }
+        #controls {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-top: 1px solid #3c3c3c;
+            background-color: #333333;
+        }
+        #newchatbtn {
+            padding: 0.7em 1.2em;
+            font-size: 1em;
+            border-radius: 6px;
+            background: #6c757d;
+            color: #fff;
+            border: none;
+            margin-right: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #newchatbtn:hover {
+            background: #5a6268;
+        }
+        #chatform {
+            flex-grow: 1;
+            display: flex;
+        }
+        #userinput {
+            flex-grow: 1;
+            padding: 0.7em;
+            border-radius: 6px;
+            border: 1px solid #3c3c3c;
+            background-color: #3c3c3c;
+            color: #d4d4d4;
+            font-size: 1em;
+        }
+        #sendbtn {
+            padding: 0.7em 1.5em;
+            margin-left: 0.5em;
+            border-radius: 6px;
+            border: none;
+            background-color: #0e639c;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #sendbtn:hover {
+            background-color: #1177bb;
+        }
+        #sendbtn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
     <div id="chatbox">
         <h2>GAIA Web Chat</h2>
         <div id="output"></div>
-        <form id="chatform">
-            <input type="text" id="userinput" autocomplete="off" placeholder="Type a message..." required>
-            <button type="submit" id="sendbtn">Send</button>
-        </form>
-        {% if warning %}<p style="color:red;">{{ warning }}</p>{% endif %}
+        <div id="controls">
+            <button id="newchatbtn" title="Start a new conversation">New Chat</button>
+            <form id="chatform">
+                <input type="text" id="userinput" autocomplete="off" placeholder="Type a message..." required>
+                <button type="submit" id="sendbtn">Send</button>
+            </form>
+        </div>
+        {% if warning %}<p style="color:red; padding: 0 1rem;">{{ warning }}</p>{% endif %}
     </div>
+
     <script>
         const form = document.getElementById('chatform');
         const input = document.getElementById('userinput');
         const output = document.getElementById('output');
-        let controller = null; // To allow aborting the fetch request
+        const newChatBtn = document.getElementById('newchatbtn');
+        const sendBtn = document.getElementById('sendbtn');
+        let controller = null;
+
+        // --- Session Management Logic ---
+        // This function gets the session ID from the browser's local storage.
+        // If it doesn't exist, it creates a new unique ID and stores it.
+        function getOrSetSessionId() {
+            let sessionId = localStorage.getItem('gaiaSessionId');
+            if (!sessionId) {
+                // Create a reasonably unique ID for the new session
+                sessionId = 'session_web_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
+                localStorage.setItem('gaiaSessionId', sessionId);
+                console.log("New session started:", sessionId);
+            }
+            return sessionId;
+        }
+
+        // The "New Chat" button clears the session ID and reloads the page.
+        newChatBtn.onclick = function() {
+            if (confirm("Are you sure you want to start a new chat? This will clear the current conversation history.")) {
+                localStorage.removeItem('gaiaSessionId');
+                location.reload(); // Reload the page to start fresh
+            }
+        };
+        // --- End Session Management Logic ---
+
+        // Helper to add messages to the chat window
+        function addMessageToOutput(role, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+
+            const roleSpan = document.createElement('span');
+            roleSpan.className = role === 'user' ? 'user-message' : 'gaia-message';
+            roleSpan.textContent = role === 'user' ? 'You: ' : 'GAIA: ';
+
+            const textNode = document.createTextNode(text);
+
+            messageDiv.appendChild(roleSpan);
+            messageDiv.appendChild(textNode);
+            output.appendChild(messageDiv);
+            output.scrollTop = output.scrollHeight; // Auto-scroll to the bottom
+            return messageDiv;
+        }
 
         form.onsubmit = async function(e) {
             e.preventDefault();
+            const userMessage = input.value.trim();
+            if (!userMessage) return;
 
-            if (controller) {
-                controller.abort(); // Abort previous stream if a new one starts
-            }
+            // Get the session ID for this request
+            const sessionId = getOrSetSessionId();
+
+            addMessageToOutput('user', userMessage);
+            input.value = '';
+            sendBtn.disabled = true;
+
+            const gaiaMessageDiv = addMessageToOutput('gaia', '');
+            // Get the text node to append streaming content to
+            let gaiaTextNode = gaiaMessageDiv.childNodes[1];
 
             controller = new AbortController();
             const signal = controller.signal;
 
-            output.textContent = ""; // Clear previous output
-            const userMessage = input.value;
-            input.value = ""; // Clear input field immediately
-            input.disabled = true; // Disable input during streaming
-
             try {
                 const response = await fetch("/chat", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ message: userMessage }),
-                    signal: signal // Pass the abort signal to fetch
+                    headers: { "Content-Type": "application/json" },
+                    // Send the session ID along with the message
+                    body: JSON.stringify({ message: userMessage, session_id: sessionId }),
+                    signal: signal
                 });
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                // Get a ReadableStream from the response body
                 const reader = response.body.getReader();
-                const decoder = new TextDecoder("utf-8");
-                let buffer = ""; // Buffer to accumulate partial SSE messages
+                const decoder = new TextDecoder();
 
                 while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) {
-                        console.log("Stream finished.");
-                        break;
-                    }
-
-                    buffer += decoder.decode(value, { stream: true });
-
-                    // Process complete SSE messages from the buffer
-                    // SSE messages are terminated by two newline characters (\n\n)
-                    let lastIndex = 0;
-                    while ((lastIndex = buffer.indexOf('\n\n', lastIndex)) !== -1) {
-                        const message = buffer.substring(0, lastIndex);
-                        buffer = buffer.substring(lastIndex + 2); // Move buffer past the processed message
-
-                        let eventType = 'message'; // Default SSE event type
-                        let eventData = message;
-
-                        // Check for custom event type
-                        if (message.startsWith('event:')) {
-                            const eventLineEnd = message.indexOf('\n');
-                            eventType = message.substring(6, eventLineEnd).trim();
-                            eventData = message.substring(eventLineEnd + 1);
-                        }
-
-                        // Extract data payload (always starts with "data:")
-                        if (eventData.startsWith('data:')) {
-                            eventData = eventData.substring(5).trim();
-                        }
-
-                        if (eventType === 'interruption') {
-                            const parsedData = JSON.parse(eventData);
-                            const reason = parsedData.reason || "Stream interrupted by observer.";
-                            output.innerHTML += `<br><strong style="color: #ff6b6b;">--- ${reason} ---</strong>`;
-                            controller.abort(); // Stop the stream on interruption
-                            break; // Exit the while loop
-                        } else if (eventType === 'error') {
-                            const parsedData = JSON.parse(eventData);
-                            output.textContent += `\n[Server Error: ${parsedData.message}]`;
-                            controller.abort();
-                            break;
-                        } else { // Default 'message' event (for tokens)
-                            const token = JSON.parse(eventData); // Tokens are JSON-encoded strings
-                            output.textContent += token;
-                            // Scroll to bottom to keep new text in view
-                            output.scrollTop = output.scrollHeight;
-                        }
-                        lastIndex = 0; // Reset lastIndex to start search from beginning of new buffer
-                    }
-
-                    if (signal.aborted) break; // Check if the stream was aborted during processing
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    gaiaTextNode.textContent += chunk;
+                    output.scrollTop = output.scrollHeight;
                 }
+
             } catch (error) {
-                if (error.name !== 'AbortError') { // Ignore abort errors, they are intentional
-                    output.textContent += `\n[Error: ${error.message}]`; // Display error to user
-                    console.error("Fetch error:", error); // Log detailed error to console
+                if (error.name === 'AbortError') {
+                    console.log('Fetch aborted by user.');
+                } else {
+                    console.error('Fetch error:', error);
+                    gaiaTextNode.textContent += "\n\n[Error: Could not connect to GAIA.]";
                 }
             } finally {
-                input.disabled = false; // Re-enable input field
-                input.focus(); // Focus input field for next message
-                controller = null; // Clear the controller
+                controller = null;
+                sendBtn.disabled = false;
+                input.focus();
             }
         };
     </script>

@@ -74,6 +74,7 @@ coverage.xml
 /app/shared/chroma_db/
 /app/knowledge/system-reference/code_summaries/
 /app/shared/gaia_code_snapshot.json
+/app/shared/sessions.json # Add this line
 /app/conversation_logs/
 /logs/
 *.log

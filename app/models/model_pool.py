@@ -47,9 +47,6 @@ class ModelPool:
             except Exception as e:
                 logger.warning(f"⚠️ Failed to load Lite model: {e}")
 
-        # --- MODIFICATION START ---
-        # The following blocks were moved out of the `if self.config.lite_model_path:` block.
-
         # Load the embedding model into the pool
         try:
             logger.info("🔹 Loading Embedding model")
@@ -59,19 +56,6 @@ class ModelPool:
             self.model_status["embed"] = "idle"
         except Exception as e:
             logger.error(f"❌ Failed to load Embedding model: {e}")
-
-        # Load default persona after models are loaded
-        try:
-            default_persona_name = self.config.persona_name
-            loaded_persona_data = self.persona_manager.load_persona(default_persona_name)
-            if loaded_persona_data:
-                self.active_persona_obj = PersonaAdapter(loaded_persona_data, self.config)
-                logger.info(f"✅ Default persona '{default_persona_name}' loaded into ModelPool.")
-            else:
-                logger.warning(f"⚠️ Could not load default persona '{default_persona_name}'.")
-        except Exception as e:
-            logger.error(f"❌ Error loading default persona into ModelPool: {e}")
-        # --- MODIFICATION END ---
 
     def get(self, name: str):
         model = self.models.get(name)
@@ -96,6 +80,23 @@ class ModelPool:
     def get_active_persona(self) -> PersonaAdapter:
         """Returns the currently active PersonaAdapter object."""
         return self.active_persona_obj
+    
+    def set_persona(self, persona):
+        """
+        Make the given persona object discoverable to code that calls
+        `model_pool.get_active_persona()` or inspects `model_pool.persona_name`.
+        """
+        if isinstance(persona, dict):
+            self.active_persona_obj = PersonaAdapter(persona, self.config)
+        elif isinstance(persona, PersonaAdapter):
+            self.active_persona_obj = persona
+        else:
+            logger.error(f"Invalid persona type: {type(persona)}")
+            return
+
+        # Best-effort human label
+        self.persona_name = getattr(self.active_persona_obj, "name", getattr(self.active_persona_obj, "id", "unknown"))
+        logging.getLogger(__name__).debug("🔄 Active persona set to %s", self.persona_name)
 
 # Global instance
 model_pool = ModelPool()

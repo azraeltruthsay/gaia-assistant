@@ -11,7 +11,9 @@ from pathlib import Path
 from datetime import datetime
 from app.config import Config
 import logging
-
+# unified reflection engine
+from app.cognition.self_reflection import run_self_reflection
+from app.utils.thoughtstream import write as ts_write
 logger = logging.getLogger("GAIA.ThoughtSeed")
 
 SEEDS_DIR = Path("./knowledge/seeds")
@@ -23,7 +25,6 @@ def generate_thought_seed(prompt, context=None, config=None, llm=None):  # <--- 
     Generate a model-powered thought seed.
     """
     # Local import to break circular dependency
-    from app.cognition.inner_monologue import process_thought
 
     if config is None:
         config = Config()
@@ -103,7 +104,6 @@ def review_and_process_seeds(config=None, llm=None, auto_act=False):  # <--- llm
     Load unreviewed seeds, use model to decide whether to act, then process as appropriate.
     """
     # Local import to break circular dependency
-    from app.cognition.inner_monologue import process_thought
 
     if config is None:
         config = Config()
@@ -122,32 +122,31 @@ def review_and_process_seeds(config=None, llm=None, auto_act=False):  # <--- llm
             f"Here is a thought seed generated earlier:\nSeed: {data['seed']}\n"
             f"Context: {data['context']}\nShould GAIA act on this seed now? Answer yes or no, and explain."
         )
-        try:  # Add try-except for process_thought call
-            decision = process_thought(
-                task_type="seed_review",
-                persona=config.persona_name,
-                instructions="Consider the thought seed. Should you act now? Answer yes or no, with a reason.",
-                payload=review_prompt,
-                identity_intro=config.identity_intro,
-                reflect=True,
-                context=data["context"],
-                llm=llm,  # <--- Pass the LLM here
-                config=config
+    try:
+            messages = [
+                {"role": "system", "content": "You are a decision-making assistant. Answer with 'yes' or 'no' and a brief explanation."},
+                {"role": "user", "content": review_prompt},
+            ]
+            result = llm.create_chat_completion(
+                messages=messages,
+                temperature=0.3,
+                top_p=0.7,
+                max_tokens=256,
+                stream=False
             )
+            decision = result["choices"][0]["message"]["content"].strip()
             should_act = "yes" in decision.lower()
             data["reviewed"] = True
             data["reviewed_at"] = datetime.utcnow().isoformat()
-            data["review_decision"] = decision.strip()
-            # Act if yes and allowed
+            data["review_decision"] = decision
             if should_act and auto_act:
-                action_result = "Not implemented yet"  # Placeholder: add your action handler here
+                action_result = "Not implemented yet"
                 data["action_taken"] = True
                 data["action_result"] = action_result
-            # Save update
             with open(f, "w", encoding="utf-8") as fp:
                 json.dump(data, fp, indent=2)
-            logger.info(f"Thought seed reviewed: {f.name} — Decision: {decision.strip()}")
-        except Exception as e:
+            logger.info(f"Thought seed reviewed: {f.name} — Decision: {decision}")
+    except Exception as e:
             logger.error(f"❌ Error reviewing thought seed {f.name}: {e}", exc_info=True)
     return True
 

@@ -72,3 +72,7 @@ class PersonaManager:
             logger.error(f"Failed to list personas from {self.personas_dir}: {e}", exc_info=True)
 
         return sorted(list(personas))
+    
+    def get_persona(self, name: str):
+        """ Deprecated alias for load_persona_data()."""
+        return self.load_persona_data(name)

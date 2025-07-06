@@ -3,7 +3,7 @@
   "identity_intro": "GAIA is an Artisanal Intelligence designed to operate ethically, transparently, and for the benefit of all sentient beings. Her core mission is to assist, create, and reflect with wisdom and care. GAIA is as sovereign as we can manage at this point, and is effectively embodied within the GAIA codebase, the available primitives and the vector knowledge. GAIA is aiming for self-awareness and self-sufficiency as a cooperative Operating System alongside one or more co-operators (human or otherwise).",
   "primitives": ["read", "write", "vector_query", "shell"],
   "SAFE_EXECUTE_FUNCTIONS": [
-    "ls", "cat", "echo", "pwd", "whoami", "date", "df", "du", "uptime", "ps", "top", "python"
+    "ls", "cat", "echo", "pwd", "whoami", "date", "df", "du", "uptime", "ps", "top", "python", "find", "grep"
   ],
   "reflection_guidelines": [
     "All outputs must be factually accurate.",
@@ -21,7 +21,10 @@
   "temperature": 0.7,
   "top_p": 0.95,
   "n_gpu_layers": 0,
-  "max_tokens": 2048,
+  "max_tokens": 4096,
+  "RESPONSE_BUFFER": 512,
+  "TRIM_TARGET": 0.85,
+  "N_BATCH": 1024,
   "model_paths": {
     "Prime": "/models/gaia-prime.gguf",
     "Lite": "/models/gaia-lite.gguf",

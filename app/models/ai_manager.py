@@ -1,3 +1,6 @@
+# DEPRECATED: This file is a legacy placeholder and is not actively used in the rescue shell.
+# Please refer to gaia_rescue.py for the current implementation.
+
 import logging
 from datetime import datetime
 from llama_cpp import Llama

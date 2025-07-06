@@ -1,112 +1,117 @@
 """
-external_voice.py -- Handles all inbound and outbound external communication for GAIA,
-including chat input, output, streaming, observer notifications, and session logging.
-This module is the *sole* entry and exit for all chat-based interactions with GAIA.
+external_voice.py — handles all inbound/outbound chat traffic for GAIA
+(streaming, observer hooks, basic logging).  This module is the *sole*
+entry and exit for chat-based interactions.
 """
-# /home/azrael/Project/gaia-assistant/app/cognition/external_voice.py
+from __future__ import annotations
 
-import os
-import sys
-import logging
 import contextlib
 import json
+import logging
+import os
 import queue
+import sys
 import threading
 from datetime import datetime
+from typing import Dict, List, Optional
+
+from app.config import Config
 from app.utils.prompt_builder import build_prompt
-from app.cognition import inner_monologue
 from app.utils.stream_observer import StreamObserver
 
 logger = logging.getLogger("GAIA.ExternalVoice")
 
-llama_log_path = "/gaia-assistant/logs/llama_cpp.log"
-chat_log_path = "/gaia-assistant/logs/chat_session.log"
-os.makedirs(os.path.dirname(llama_log_path), exist_ok=True)
-os.makedirs(os.path.dirname(chat_log_path), exist_ok=True)
+cfg = Config()
+LLAMA_LOG_PATH = os.path.join(cfg.LOGS_DIR, "llama_cpp.log")
+CHAT_LOG_PATH = os.path.join(cfg.LOGS_DIR, "chat_session.log")
+os.makedirs(cfg.LOGS_DIR, exist_ok=True)
 
 
+# --------------------------------------------------------------------------- #
+# stderr suppression helper (llama.cpp progress bars)
+# --------------------------------------------------------------------------- #
 @contextlib.contextmanager
-def suppress_llama_stderr():
+def suppress_llama_stderr() -> None:
     """
-    A context manager to temporarily redirect C-level stderr to a log file.
-    This is necessary to capture the progress bars from llama.cpp, which are
-    printed to stderr, without affecting the main application's stdout.
+    Temporarily redirect C-level stderr (llama.cpp progress bars) to a file so
+    they don't pollute the interactive CLI.
     """
-    original_stderr_fd = sys.stderr.fileno()
-    saved_stderr_fd = os.dup(original_stderr_fd)
-
+    original_fd = sys.stderr.fileno()
+    saved_fd = os.dup(original_fd)
     try:
-        # Open the log file and redirect stderr to it
-        with open(llama_log_path, 'a', encoding='utf-8') as log_file:
-            os.dup2(log_file.fileno(), original_stderr_fd)
+        with open(LLAMA_LOG_PATH, "a", encoding="utf-8") as fh:
+            os.dup2(fh.fileno(), original_fd)
             yield
     finally:
-        # Restore original stderr and close the saved descriptor
-        os.dup2(saved_stderr_fd, original_stderr_fd)
-        os.close(saved_stderr_fd)
+        os.dup2(saved_fd, original_fd)
+        os.close(saved_fd)
 
 
-def log_chat_entry(user_input: str, assistant_output: str):
-    """Appends a full user/assistant turn to the session log."""
-    timestamp = datetime.now().isoformat()
-    with open(chat_log_path, 'a', encoding='utf-8') as log:
-        log.write(f"[{timestamp}]\nUser > {user_input}\nGAIA > {assistant_output}\n\n")
-
-
+# --------------------------------------------------------------------------- #
+# ExternalVoice
+# --------------------------------------------------------------------------- #
 class ExternalVoice:
     def __init__(
-            self,
-            model,
-            model_pool,
-            config,
-            thought: str = None,
-            messages: list = None,
-            context: dict = None,
-            source: str = "web",
-            observer: StreamObserver = None
-    ):
+        self,
+        model,
+        model_pool,
+        config: Config,
+        thought: Optional[str] = None,
+        messages: Optional[List[Dict]] = None,
+        context: Optional[Dict] = None,
+        session_id: str = "shell",
+        source: str = "web",
+        observer: Optional[StreamObserver] = None,
+    ) -> None:
         self.model = model
         self.model_pool = model_pool
         self.config = config
         self.thought = thought
         self.messages = messages
         self.context = context or {}
+        self.session_id = session_id
         self.source = source
         self.observer = observer
-        self.logical_stop_punctuation = self.config.LOGICAL_STOP_PUNCTUATION
-        self.observer_token_threshold = self.config.OBSERVER_TOKEN_THRESHOLD
 
-    def stream_response(self, user_input: str = None):
-        """
-        A generator that yields tokens from the LLM response stream.
-        This version uses a worker thread to isolate the noisy C++ library output,
-        ensuring the main thread's stdout is not suppressed.
-        """
+        self.logical_stop_punct = self.config.LOGICAL_STOP_PUNCTUATION
+        self.observer_threshold = self.config.OBSERVER_TOKEN_THRESHOLD
+
+    # --------------------------------------------------------------------- #
+    # streaming
+    # --------------------------------------------------------------------- #
+    def stream_response(self, user_input: Optional[str] = None):
+        """Generator that yields tokens (or events) from the LLM stream."""
         if user_input:
             self.thought = user_input
 
         active_persona = self.model_pool.get_active_persona()
 
-        prompt_context = {
-            "user_input": self.thought,
-            "history": self.context.get("history", [])
-        }
+        # ---- Build persona instructions block safely -------------------- #
+        persona_instructions = ""
         if active_persona:
-            prompt_context.update({
-                "persona": active_persona.name,
-                "instructions": active_persona.instructions,
-                "persona_template": active_persona.template,
-                "persona_traits": active_persona.traits,
-            })
+            tmpl = getattr(active_persona, "template", "")
+            instr = getattr(active_persona, "instructions", [])
+            if isinstance(instr, list):
+                instr_block = "\n".join(instr)
+            else:  # already a str
+                instr_block = str(instr)
+            persona_instructions = f"{tmpl}\n\n{instr_block}".strip()
+
+        prompt_context = {
+            "config": self.config,
+            "persona_instructions": persona_instructions,
+            "session_id": self.session_id,
+            "history": self.context.get("history", []),
+            "user_input": self.thought,
+        }
 
         self.messages = build_prompt(context=prompt_context)
 
-        q = queue.Queue()
+        # ---- Launch model stream in a worker thread ---------------------- #
+        q: "queue.Queue[object]" = queue.Queue()
 
-        def worker():
-            """This function runs in a separate thread."""
+        def worker() -> None:
             try:
-                # The model call and iteration happen here, inside the suppressed context.
                 with suppress_llama_stderr():
                     token_stream = self.model.create_chat_completion(
                         messages=self.messages,
@@ -117,16 +122,16 @@ class ExternalVoice:
                     )
                     for chunk in token_stream:
                         q.put(chunk)
-            except Exception as e:
-                q.put(e)
+            except Exception as exc:  # pass exception back
+                q.put(exc)
             finally:
-                q.put(None)
+                q.put(None)  # sentinel
 
-        thread = threading.Thread(target=worker)
-        thread.start()
+        threading.Thread(target=worker, daemon=True).start()
 
-        full_response_buffer = []
-        token_count_since_last_check = 0
+        # ---- Consume queue, yield tokens -------------------------------- #
+        buffer: List[str] = []
+        since_check = 0
 
         while True:
             item = q.get()
@@ -135,58 +140,58 @@ class ExternalVoice:
             if isinstance(item, Exception):
                 raise item
 
-            chunk = item
-            token_str = chunk["choices"][0]["delta"].get("content", "")
-            if not token_str:
+            token = item["choices"][0]["delta"].get("content", "")
+            if not token:
                 continue
 
-            full_response_buffer.append(token_str)
-            yield token_str
+            buffer.append(token)
+            yield token
 
-            token_count_since_last_check += 1
-            perform_observer_check = token_count_since_last_check >= self.observer_token_threshold or \
-                                     any(p in token_str for p in self.logical_stop_punctuation)
+            since_check += 1
+            need_check = (
+                since_check >= self.observer_threshold
+                or any(p in token for p in self.logical_stop_punct)
+            )
 
-            if self.observer and perform_observer_check:
-                current_output = "".join(full_response_buffer)
-                decision = self.observer.observe(current_output, prompt_context)
-                token_count_since_last_check = 0
-
+            if self.observer and need_check:
+                current = "".join(buffer)
+                decision = self.observer.observe(current, prompt_context)
+                since_check = 0
                 if decision == "interrupt":
-                    reason = getattr(self.observer, 'interrupt_reason', "Interrupted by observer.")
-                    logger.info(f"Stream interrupted by observer. Reason: {reason}")
+                    reason = getattr(self.observer, "interrupt_reason", "observer interrupt")
+                    logger.info("Stream interrupted: %s", reason)
                     yield {"event": "interruption", "data": reason}
                     break
 
-        thread.join()
-
-    def generate_full_response(self, user_input: str = None) -> str:
-        """Generates the full model response by consuming the stream_response generator."""
-        output_chunks = []
-        for chunk in self.stream_response(user_input):
-            if isinstance(chunk, dict) and chunk.get("event") == "interruption":
-                output_chunks.append(f"\n\n--- {chunk['data']} ---")
+    # --------------------------------------------------------------------- #
+    # convenience helpers
+    # --------------------------------------------------------------------- #
+    def generate_full_response(self, user_input: Optional[str] = None) -> str:
+        chunks: List[str] = []
+        for item in self.stream_response(user_input):
+            if isinstance(item, dict) and item.get("event") == "interruption":
+                chunks.append(f"\n\n--- {item['data']} ---")
                 break
-            output_chunks.append(str(chunk))
-        return "".join(output_chunks)
+            chunks.append(str(item))
+        return "".join(chunks)
 
     @classmethod
-    def from_thought(cls, model, thought: str, **kwargs):
-        return cls(model=model, thought=thought, **kwargs)
+    def from_thought(cls, model, thought: str, **kw):
+        return cls(model=model, thought=thought, **kw)
 
     @classmethod
-    def from_messages(cls, model, messages: list, **kwargs):
-        return cls(model=model, messages=messages, **kwargs)
+    def from_messages(cls, model, messages: List[Dict], **kw):
+        return cls(model=model, messages=messages, **kw)
 
     @classmethod
-    def one_shot(cls, model, prompt: str, **kwargs) -> str:
-        """Generates a single, non-streamed response."""
+    def one_shot(cls, model, prompt: str, **kw) -> str:
+        """Non-streamed convenience wrapper."""
         messages = build_prompt(context={"user_input": prompt})
         with suppress_llama_stderr():
-            result = model.create_chat_completion(
+            res = model.create_chat_completion(
                 messages=messages,
-                max_tokens=kwargs.get("max_tokens", 512),
-                temperature=kwargs.get("temperature", 0.7),
-                top_p=kwargs.get("top_p", 0.95),
+                max_tokens=kw.get("max_tokens", 52),
+                temperature=kw.get("temperature", 0.7),
+                top_p=kw.get("top_p", 0.95),
             )
-        return result["choices"][0]["message"]["content"]
+        return res["choices"][0]["message"]["content"]
