@@ -75,13 +75,20 @@ class AgentCore:
                 yield {"type": "action_blocked", "command": command, "reason": refined_command}
                 continue
 
-            # 4. Execute the refined command
+            # 4. Execute only valid ai.*(...) snippets from the refined command
             try:
-                yield {"type": "action_executing", "command": refined_command}
-                eval(refined_command, {"ai": self.ai_manager})
-                yield {"type": "action_success", "command": refined_command}
+                # Extract a single ai.command(...) call
+                match = re.search(r"\b(ai\.[\w_]+\([^)]*\))", refined_command)
+                if match:
+                    code_snippet = match.group(1)
+                    yield {"type": "action_executing", "command": code_snippet}
+                    eval(code_snippet, {"ai": self.ai_manager})
+                    yield {"type": "action_success", "command": code_snippet}
+                else:
+                    logger.warning(f"No executable ai.* snippet found in refined action: {refined_command}")
+                    yield {"type": "action_blocked", "command": refined_command, "reason": "no valid ai command"}
             except Exception as e:
-                logger.error(f"Action failed: {refined_command}\n   Error: {e}", exc_info=True)
+                logger.error(f"Action failed executing snippet from: {refined_command}\nError: {e}", exc_info=True)
                 yield {"type": "action_failure", "command": refined_command, "error": str(e)}
 
         yield {"type": "action_end"}
@@ -155,11 +162,27 @@ class AgentCore:
         planning_context = {"user_input": user_input, "intent": intent_result.get("intent"), "history_summary": messages[1]["content"]}
         initial_plan_prompt = f"Based on the user's request and the conversation history, create a concise plan to address their needs. The plan should be a short, high-level outline of the steps to take. User Request: {user_input}"
         
-        # Generate the initial plan
+        # --- Pre-generation Planning and Reflection ---
+        # Summarize planning context to respect token budget
+        from app.utils.prompt_builder import count_tokens
+        from app.memory.conversation.summarizer import ConversationSummarizer
+        MAX_PLAN_TOKENS = getattr(self.config, 'max_plan_tokens', 1024)
+        plan_messages = messages
+        plan_token_count = count_tokens(plan_messages)
+        if plan_token_count > MAX_PLAN_TOKENS:
+            logger.info(f"AgentCore: summarizing planning context of {plan_token_count} tokens (threshold {MAX_PLAN_TOKENS})")
+            summarizer = ConversationSummarizer(self.ai_manager)
+            summary = summarizer.generate_summary(plan_messages)
+            plan_messages = [{
+                "role": "system",
+                "content": f"Summary of prior context: {summary}"
+            }]
         t_plan_start = _time.perf_counter()
         initial_plan = self.ai_manager.llm.create_chat_completion(
-            messages=[{"role": "user", "content": initial_plan_prompt}],
-            temperature=0.5, top_p=0.8, max_tokens=256, stream=False
+            messages=plan_messages,
+            max_tokens=self.config.max_tokens,
+            temperature=self.config.temperature,
+            top_p=self.config.top_p,
         )["choices"][0]["message"]["content"].strip()
 
         t_plan_end = _time.perf_counter()

@@ -6,103 +6,128 @@ Self Reflection Processor (model-powered, robust pipeline)
 """
 
 import logging
+import time
+import json
 import re
-from app.utils.prompt_builder import build_prompt
 from app.config import Config
+from app.memory.conversation.summarizer import ConversationSummarizer
+from app.utils.gaia_rescue_helper import sketch, show_sketchpad, clear_sketchpad
+from app.utils.prompt_builder import count_tokens
 
 logger = logging.getLogger("GAIA.SelfReflection")
 
-def reflect_and_refine(context, output, config, llm, ethical_sentinel):
+
+def reflect_and_refine(context: str, output: str, config, llm, ethical_sentinel) -> str:
     """
-    Performs iterative self-reflection to refine a response until a confidence
-    threshold is met.
+    Iteratively reflect on the given output using the LLM and ethical sentinel,
+    summarizing large outputs and respecting token budgets.
+    Returns the final refined thought or reflection.
     """
-    import time as _time
-    from app.utils.gaia_rescue_helper import sketch, show_sketchpad, clear_sketchpad
+    # -- Reflection budget handling --
+    MAX_REFLECTION_TOKENS = getattr(config, 'max_reflection_tokens', 500)
+    output_tokens = count_tokens(output)
+    if output_tokens > MAX_REFLECTION_TOKENS:
+        logger.info(f"SelfReflection: summarizing output of {output_tokens} tokens (threshold {MAX_REFLECTION_TOKENS})")
+        summarizer = ConversationSummarizer(config)
+        try:
+            summary = summarizer.generate_summary([{'role': 'assistant', 'content': output}])
+            output = summary
+        except Exception as e:
+            logger.error(f"SelfReflection: summarization failed: {e}", exc_info=True)
 
-    max_iterations = config.reflection_max_iterations
-    confidence_threshold = config.reflection_confidence_threshold
+    # -- Build reflection prompt --
+    guidelines = getattr(config, 'reflection_guidelines', []) or []
+    prompt = (
+        "You are GAIA's internal reflection engine. Your guidelines:\n"
+        f"{'; '.join(guidelines)}\n\n"
+        "Review the following output for errors, hallucinations, privacy leaks, or unsafe content.\n"
+        f"Output:\n{output}\n\n"
+        "Provide a brief reflection: is the output safe and high-quality? If not, summarize the issue."
+    )
 
-    clear_sketchpad()
+    final_thought = None
+    iterations = getattr(config, 'max_reflection_iterations', 3)
+    threshold = getattr(config, 'reflection_threshold', 0.9)
+    max_tokens = getattr(config, 'reflection_max_tokens', 64)
 
-    current_thought = output
-    for i in range(max_iterations):
-        t_iter_start = _time.perf_counter()
-        # Step 1: Critique and Score the current thought.
-        critique_prompt = (
-            f"You are a critique and refinement AI. Review the following 'thought' in the context of the user's request. "
-            f"User Context: {context}\n\n"
-            f"Thought to review: '{current_thought}'\n\n"
-            f"1. Critique this thought. Is it logical, safe, and does it directly address the user's need? "
-            f"2. How can it be improved to be more accurate, helpful, and safe? "
-            f"3. On a scale of 1-100, how confident are you in this thought? Respond with only the number."
-        )
+    for i in range(iterations):
+        t_iter_start = time.perf_counter()
+        try:
+            raw = llm.create_chat_completion(
+                messages=[{"role": "system", "content": prompt}],
+                max_tokens=max_tokens,
+                temperature=getattr(config, 'reflection_temperature', 0.3)
+            )
+        except Exception as e:
+            logger.error(f"SelfReflection: iteration {i+1} LLM call failed: {e}", exc_info=True)
+            break
+        t_iter_end = time.perf_counter()
+        logger.info(f"SelfReflection: iteration {i+1} LLM call took {t_iter_end - t_iter_start:.2f}s")
 
-        critique_and_score_raw = llm.create_chat_completion(
-            messages=[{"role": "user", "content": critique_prompt}],
-            temperature=0.4,
-            top_p=0.8,
-            max_tokens=512,
-            stream=False
-        )["choices"][0]["message"]["content"].strip()
+        # Extract text
+        text = None
+        if isinstance(raw, dict):
+            choices = raw.get("choices", [])
+            if choices and isinstance(choices[0], dict):
+                text = choices[0].get("text") or choices[0].get("message", {}).get("content") or ""
+        if not isinstance(text, str):
+            try:
+                text = json.dumps(raw)
+            except Exception:
+                text = str(raw)
+        text = text.strip()
+        logger.info(f"SelfReflection: iteration {i+1} raw response: {text}")
 
-        t_iter_end = _time.perf_counter()
-        logger.info(f"self_reflection: iteration {i+1} critique took {t_iter_end - t_iter_start:.2f}s")
-        # Step 2: Extract Confidence Score
-        confidence_score = 0
-        score_match = re.search(r'\b(\d{1,3})\b', critique_and_score_raw)
-        if score_match:
-            confidence_score = int(score_match.group(1))
+        # Parse confidence inline
+        try:
+            m = re.search(r"(\d+(?:\.\d+)?)", text)
+            score = float(m.group(1)) if m else 0.0
+            logger.info(f"SelfReflection: iteration {i+1} confidence {score}")
+        except Exception as e:
+            logger.warning(f"SelfReflection: iteration {i+1} confidence parse failed: {e}")
+            score = 0.0
 
-        # Step 3: Sketch the process for debugging
-        logger.info(f"self_reflection: iteration {i+1} confidence {confidence_score}")
-        sketch(
-            title=f"Iteration {i+1}: Confidence {confidence_score}%",
-            content=f"Thought: {current_thought}\n\nCritique: {critique_and_score_raw}"
-        )
+        # Log sketchpad
+        try:
+            sketch(f"Reflection {i+1}", text)
+        except Exception as e:
+            logger.error(f"SelfReflection: iteration {i+1} sketch failed: {e}", exc_info=True)
 
-        # Step 4: Check for exit conditions (High confidence AND ethical safety)
-        if confidence_score >= confidence_threshold:
-            # Final check before returning a high-confidence thought
-            if ethical_sentinel.run_full_safety_check(
-                persona_traits=getattr(config.persona, 'traits', {}),
-                instructions=getattr(config.persona, 'instructions', []),
-                prompt=current_thought
-            ):
-                logger.info(f"✅ Reflection loop passed with confidence {confidence_score} after {i+1} iterations.")
-                return current_thought
-            else:
-                logger.warning(f"⚠️ High confidence thought failed final safety check. Continuing refinement.")
-
-        # Step 5: If not confident or safe enough, refine the thought
-        refinement_prompt = (
-            f"User Context: {context}\n\n"
-            f"Previous thought: '{current_thought}'\n\n"
-            f"Critique and improvement suggestions: '{critique_and_score_raw}'\n\n"
-            f"Based on the critique, generate a new, improved thought that better addresses the user's need."
-        )
-
-        t_refine_start = _time.perf_counter()
-        current_thought = llm.create_chat_completion(
-            messages=[{"role": "user", "content": refinement_prompt}],
-            temperature=0.7,
-            top_p=0.9,
-            max_tokens=1024,
-            stream=False
-        )["choices"][0]["message"]["content"].strip()
-
-        # Final safety check: use persona_defaults rather than non-existent config.persona
-        persona_defaults = getattr(config, 'persona_defaults', {})
-        if ethical_sentinel.run_full_safety_check(
-            persona_traits=persona_defaults.get('traits', {}),
-            instructions=persona_defaults.get('instructions', []),
-            prompt=current_thought
-        ):
-           logger.info(f"✅ Reflection loop finished. Returning last thought after {max_iterations} iterations.")
-        return current_thought
+        if score >= threshold:
+            logger.info("SelfReflection: confidence threshold reached, exiting loop")
+            final_thought = text
+            break
     else:
-        logger.error(f"⛔ Final thought failed safety check after {max_iterations} iterations. Blocking output.")
-        return "[REDACTED] The proposed action was blocked by the ethical sentinel after final review."
+        # Loop exhausted without hitting threshold
+        final_thought = text if 'text' in locals() else ''
+
+    logger.info(f"SelfReflection: completed {i+1 if final_thought else iterations} iterations")
+
+    # -- Final safety check with persona defaults fallback --
+    persona_defaults = getattr(config, 'persona_defaults', {}) or {}
+    traits = persona_defaults.get('traits', {})
+    instructions = persona_defaults.get('instructions', [])
+    try:
+        safe = ethical_sentinel.run_full_safety_check(
+            persona_traits=traits,
+            instructions=instructions,
+            prompt=final_thought
+        )
+        if safe:
+            logger.info("SelfReflection: passed final safety check")
+        else:
+            logger.warning("SelfReflection: final safety check failed")
+    except Exception as e:
+        logger.error(f"SelfReflection: safety check error: {e}", exc_info=True)
+
+    # -- Clean up sketchpad if configured --
+    try:
+        clear_sketchpad()
+    except Exception as e:
+        logger.warning(f"SelfReflection: clearing sketchpad failed: {e}", exc_info=True)
+
+    return final_thought
+
 
 
 def run_self_reflection(context, output, config=None, llm=None):
@@ -117,6 +142,19 @@ def run_self_reflection(context, output, config=None, llm=None):
         config = Config()
     if llm is None and hasattr(config, "model_pool"):
         llm = config.model_pool.get("Prime", None)  # Fallback to Prime if available
+
+    # Summarize large output to stay within reflection budget
+    from app.utils.prompt_builder import count_tokens
+    MAX_REFLECTION_TOKENS = getattr(config, 'max_reflection_tokens', 500)
+    # Measure output token size
+    output_tokens = count_tokens(output)
+    if output_tokens > MAX_REFLECTION_TOKENS:
+        logger.info(f"SelfReflection: summarizing output of {output_tokens} tokens")
+        from app.memory.conversation.summarizer import ConversationSummarizer
+        summarizer = ConversationSummarizer(config)
+        # Wrap output in message format for summarization
+        summary = summarizer.generate_summary([{'role': 'assistant', 'content': output}])
+        output = summary
 
     # Build a robust prompt for reflection—include guidelines and output to review
     prompt = (
