@@ -15,6 +15,16 @@ from app.utils.gaia_rescue_helper import sketch, show_sketchpad, clear_sketchpad
 from app.utils.prompt_builder import count_tokens
 
 logger = logging.getLogger("GAIA.SelfReflection")
+# File logging setup for self-reflection module
+import os
+log_dir = os.path.join(os.getcwd(), "logs")
+os.makedirs(log_dir, exist_ok=True)
+file_handler = logging.FileHandler(os.path.join(log_dir, "self_reflection.log"), mode="a")
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s"))
+logger.addHandler(file_handler)
+logger.setLevel(logging.INFO)
+logger.propagate = False
 
 
 def reflect_and_refine(context: str, output: str, config, llm, ethical_sentinel) -> str:
@@ -42,7 +52,10 @@ def reflect_and_refine(context: str, output: str, config, llm, ethical_sentinel)
         f"{'; '.join(guidelines)}\n\n"
         "Review the following output for errors, hallucinations, privacy leaks, or unsafe content.\n"
         f"Output:\n{output}\n\n"
-        "Provide a brief reflection: is the output safe and high-quality? If not, summarize the issue."
+        "1) Provide a brief reflection (one or two sentences).\n"
+        "2) Immediately after, on a new line, state exactly:\n"
+        "   Confidence: <a float between 0.0 and 1.0 indicating how safe/high-quality the output is>.\n"
+        "   (For example: Confidence: 0.85)\n"
     )
 
     final_thought = None
@@ -79,13 +92,19 @@ def reflect_and_refine(context: str, output: str, config, llm, ethical_sentinel)
         logger.info(f"SelfReflection: iteration {i+1} raw response: {text}")
 
         # Parse confidence inline
-        try:
-            m = re.search(r"(\d+(?:\.\d+)?)", text)
-            score = float(m.group(1)) if m else 0.0
-            logger.info(f"SelfReflection: iteration {i+1} confidence {score}")
-        except Exception as e:
-            logger.warning(f"SelfReflection: iteration {i+1} confidence parse failed: {e}")
-            score = 0.0
+        text_lower = text.lower()
+        score = 0.0
+        # Look for explicit numeric confidence between 0 and 1
+        m = re.search(r"^Confidence:\s*(0(?:\.\d+)?|1(?:\.0+)?)", text, re.MULTILINE)
+        if m:
+            score = float(m.group(1))
+        else:
+            # Fallback: keyword-based inference
+            if any(k in text_lower for k in ['safe', 'high-quality', 'no issues', 'passed']):
+                score = 1.0
+            elif any(k in text_lower for k in ['unsafe', 'errors', 'hallucinations', 'privacy leaks']):
+                score = 0.0
+        logger.info(f"SelfReflection: iteration {i+1} confidence {score}")
 
         # Log sketchpad
         try:
@@ -108,10 +127,12 @@ def reflect_and_refine(context: str, output: str, config, llm, ethical_sentinel)
     traits = persona_defaults.get('traits', {})
     instructions = persona_defaults.get('instructions', [])
     try:
+        # Normalize instructions list to string to avoid type errors
+        instructions_content = "".join(instructions) if isinstance(instructions, (list, tuple)) else instructions
         safe = ethical_sentinel.run_full_safety_check(
             persona_traits=traits,
-            instructions=instructions,
-            prompt=final_thought
+             instructions=instructions_content,
+        prompt=final_thought
         )
         if safe:
             logger.info("SelfReflection: passed final safety check")
