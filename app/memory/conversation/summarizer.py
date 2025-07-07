@@ -33,8 +33,25 @@ class ConversationSummarizer:
             )
 
             logger.debug("🧠 Requesting LLM-based conversation summary...")
-            response = self.llm(prompt)
-            return response.strip()
+            raw = self.llm(prompt)
+            # Normalize to a plain string
+            if isinstance(raw, dict):
+                # Prefer OpenAI-style choices
+                choices = raw.get("choices", [])
+                if choices and isinstance(choices[0], dict):
+                    text = choices[0].get("text")
+                    if text is None:
+                        text = choices[0].get("message", {}).get("content", "")
+                else:
+                    # Fallback: serialize full response
+                    import json
+                    try:
+                        text = json.dumps(raw)
+                    except Exception:
+                        text = str(raw)
+            else:
+                text = raw
+            return text.strip()
 
         except Exception as e:
             logger.error(f"❌ Failed to summarize conversation: {e}", exc_info=True)

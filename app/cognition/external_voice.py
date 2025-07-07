@@ -12,6 +12,7 @@ import os
 import queue
 import sys
 import threading
+import time
 from datetime import datetime
 from typing import Dict, List, Optional
 
@@ -112,6 +113,8 @@ class ExternalVoice:
 
         def worker() -> None:
             try:
+                logger.info("ExternalVoice.worker: starting create_chat_completion stream")
+                t_start = time.perf_counter()
                 with suppress_llama_stderr():
                     token_stream = self.model.create_chat_completion(
                         messages=self.messages,
@@ -120,7 +123,9 @@ class ExternalVoice:
                         top_p=self.config.top_p,
                         stream=True,
                     )
-                    for chunk in token_stream:
+                t_end = time.perf_counter()
+                logger.info(f"ExternalVoice.worker: create_chat_completion stream took {t_end - t_start:.2f}s")
+                for chunk in token_stream:
                         q.put(chunk)
             except Exception as exc:  # pass exception back
                 q.put(exc)
@@ -134,7 +139,10 @@ class ExternalVoice:
         since_check = 0
 
         while True:
+            t_wait_start = time.perf_counter()
             item = q.get()
+            t_wait_end = time.perf_counter()
+            logger.debug(f"ExternalVoice: queue.get() waited {t_wait_end - t_wait_start:.3f}s")
             if item is None:
                 break
             if isinstance(item, Exception):
@@ -155,11 +163,15 @@ class ExternalVoice:
 
             if self.observer and need_check:
                 current = "".join(buffer)
+                logger.debug("ExternalVoice: invoking observer.observe")
+                t_obs_start = time.perf_counter()
                 decision = self.observer.observe(current, prompt_context)
+                t_obs_end = time.perf_counter()
+                logger.info(f"ExternalVoice: observer.observe took {t_obs_end - t_obs_start:.2f}s")
                 since_check = 0
                 if decision == "interrupt":
                     reason = getattr(self.observer, "interrupt_reason", "observer interrupt")
-                    logger.info("Stream interrupted: %s", reason)
+                    logger.info(f"ExternalVoice: interruption triggered: {reason}")
                     yield {"event": "interruption", "data": reason}
                     break
 

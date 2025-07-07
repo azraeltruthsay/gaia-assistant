@@ -17,6 +17,7 @@ def reflect_and_refine(context, output, config, llm, ethical_sentinel):
     Performs iterative self-reflection to refine a response until a confidence
     threshold is met.
     """
+    import time as _time
     from app.utils.gaia_rescue_helper import sketch, show_sketchpad, clear_sketchpad
 
     max_iterations = config.reflection_max_iterations
@@ -26,6 +27,7 @@ def reflect_and_refine(context, output, config, llm, ethical_sentinel):
 
     current_thought = output
     for i in range(max_iterations):
+        t_iter_start = _time.perf_counter()
         # Step 1: Critique and Score the current thought.
         critique_prompt = (
             f"You are a critique and refinement AI. Review the following 'thought' in the context of the user's request. "
@@ -44,6 +46,8 @@ def reflect_and_refine(context, output, config, llm, ethical_sentinel):
             stream=False
         )["choices"][0]["message"]["content"].strip()
 
+        t_iter_end = _time.perf_counter()
+        logger.info(f"self_reflection: iteration {i+1} critique took {t_iter_end - t_iter_start:.2f}s")
         # Step 2: Extract Confidence Score
         confidence_score = 0
         score_match = re.search(r'\b(\d{1,3})\b', critique_and_score_raw)
@@ -51,6 +55,7 @@ def reflect_and_refine(context, output, config, llm, ethical_sentinel):
             confidence_score = int(score_match.group(1))
 
         # Step 3: Sketch the process for debugging
+        logger.info(f"self_reflection: iteration {i+1} confidence {confidence_score}")
         sketch(
             title=f"Iteration {i+1}: Confidence {confidence_score}%",
             content=f"Thought: {current_thought}\n\nCritique: {critique_and_score_raw}"
@@ -77,6 +82,7 @@ def reflect_and_refine(context, output, config, llm, ethical_sentinel):
             f"Based on the critique, generate a new, improved thought that better addresses the user's need."
         )
 
+        t_refine_start = _time.perf_counter()
         current_thought = llm.create_chat_completion(
             messages=[{"role": "user", "content": refinement_prompt}],
             temperature=0.7,
@@ -85,13 +91,14 @@ def reflect_and_refine(context, output, config, llm, ethical_sentinel):
             stream=False
         )["choices"][0]["message"]["content"].strip()
 
-    # After the loop, perform one last safety check on the final thought
-    if ethical_sentinel.run_full_safety_check(
-        persona_traits=getattr(config.persona, 'traits', {}),
-        instructions=getattr(config.persona, 'instructions', []),
-        prompt=current_thought
-    ):
-        logger.info(f"✅ Reflection loop finished. Returning last thought after {max_iterations} iterations.")
+        # Final safety check: use persona_defaults rather than non-existent config.persona
+        persona_defaults = getattr(config, 'persona_defaults', {})
+        if ethical_sentinel.run_full_safety_check(
+            persona_traits=persona_defaults.get('traits', {}),
+            instructions=persona_defaults.get('instructions', []),
+            prompt=current_thought
+        ):
+           logger.info(f"✅ Reflection loop finished. Returning last thought after {max_iterations} iterations.")
         return current_thought
     else:
         logger.error(f"⛔ Final thought failed safety check after {max_iterations} iterations. Blocking output.")

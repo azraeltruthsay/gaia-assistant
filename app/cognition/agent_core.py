@@ -1,5 +1,6 @@
 import logging
 import re
+import regex as re
 from typing import Generator, Dict, Any
 
 from app.cognition.external_voice import ExternalVoice
@@ -10,9 +11,11 @@ from app.utils.chat_logger import log_chat_entry
 from app.utils.stream_observer import StreamObserver
 from app.config import Config
 from app.utils.thoughtstream import write as ts_write
+from app.memory.conversation.summarizer import ConversationSummarizer
 
 logger = logging.getLogger("GAIA.AgentCore")
-
+# After this many messages, collapse history into a summary
+HISTORY_SUMMARY_THRESHOLD = 20
 
 class AgentCore:
     """
@@ -88,6 +91,8 @@ class AgentCore:
         Runs a single turn of the agent loop. This is a generator that yields structured events.
         """
         from app.cognition.nlu.intent_service import detect_intent
+        import time as _time
+        t0 = _time.perf_counter()
         full_response = ""
         prime_model = self.model_pool.get("prime")
         lite_model = self.model_pool.get("lite")
@@ -105,9 +110,22 @@ class AgentCore:
         intent_result = {"intent": intent_str}    # normalise to dict
         ts_write({"type": "intent_detect", **intent_result}, session_id)
 
-        # MODIFICATION: Use the new PromptBuilder to construct a budget-aware, tiered prompt
+        # Instrument: Measure prompt building
+        t_build_start = _time.perf_counter()
         persona_instructions = self.ai_manager.active_persona.get_full_instructions()
         history = self.session_manager.get_history(session_id)
+
+        # ——— Summarize long histories to stay under token budget ———
+        if len(history) > HISTORY_SUMMARY_THRESHOLD:
+            logger.info(f"AgentCore: summarizing history of {len(history)} messages")
+            summarizer = ConversationSummarizer(self.ai_manager)
+            summary = summarizer.generate_summary(history)
+            history = [
+                {
+                    "role": "system",
+                    "content": f"Summary of prior conversation: {summary}"
+                }
+            ]
 
         messages = build_prompt(
             config=self.config,
@@ -117,17 +135,37 @@ class AgentCore:
             user_input=user_input
         )
 
+        # Prepend identity summary to messages for system instructions (with fallback)
+        import json
+        if hasattr(self.ai_manager.identity_guardian, "get_identity_summary"):
+            identity_summary = self.ai_manager.identity_guardian.get_identity_summary()
+        elif hasattr(self.ai_manager.identity_guardian, "identity"):
+            try:
+                identity_summary = json.dumps(self.ai_manager.identity_guardian.identity)
+            except Exception:
+                identity_summary = str(self.ai_manager.identity_guardian.identity)
+        else:
+            identity_summary = ""
+        if identity_summary:
+            messages.insert(0, {"role": "system", "content": identity_summary})
+
+        t_build_end = _time.perf_counter()
+        logger.info(f"AgentCore: build_prompt took {t_build_end - t_build_start:.2f}s")
         # --- Pre-generation Planning and Reflection ---
         planning_context = {"user_input": user_input, "intent": intent_result.get("intent"), "history_summary": messages[1]["content"]}
         initial_plan_prompt = f"Based on the user's request and the conversation history, create a concise plan to address their needs. The plan should be a short, high-level outline of the steps to take. User Request: {user_input}"
         
         # Generate the initial plan
+        t_plan_start = _time.perf_counter()
         initial_plan = self.ai_manager.llm.create_chat_completion(
             messages=[{"role": "user", "content": initial_plan_prompt}],
             temperature=0.5, top_p=0.8, max_tokens=256, stream=False
         )["choices"][0]["message"]["content"].strip()
 
+        t_plan_end = _time.perf_counter()
+        logger.info(f"AgentCore: initial plan generation took {t_plan_end - t_plan_start:.2f}s")
         # Refine the plan
+        t_reflect_start = _time.perf_counter()
         refined_plan = reflect_and_refine(
             context=planning_context,
             output=initial_plan,
@@ -135,6 +173,8 @@ class AgentCore:
             llm=lite_model or prime_model,
             ethical_sentinel=self.ethical_sentinel
         )
+        t_reflect_end = _time.perf_counter()
+        logger.info(f"AgentCore: reflect_and_refine took {t_reflect_end - t_reflect_start:.2f}s")
         ts_write({"type": "reflection-pre", "in": planning_context, "out": refined_plan}, session_id)
 
         # The context for the observer and voice is now the fully constructed prompt
@@ -156,6 +196,7 @@ class AgentCore:
             session_id=session_id,
         )
 
+        t_stream_start = _time.perf_counter()
         stream_generator = voice.stream_response()   # no arg needed
         
         for token_or_event in stream_generator:
@@ -200,6 +241,8 @@ Please generate a new, corrected, and complete response that addresses the user'
                 ts_write({"type":"token", "value": token}, session_id)
                 full_response += token
 
+        t_stream_end = _time.perf_counter()
+        logger.info(f"AgentCore: streaming response took {t_stream_end - t_stream_start:.2f}s")
         self.ai_manager.status["last_response"] = full_response
         # Add the final assistant response to the persistent session
         self.session_manager.add_message(session_id, "assistant", full_response)
@@ -212,4 +255,8 @@ Please generate a new, corrected, and complete response that addresses the user'
         self.session_manager.record_last_activity()
 
         if full_response:
+            t_exec_start = _time.perf_counter()
             yield from self._execute_actions(full_response, session_id)
+            t_exec_end = _time.perf_counter()
+            logger.info(f"AgentCore: _execute_actions took {t_exec_end - t_exec_start:.2f}s")
+        logger.info(f"AgentCore: run_turn total took {_time.perf_counter() - t0:.2f}s")

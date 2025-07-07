@@ -1,9 +1,18 @@
+import faulthandler, os
+# ensure logs dir exists
+log_dir = os.path.join(os.path.dirname(__file__), "logs")
+os.makedirs(log_dir, exist_ok=True)
+# open a file to record native stack traces
+fh = open(os.path.join(log_dir, "faulthandler.log"), "w")
+faulthandler.enable(fh, all_threads=True)
+
 import argparse
 import code
 import importlib
 import logging
 import os
 import subprocess
+import time
 from datetime import datetime
 from typing import Dict, Any
 
@@ -222,6 +231,8 @@ def rescue_chat_loop(ai: MinimalAIManager, session_id: str) -> None:
 
             print("GAIA > ", end="", flush=True)
 
+            t_loop_start = time.perf_counter()
+            logger.info(f"gaia_rescue: starting run_turn for prompt")
             for event in agent_core.run_turn(prompt, session_id=session_id):
                 et, val = event["type"], event.get("value")
                 if et == "token":
@@ -243,6 +254,8 @@ def rescue_chat_loop(ai: MinimalAIManager, session_id: str) -> None:
                     print(f"❌ Action failed: {event['error']}")
                 elif et == "action_end":
                     print("--- ✅ ACTIONS COMPLETE ---")
+            t_loop_end = time.perf_counter()
+            logger.info(f"gaia_rescue: run_turn loop took {t_loop_end - t_loop_start:.2f}s")
             print()  # newline for next prompt
 
         except (KeyboardInterrupt, EOFError):
@@ -252,6 +265,14 @@ def rescue_chat_loop(ai: MinimalAIManager, session_id: str) -> None:
             logger.exception("Chat loop error: %s", exc)
             print(f"\n❌ Error: {exc}")
 
+    # Setup file logging
+    log_dir = os.path.join(os.path.dirname(__file__), "..", "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    file_handler = logging.FileHandler(os.path.join(log_dir, "gaia_rescue.log"), mode="a")
+    file_handler.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+    file_handler.setFormatter(formatter)
+    logging.getLogger().addHandler(file_handler)
 
 # =============================================================================
 #  CLI entry‑point
