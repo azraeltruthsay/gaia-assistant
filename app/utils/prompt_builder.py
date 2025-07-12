@@ -25,7 +25,9 @@ def _build_prompt_core(
     persona_instructions: str,
     session_id: str,
     history: List[Dict],
-    user_input: str
+    user_input: str,
+    task_instruction: str = None,
+    token_budget: int = 4096
 ) -> List[Dict]:
     """
     Builds a tiered, budget-aware prompt for LLM inference.
@@ -53,6 +55,8 @@ def _build_prompt_core(
     summary_file_path = os.path.join(SUMMARY_DIR, f"{session_id}.summary")
 
     # --- Tier 0 & 3: The immutable parts of the prompt ---
+    if task_instruction:
+        persona_instructions = f"{task_instruction}\n\n{persona_instructions}"
     core_prompt = {"role": "system", "content": persona_instructions}
     user_prompt = {"role": "user", "content": user_input}
 

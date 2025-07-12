@@ -10,13 +10,10 @@ import argparse
 import code
 import importlib
 import logging
-import os
 import subprocess
 import time
 from datetime import datetime
 from typing import Dict, Any
-
-import faulthandler
 
 # GAIA internal modules
 from app.behavior.persona_adapter import PersonaAdapter
@@ -50,8 +47,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger("GAIA.Rescue")
 
+
+
+
 # Silence noisy deps that spam INFO
-for noisy in ("llama_index", "llama_cpp", "transformers", "sentence_transformers", "huggingface_hub"):
+for noisy in ("llama_index", "llama_cpp", "transformers", "sentence_transformers", "huggingface_hub", "GAIA.AgentCore"):
     logging.getLogger(noisy).setLevel(logging.WARNING)
 
 # =============================================================================
@@ -94,6 +94,15 @@ class MinimalAIManager:
                 self.model_pool.set_persona(persona)
             except Exception:  # pragma: no cover – not fatal in rescue mode
                 logger.warning("ModelPool.set_persona() failed; continuing without persona binding.")
+
+        # ------------------------------------------------------------------
+        # Snapshot short-circuit: when the capability mapper runs GAIA under
+        # `trace`, it sets GAIA_CAPABILITY_SNAPSHOT=1 so we don’t drop into
+        # the interactive shell.
+        # ------------------------------------------------------------------
+        if os.getenv("GAIA_CAPABILITY_SNAPSHOT") == "1":
+            logger.info("Capability snapshot mode: skipping interactive shell")
+            return  # 🚪 exit early
 
     # --------------------------------------------------------------------- init
     def initialize(self, persona_name: str = "dev") -> None:
@@ -232,28 +241,29 @@ def rescue_chat_loop(ai: MinimalAIManager, session_id: str) -> None:
             print("GAIA > ", end="", flush=True)
 
             t_loop_start = time.perf_counter()
-            logger.info(f"gaia_rescue: starting run_turn for prompt")
+
+            # Simplified event handling for a cleaner chat experience
+            full_response = ""
             for event in agent_core.run_turn(prompt, session_id=session_id):
-                et, val = event["type"], event.get("value")
+                et = event.get("type")
+                val = event.get("value")
+
                 if et == "token":
                     print(val, end="", flush=True)
+                    full_response += val
                 elif et == "interruption_start":
-                    print(f"\n\n--- 🔔 INTERRUPT: {event['reason']} ---")
+                    print(f"\n\n--- 🔔 INTERRUPT: {event.get('reason', 'Reason not provided.')} ---")
                     print("🤔 Engaging self‑reflection to generate a corrected response…\n")
                 elif et == "correction_start":
                     print("GAIA (Corrected) > ", end="", flush=True)
-                elif et == "action_start":
-                    print("\n\n--- ⚡ ACTIONS DETECTED ---")
-                elif et == "action_reflect":
-                    print(f"🤔 Reflecting on: {event['command']}")
-                elif et == "action_blocked":
-                    print(f"⚠️ Action blocked: {event['reason']}")
-                elif et == "action_executing":
-                    print(f"Executing: {event['command']}")
                 elif et == "action_failure":
-                    print(f"❌ Action failed: {event['error']}")
-                elif et == "action_end":
-                    print("--- ✅ ACTIONS COMPLETE ---")
+                    logger.error(f"Action failed: {event.get('command')}, Error: {event.get('error')}")
+                    print(f"\n❌ Action failed: {event.get('command')}")
+                # Other events can be logged to file but not shown in the interactive shell
+                # to reduce noise. For debugging, you can re-enable them.
+                # else:
+                #     logger.debug(f"[AgentCore Event] {event}")
+
             t_loop_end = time.perf_counter()
             logger.info(f"gaia_rescue: run_turn loop took {t_loop_end - t_loop_start:.2f}s")
             print()  # newline for next prompt

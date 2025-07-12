@@ -77,6 +77,26 @@ class ModelPool:
                 return name
         return None
 
+    def acquire_model(self, name: str):
+        if name in self.models:
+            self.set_status(name, "busy")
+            return self.models[name]
+        return None
+
+    def release_model(self, name: str):
+        if name in self.models:
+            self.set_status(name, "idle")
+
+    def acquire_model(self, name: str):
+        if name in self.models:
+            self.set_status(name, "busy")
+            return self.models[name]
+        return None
+
+    def release_model(self, name: str):
+        if name in self.models:
+            self.set_status(name, "idle")
+
     def get_active_persona(self) -> PersonaAdapter:
         """Returns the currently active PersonaAdapter object."""
         return self.active_persona_obj

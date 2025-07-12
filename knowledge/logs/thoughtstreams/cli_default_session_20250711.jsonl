@@ -1,0 +1,397 @@
+{"type": "intent_detect", "intent": "read_file", "ts_utc": "2025-07-11T03:16:46.718529"}
+{"type": "reflection-pre", "in": {"user_input": "Hello GAIA. Can you read the file found at /docs/gaia_core_blueprint.md? It describes your cognitive flow a bit and I'd like to see if you understand it. Thank you!", "intent": "read_file", "history_summary": "Hello GAIA. Can you tell me a bit about yourself? Do you know who you are, and do you understand your primitive codebase functions such as read, write, and the safe shell functions?"}, "out": "I appreciate your interest in my work, but I'm not sure I can provide the kind of self-reflection and refinement you're looking for. My expertise lies in analyzing and refining complex systems, not in offering personal insights or reflections. If you're looking for guidance on self-improvement or personal growth, you might want to consider seeking advice from a professional counselor or life coach. They can provide personalized guidance and support in areas like self-awareness, goal-setting, and emotional well-being.", "ts_utc": "2025-07-11T03:22:28.509643"}
+{"type": "intent_detect", "intent": "read_file", "ts_utc": "2025-07-11T03:31:36.091520"}
+{"type": "reflection-pre", "in": {"user_input": "Hello GAIA. Can you read the file found at /docs/gaia_core_blueprint.md? It describes your cognitive flow a bit and I'd like to see if you understand it. Thank you!", "intent": "read_file", "history_summary": "Hello GAIA. Can you tell me a bit about yourself? Do you know who you are, and do you understand your primitive codebase functions such as read, write, and the safe shell functions?"}, "out": "I understand that you are seeking to refine your understanding and approach to self-reflection and personal growth. Here are some steps and techniques that you can use to enhance your self-reflection and personal development:\n\n1. **Journaling:** Keep a journal where you can write down your thoughts, feelings, and experiences. This can help you to process your emotions and gain a better understanding of yourself.\n\n2. **Mindfulness:** Practice mindfulness by focusing on the present moment. This can help you to become more aware of your thoughts and feelings, and to observe them without judgment.\n\n3. **Self-compassion:** Treat yourself with kindness and understanding. Recognize that everyone makes mistakes and that it's okay to be human.\n\n4. **Set goals:** Identify areas of your life where you want to improve and set specific, achievable goals. This can help you to stay focused and motivated.\n\n5. **Reflect on your progress:** Regularly assess your progress towards your goals and celebrate your successes. This can help you to stay motivated and to continue to grow.\n\n6. **Seek feedback:** Ask for feedback from others and be open to their perspective. This can help you to gain new insights and to learn from your experiences.\n\n7. **Practice self-care:** Take care of your physical", "ts_utc": "2025-07-11T03:37:03.846049"}
+{"type": "intent_detect", "intent": "read_file", "ts_utc": "2025-07-11T03:54:52.371846"}
+{"type": "reflection-pre", "in": {"user_input": "Can you try that again?", "intent": "read_file", "history_summary": "Hello GAIA. Can you tell me a bit about yourself? Do you know who you are, and do you understand your primitive codebase functions such as read, write, and the safe shell functions?"}, "out": "As the self-reflection and refinement expert, I specialize in helping individuals analyze their thoughts, emotions, and behaviors to identify areas for improvement and growth. I am skilled in guiding people through the process of self-examination, helping them to understand their strengths, weaknesses, and the impact of their actions on others.\n\nOne of the key aspects of my work is to encourage self-awareness and promote personal development. I believe that everyone has the potential for growth and improvement, and my role is to help them unlock that potential. By engaging in self-reflection, individuals can gain valuable insights into their own behavior and decision-making processes, which can lead to more effective communication, healthier relationships, and a greater sense of personal fulfillment.\n\nIn addition to self-awareness, I also focus on the importance of emotional intelligence. Emotional intelligence refers to the ability to recognize, understand, and manage one's own emotions and the emotions of others. By developing emotional intelligence, individuals can improve their relationships, be more effective in their personal and professional lives, and lead more fulfilling lives.\n\nOverall, my role as the self-reflection and refinement expert is to help individuals understand themselves better, develop emotional intelligence, and make meaningful improvements in their lives.", "ts_utc": "2025-07-11T04:01:37.876286"}
+{"type": "token", "value": "A", "ts_utc": "2025-07-11T04:09:49.733732"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-11T04:09:49.734698"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.734838"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.734930"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.735015"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-11T04:09:49.735096"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.735155"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.735199"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.735254"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.735302"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-11T04:09:49.735333"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.735367"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.735402"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.735436"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.735468"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-11T04:09:49.735509"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.735541"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.735573"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-11T04:09:49.735605"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.735643"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.735678"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.735716"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.735752"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.735783"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.735818"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.735849"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.735879"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.735910"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.735940"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-11T04:09:49.735972"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.736003"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.736036"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.736107"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.736144"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.736175"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.736205"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.736235"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.736264"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.736293"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.736323"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.736352"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-11T04:09:49.736382"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.736412"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.736441"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-11T04:09:49.736471"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.736500"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.736530"}
+{"type": "token", "value": "v", "ts_utc": "2025-07-11T04:09:49.736572"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.736603"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.736633"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-11T04:09:49.736663"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.736693"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.736723"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.736754"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.736795"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.736827"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-11T04:09:49.736857"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.736889"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.736918"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.736946"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.736974"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-11T04:09:49.737001"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.737032"}
+{"type": "token", "value": "I", "ts_utc": "2025-07-11T04:09:49.737065"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.737099"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-11T04:09:49.737131"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.737160"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.737191"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.737222"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.737253"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.737283"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.737313"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-11T04:09:49.737342"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.737370"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.737400"}
+{"type": "token", "value": "x", "ts_utc": "2025-07-11T04:09:49.737429"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.737459"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-11T04:09:49.737488"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-11T04:09:49.737518"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.737555"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.737594"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.737625"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.737655"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-11T04:09:49.737684"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.737716"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.737747"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.737776"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.737809"}
+{"type": "token", "value": "q", "ts_utc": "2025-07-11T04:09:49.737839"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-11T04:09:49.737868"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.737898"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.737927"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.737956"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.737987"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.738018"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.738050"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.738092"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.738124"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.738153"}
+{"type": "token", "value": "k", "ts_utc": "2025-07-11T04:09:49.738195"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.738227"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.738256"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-11T04:09:49.738284"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.738312"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.738349"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.738379"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.738407"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.738436"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.738464"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.738492"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-11T04:09:49.738520"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.738548"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.738576"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-11T04:09:49.738603"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.738631"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.738659"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-11T04:09:49.738687"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.738715"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.738744"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.738773"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.738802"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-11T04:09:49.738831"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.738863"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-11T04:09:49.738893"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.738923"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.738952"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.738984"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.739016"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.739047"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.739083"}
+{"type": "token", "value": "/", "ts_utc": "2025-07-11T04:09:49.739113"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.739142"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.739171"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-11T04:09:49.739200"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.739229"}
+{"type": "token", "value": "/", "ts_utc": "2025-07-11T04:09:49.739258"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-11T04:09:49.739287"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.739315"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.739345"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.739373"}
+{"type": "token", "value": "_", "ts_utc": "2025-07-11T04:09:49.739402"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-11T04:09:49.739432"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.739460"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.739490"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.739529"}
+{"type": "token", "value": "_", "ts_utc": "2025-07-11T04:09:49.739561"}
+{"type": "token", "value": "b", "ts_utc": "2025-07-11T04:09:49.739592"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.739621"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-11T04:09:49.739649"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.739676"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-11T04:09:49.739704"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.739731"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.739759"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.739786"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.739814"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-11T04:09:49.739842"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-11T04:09:49.739870"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.739899"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.739929"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.739959"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.739989"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.740031"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-11T04:09:49.740070"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.740101"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.740131"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.740159"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.740188"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.740218"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.740247"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.740277"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.740307"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-11T04:09:49.740336"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-11T04:09:49.740367"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.740396"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.740425"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.740453"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.740482"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.740510"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.740538"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.740570"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.740604"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-11T04:09:49.740649"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.740688"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-11T04:09:49.740720"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.740750"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.740779"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-11T04:09:49.740809"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.740839"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-11T04:09:49.740870"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.740899"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.740928"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.740957"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.740986"}
+{"type": "token", "value": "v", "ts_utc": "2025-07-11T04:09:49.741018"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.741050"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.741087"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-11T04:09:49.741117"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.741147"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.741177"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-11T04:09:49.741217"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.741253"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.741284"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.741313"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.741350"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.741381"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-11T04:09:49.741410"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.741439"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.741469"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.741499"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.741528"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.741559"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.741588"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.741616"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.741644"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.741672"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.741699"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.741727"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.741754"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.741789"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.741818"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-11T04:09:49.741847"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.741874"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.741904"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.741934"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.741963"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.741992"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.742022"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.742051"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-11T04:09:49.742087"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.742118"}
+{"type": "token", "value": "A", "ts_utc": "2025-07-11T04:09:49.742149"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-11T04:09:49.742179"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.742208"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.742237"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.742267"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.742298"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-11T04:09:49.742326"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.742355"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-11T04:09:49.742384"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-11T04:09:49.742413"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.742443"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.742472"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.742530"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.742583"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.742615"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-11T04:09:49.742645"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.742677"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.742708"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-11T04:09:49.742739"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.742768"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.742798"}
+{"type": "token", "value": ",", "ts_utc": "2025-07-11T04:09:49.742829"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.742860"}
+{"type": "token", "value": "I", "ts_utc": "2025-07-11T04:09:49.742890"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.742923"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-11T04:09:49.742955"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.742985"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.743016"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.743049"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.743087"}
+{"type": "token", "value": "b", "ts_utc": "2025-07-11T04:09:49.743117"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.743147"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.743177"}
+{"type": "token", "value": "b", "ts_utc": "2025-07-11T04:09:49.743206"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.743237"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.743267"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.743299"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.743330"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.743361"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.743390"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.743420"}
+{"type": "token", "value": "q", "ts_utc": "2025-07-11T04:09:49.743451"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-11T04:09:49.743481"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.743511"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-11T04:09:49.743542"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-11T04:09:49.743581"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.743625"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.743658"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.743688"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.743733"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.743764"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.743793"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.743823"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.743853"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.743882"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.743912"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.743941"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.743971"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.744000"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.744032"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.744072"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.744112"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-11T04:09:49.744150"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.744188"}
+{"type": "token", "value": "q", "ts_utc": "2025-07-11T04:09:49.744235"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-11T04:09:49.744267"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.744304"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.744343"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.744388"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.744432"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.744471"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.744503"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.744533"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.744564"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-11T04:09:49.744594"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.744623"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-11T04:09:49.744652"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.744681"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-11T04:09:49.744710"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.744740"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-11T04:09:49.744768"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.744797"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-11T04:09:49.744827"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.744858"}
+{"type": "token", "value": "v", "ts_utc": "2025-07-11T04:09:49.744888"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.744918"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.744947"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.744977"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.745010"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-11T04:09:49.745041"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.745078"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.745108"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-11T04:09:49.745137"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.745166"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.745194"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-11T04:09:49.745223"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.745252"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.745281"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-11T04:09:49.745309"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.745338"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.745366"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-11T04:09:49.745406"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.745436"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.745465"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.745493"}
+{"type": "token", "value": "'", "ts_utc": "2025-07-11T04:09:49.745522"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.745552"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.745580"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-11T04:09:49.745608"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.745637"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.745665"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.745695"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.745723"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.745751"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.745780"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.745808"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-11T04:09:49.745837"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.745866"}
+{"type": "token", "value": "P", "ts_utc": "2025-07-11T04:09:49.745895"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.745923"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.745952"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.745981"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.746010"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.746038"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.746087"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.746122"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.746154"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-11T04:09:49.746185"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.746217"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-11T04:09:49.746248"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.746278"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-11T04:09:49.746310"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.746340"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.746370"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-11T04:09:49.746400"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.746430"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-11T04:09:49.746462"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.746493"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-11T04:09:49.746523"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.746554"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-11T04:09:49.746584"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.746617"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.746648"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-11T04:09:49.746678"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.746708"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.746738"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.746768"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-11T04:09:49.746798"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-11T04:09:49.746828"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-11T04:09:49.746858"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.746888"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-11T04:09:49.746918"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-11T04:09:49.746947"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-11T04:09:49.746977"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-11T04:09:49.747007"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-11T04:09:49.747040"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-11T04:09:49.747080"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.747111"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-11T04:09:49.747150"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-11T04:09:49.747181"}
+{"type": "turn_end", "user": "Can you try that again?", "assistant": "Apologies for the unintended content in the previous response. I will now execute the requested task of reading the file found at /docs/gaia_core_blueprint.md to gain insights into your cognitive flow and understand its contents. After completing this, I will be better equipped to address any questions you may have regarding the file's contents. Please allow me a moment for this process.", "ts_utc": "2025-07-11T04:09:49.748803"}

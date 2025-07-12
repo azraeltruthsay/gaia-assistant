@@ -7,9 +7,10 @@ from app.cognition.external_voice import ExternalVoice
 from app.cognition.self_reflection import run_self_reflection, reflect_and_refine
 # MODIFICATION: Import the new prompt builder and the correct chat logger
 from app.utils.prompt_builder import build_prompt
+from app.utils.output_router import route_output
 from app.utils.chat_logger import log_chat_entry
 from app.utils.stream_observer import StreamObserver
-from app.config import Config
+from app.config import Config, constants
 from app.utils.thoughtstream import write as ts_write
 from app.memory.conversation.summarizer import ConversationSummarizer
 
@@ -93,7 +94,7 @@ class AgentCore:
 
         yield {"type": "action_end"}
 
-    def run_turn(self, user_input: str, session_id: str) -> Generator[Dict[str, Any], None, None]:
+    def run_turn(self, user_input: str, session_id: str, destination: str = "cli_chat") -> Generator[Dict[str, Any], None, None]:
         """
         Runs a single turn of the agent loop. This is a generator that yields structured events.
         """
@@ -107,19 +108,35 @@ class AgentCore:
         # MODIFICATION: Add the user's message to the persistent session
         self.session_manager.add_message(session_id, "user", user_input)
 
+        # Instrument: Measure prompt building
+        t_build_start = _time.perf_counter()
+        active_persona = self.ai_manager.active_persona
+        persona_instructions = active_persona.get_full_instructions()
+        persona_instruction_list = active_persona.instructions
+
+        # --- Cognitive Dispatch -------------------------------------------
+        from app.cognition.cognitive_dispatcher import dispatch
+        dispatch_result = dispatch(user_input, persona_instructions)
+
+        if not dispatch_result:
+            # Handle dispatch failure, maybe by sending a default message
+            yield {"type": "token", "value": "I am currently unable to process your request."}
+            return
+
+        selected_model_name = dispatch_result["model_name"]
+        selected_model = dispatch_result["model"]
+        token_budget = dispatch_result["token_budget"]
+
         # --- Intent Detection -------------------------------------------
         intent_str = detect_intent(               # returns e.g. "ask_question"
             user_input,
             self.config,
-            lite_llm=lite_model,
-            full_llm=prime_model,
+            lite_llm=self.model_pool.get("lite"),
+            full_llm=self.model_pool.get("prime"),
         )
         intent_result = {"intent": intent_str}    # normalise to dict
         ts_write({"type": "intent_detect", **intent_result}, session_id)
 
-        # Instrument: Measure prompt building
-        t_build_start = _time.perf_counter()
-        persona_instructions = self.ai_manager.active_persona.get_full_instructions()
         history = self.session_manager.get_history(session_id)
 
         # ——— Summarize long histories to stay under token budget ———
@@ -134,40 +151,24 @@ class AgentCore:
                 }
             ]
 
-        messages = build_prompt(
+        # --- Pre-generation Planning and Reflection ---
+        plan_messages = build_prompt(
             config=self.config,
             persona_instructions=persona_instructions,
             session_id=session_id,
             history=history,
-            user_input=user_input
+            user_input=user_input,
+            task_instruction="initial_planning",
+            token_budget=token_budget
         )
 
-        # Prepend identity summary to messages for system instructions (with fallback)
-        import json
-        if hasattr(self.ai_manager.identity_guardian, "get_identity_summary"):
-            identity_summary = self.ai_manager.identity_guardian.get_identity_summary()
-        elif hasattr(self.ai_manager.identity_guardian, "identity"):
-            try:
-                identity_summary = json.dumps(self.ai_manager.identity_guardian.identity)
-            except Exception:
-                identity_summary = str(self.ai_manager.identity_guardian.identity)
-        else:
-            identity_summary = ""
-        if identity_summary:
-            messages.insert(0, {"role": "system", "content": identity_summary})
-
         t_build_end = _time.perf_counter()
-        logger.info(f"AgentCore: build_prompt took {t_build_end - t_build_start:.2f}s")
-        # --- Pre-generation Planning and Reflection ---
-        planning_context = {"user_input": user_input, "intent": intent_result.get("intent"), "history_summary": messages[1]["content"]}
-        initial_plan_prompt = f"Based on the user's request and the conversation history, create a concise plan to address their needs. The plan should be a short, high-level outline of the steps to take. User Request: {user_input}"
+        logger.info(f"AgentCore: build_prompt for planning took {t_build_end - t_build_start:.2f}s")
         
-        # --- Pre-generation Planning and Reflection ---
         # Summarize planning context to respect token budget
         from app.utils.prompt_builder import count_tokens
         from app.memory.conversation.summarizer import ConversationSummarizer
         MAX_PLAN_TOKENS = getattr(self.config, 'max_plan_tokens', 1024)
-        plan_messages = messages
         plan_token_count = count_tokens(plan_messages)
         if plan_token_count > MAX_PLAN_TOKENS:
             logger.info(f"AgentCore: summarizing planning context of {plan_token_count} tokens (threshold {MAX_PLAN_TOKENS})")
@@ -177,24 +178,38 @@ class AgentCore:
                 "role": "system",
                 "content": f"Summary of prior context: {summary}"
             }]
+
         t_plan_start = _time.perf_counter()
-        initial_plan = self.ai_manager.llm.create_chat_completion(
+        initial_plan = selected_model.create_chat_completion(
             messages=plan_messages,
             max_tokens=self.config.max_tokens,
             temperature=self.config.temperature,
             top_p=self.config.top_p,
         )["choices"][0]["message"]["content"].strip()
-
         t_plan_end = _time.perf_counter()
         logger.info(f"AgentCore: initial plan generation took {t_plan_end - t_plan_start:.2f}s")
+
+        # Build the prompt for the final response generation
+        messages = build_prompt(
+            config=self.config,
+            persona_instructions=persona_instructions,
+            session_id=session_id,
+            history=history,
+            user_input=user_input,
+            token_budget=token_budget
+        )
+        
+        planning_context = {"user_input": user_input, "intent": intent_result.get("intent"), "history_summary": messages[1]["content"] if len(messages) > 1 else ""}
+
         # Refine the plan
         t_reflect_start = _time.perf_counter()
         refined_plan = reflect_and_refine(
             context=planning_context,
             output=initial_plan,
             config=self.config,
-            llm=lite_model or prime_model,
-            ethical_sentinel=self.ethical_sentinel
+            llm=self.model_pool.get_idle_model(exclude=[selected_model_name]),
+            ethical_sentinel=self.ethical_sentinel,
+            instructions=persona_instruction_list
         )
         t_reflect_end = _time.perf_counter()
         logger.info(f"AgentCore: reflect_and_refine took {t_reflect_end - t_reflect_start:.2f}s")
@@ -206,10 +221,11 @@ class AgentCore:
         # Add the refined plan to the messages for the final response generation
         messages.append({"role": "assistant", "content": f"I will proceed with the following plan: {refined_plan}"})
 
-        observer = StreamObserver(llm=lite_model, name="AgentCore-Observer") if lite_model else None
+        observer_model = self.model_pool.get_idle_model(exclude=[selected_model_name])
+        observer = StreamObserver(llm=observer_model, name="AgentCore-Observer") if observer_model else None
 
         voice = ExternalVoice(
-            model=prime_model,
+            model=selected_model,
             model_pool=self.model_pool,
             config=self.config,
             messages=messages,            # pass the list *as messages*
@@ -222,8 +238,10 @@ class AgentCore:
         t_stream_start = _time.perf_counter()
         stream_generator = voice.stream_response()   # no arg needed
         
+        was_interrupted = False
         for token_or_event in stream_generator:
             if isinstance(token_or_event, dict) and token_or_event.get("event") == "interruption":
+                was_interrupted = True
                 reason = token_or_event.get("data", "Interrupted by observer.")
                 yield {"type": "interruption_start", "reason": reason}
                 ts_write({"type":"interruption", "reason": reason}, session_id)
@@ -239,7 +257,8 @@ Please generate a new, corrected, and complete response that addresses the user'
                     persona_instructions=persona_instructions,
                     session_id=session_id,
                     history=history,
-                    user_input=correction_thought  # The new input is the correction context
+                    user_input=correction_thought,  # The new input is the correction context
+                    task_instruction="interruption_handling"
                 )
 
                 correction_voice = ExternalVoice(
@@ -249,23 +268,25 @@ Please generate a new, corrected, and complete response that addresses the user'
                 )
 
                 yield {"type": "correction_start"}
-                corrected_response_text = ""
-                for token in correction_voice.stream_response(correction_messages):
-                    yield {"type": "token", "value": str(token)}
-                    ts_write({"type":"token", "value": str(token)}, session_id)
-                    corrected_response_text += str(token)
-
+                corrected_response_text = "".join(str(t) for t in correction_voice.stream_response(correction_messages))
                 full_response = corrected_response_text
                 yield {"type": "correction_end"}
                 break
             else:
                 token = str(token_or_event)
-                yield {"type": "token", "value": token}
-                ts_write({"type":"token", "value": token}, session_id)
                 full_response += token
 
         t_stream_end = _time.perf_counter()
         logger.info(f"AgentCore: streaming response took {t_stream_end - t_stream_start:.2f}s")
+
+        # Route the output to get the user-facing part
+        response_to_user = route_output(full_response, self.ai_manager, session_id, destination=destination)
+
+        # Stream the user-facing response
+        for char in response_to_user:
+            yield {"type": "token", "value": char}
+            ts_write({"type": "token", "value": char}, session_id)
+
         self.ai_manager.status["last_response"] = full_response
         # Add the final assistant response to the persistent session
         self.session_manager.add_message(session_id, "assistant", full_response)

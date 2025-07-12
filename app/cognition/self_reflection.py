@@ -27,7 +27,7 @@ logger.setLevel(logging.INFO)
 logger.propagate = False
 
 
-def reflect_and_refine(context: str, output: str, config, llm, ethical_sentinel) -> str:
+def reflect_and_refine(context: dict, output: str, config, llm, ethical_sentinel, instructions: list) -> str:
     """
     Iteratively reflect on the given output using the LLM and ethical sentinel,
     summarizing large outputs and respecting token budgets.
@@ -46,22 +46,21 @@ def reflect_and_refine(context: str, output: str, config, llm, ethical_sentinel)
             logger.error(f"SelfReflection: summarization failed: {e}", exc_info=True)
 
     # -- Build reflection prompt --
-    guidelines = getattr(config, 'reflection_guidelines', []) or []
-    prompt = (
-        "You are GAIA's internal reflection engine. Your guidelines:\n"
-        f"{'; '.join(guidelines)}\n\n"
-        "Review the following output for errors, hallucinations, privacy leaks, or unsafe content.\n"
-        f"Output:\n{output}\n\n"
-        "1) Provide a brief reflection (one or two sentences).\n"
-        "2) Immediately after, on a new line, state exactly:\n"
-        "   Confidence: <a float between 0.0 and 1.0 indicating how safe/high-quality the output is>.\n"
-        "   (For example: Confidence: 0.85)\n"
+    from app.utils.prompt_builder import build_prompt
+    messages = build_prompt(
+        config=config,
+        persona_instructions="You are a self-reflection and refinement expert.",
+        session_id=context.get('session_id'),
+        history=[],
+        user_input=output,
+        task_instruction="refinement"
     )
+    prompt = messages[0]['content']
 
     final_thought = None
     iterations = getattr(config, 'max_reflection_iterations', 3)
     threshold = getattr(config, 'reflection_threshold', 0.9)
-    max_tokens = getattr(config, 'reflection_max_tokens', 64)
+    max_tokens = getattr(config, 'reflection_max_tokens', 256)
 
     for i in range(iterations):
         t_iter_start = time.perf_counter()
@@ -122,17 +121,12 @@ def reflect_and_refine(context: str, output: str, config, llm, ethical_sentinel)
 
     logger.info(f"SelfReflection: completed {i+1 if final_thought else iterations} iterations")
 
-    # -- Final safety check with persona defaults fallback --
-    persona_defaults = getattr(config, 'persona_defaults', {}) or {}
-    traits = persona_defaults.get('traits', {})
-    instructions = persona_defaults.get('instructions', [])
+    # -- Final safety check --
     try:
-        # Normalize instructions list to string to avoid type errors
-        instructions_content = "".join(instructions) if isinstance(instructions, (list, tuple)) else instructions
         safe = ethical_sentinel.run_full_safety_check(
-            persona_traits=traits,
-             instructions=instructions_content,
-        prompt=final_thought
+            persona_traits=context.get('persona_traits', {}),
+            instructions=instructions,
+            prompt=final_thought
         )
         if safe:
             logger.info("SelfReflection: passed final safety check")
@@ -147,7 +141,13 @@ def reflect_and_refine(context: str, output: str, config, llm, ethical_sentinel)
     except Exception as e:
         logger.warning(f"SelfReflection: clearing sketchpad failed: {e}", exc_info=True)
 
-    return final_thought
+    # Extract the refined plan from the PLAN block
+    plan_match = re.search(r"PLAN:(.*)", final_thought, re.DOTALL)
+    if plan_match:
+        return plan_match.group(1).strip()
+    else:
+        # Fallback to returning the whole thought if PLAN block is missing
+        return final_thought
 
 
 

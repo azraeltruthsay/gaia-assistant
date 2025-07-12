@@ -10,6 +10,7 @@ import json
 import logging
 from datetime import datetime
 from typing import List
+from app.config import Config
 
 logger = logging.getLogger("GAIA.ConversationArchiver")
 
@@ -23,7 +24,7 @@ class ConversationArchiver:
 
     def archive_conversation(self, session_id: str, persona: str, messages: List[dict], summary: str, keywords: List[str]):
         try:
-            base_path = os.path.join(self.config.structured_data_path, "conversations", persona)
+            base_path = os.path.join(self.config.HISTORY_DIR, "conversations", persona)
             os.makedirs(base_path, exist_ok=True)
             file_path = os.path.join(base_path, f"{session_id}.json")
 
