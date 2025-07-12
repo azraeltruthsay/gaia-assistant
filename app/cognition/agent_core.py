@@ -196,7 +196,7 @@ class AgentCore:
         # ——— Summarize long histories to stay under token budget ———
         if len(history) > HISTORY_SUMMARY_THRESHOLD:
             logger.info(f"AgentCore: summarizing history of {len(history)} messages")
-            summarizer = ConversationSummarizer(self.ai_manager)
+            summarizer = ConversationSummarizer(llm=self.model_pool.get("prime"), embed_model=self.model_pool.get("embed"))
             summary = summarizer.generate_summary(history)
             history = [
                 {
@@ -226,7 +226,7 @@ class AgentCore:
         plan_token_count = count_tokens(plan_messages)
         if plan_token_count > MAX_PLAN_TOKENS:
             logger.info(f"AgentCore: summarizing planning context of {plan_token_count} tokens (threshold {MAX_PLAN_TOKENS})")
-            summarizer = ConversationSummarizer(self.ai_manager)
+            summarizer = ConversationSummarizer(llm=self.model_pool.get("prime"), embed_model=self.model_pool.get("embed"))
             summary = summarizer.generate_summary(plan_messages)
             plan_messages = [{
                 "role": "system",
@@ -319,7 +319,7 @@ Please generate a new, corrected, and complete response that addresses the user'
 
                 correction_voice = ExternalVoice(
                     model=prime_model, model_pool=self.model_pool, config=self.config,
-                    thought=correction_messages, source="agent_core_correction", observer=None,
+                    thought=correction_thought, messages=correction_messages, source="agent_core_correction", observer=None,
                     context={"history": correction_messages}
                 )
 

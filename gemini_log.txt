@@ -1,0 +1,111 @@
+docker-compose run --rm campaign_llm python gaia_rescue.py --prompt "Hello GAIA. Can you describe to me your primitive functions that are available within your architecture? Remember, you are the General Artisanal Intelligence Architecture, or at least the beginning of it. :)"
+Command: docker-compose run --rm campaign_llm python gaia_rescue.py --prompt "Hello GAIA. Can you describe to me your primitive functions that are available within your architecture? Remember, you are the General Artisanal Intelligence Architecture, or at least the beginning of it. :)"
+Directory: (root)
+Stdout: (empty)
+Stderr: INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
+INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
+INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
+INFO:GAIA.ModelPool:🔹 Loading Prime model
+INFO:GAIA.ModelPool:✅ Prime loaded: <llama_cpp.llama.Llama object at 0x7f956c25a3d0>
+INFO:GAIA.ModelPool:🔹 Loading Lite model
+INFO:GAIA.ModelPool:✅ Lite loaded: <llama_cpp.llama.Llama object at 0x7f956c25b150>
+INFO:GAIA.ModelPool:🔹 Loading Embedding model
+INFO:sentence_transformers.SentenceTransformer:Load pretrained SentenceTransformer: /models/all-MiniLM-L6-v2
+INFO:sentence_transformers.SentenceTransformer:Use pytorch device_name: cpu
+INFO:GAIA.ModelPool:✅ Embedding model loaded: SentenceTransformer(
+  (0): Transformer({'max_seq_length': 256, 'do_lower_case': False}) with Transformer model: BertModel 
+  (1): Pooling({'word_embedding_dimension': 384, 'pooling_mode_cls_token': False, 'pooling_mode_mean_tokens': True, 'pooling_mode_max_tokens': False, 'pooling_mode_mean_sqrt_len_tokens': False, 'pooling_mode_weightedmean_tokens': False, 'pooling_mode_lasttoken': False, 'include_prompt': True})
+  (2): Normalize()
+)
+INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
+INFO:GAIA.IdentityGuardian:✅ Loaded Tier I Identity from /gaia-assistant/knowledge/system_reference/core_identity.json
+INFO:GAIA.SessionManager:💾 Loading 1 sessions from app/shared/sessions.json
+INFO:GAIA.SessionManager:SessionManager initialized. Found 1 existing sessions.
+INFO:GAIA.PersonaManager:✅ Loaded persona data for 'dev' from /gaia-assistant/knowledge/personas/dev/dev_persona.json
+INFO:GAIA.PersonaManager:✅ Loaded persona data for 'dev' from /gaia-assistant/knowledge/personas/dev/dev_persona.json
+INFO:GAIA.Rescue:✅ Loaded default persona 'gaia-dev' via PersonaManager.
+INFO:GAIA.ModelPool:🔄 Model 'lite' status set to 'busy'
+INFO:GAIA.ModelPool:🔄 Model 'lite' status set to 'idle'
+INFO:GAIA.ModelPool:🔄 Model 'prime' status set to 'idle'
+INFO:GAIA.IntentDetection:Model intent detection: read_file
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 20, Estimated Tokens: ~1670/4096
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 20, Estimated Tokens: ~1666/4096
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'None'. Messages: 2, Estimated Tokens: ~212/4096
+INFO:GAIA.Helper:🗃️ Sketchpad backed up to ./knowledge/system_reference/sketchpad.json.bak.20250712_155853
+INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 23, Estimated Tokens: ~2274/4096
+INFO:GAIA.ExternalVoice:ExternalVoice.worker: starting create_chat_completion stream
+INFO:GAIA.ExternalVoice:ExternalVoice.worker: create_chat_completion stream took 0.00s
+Traceback (most recent call last):
+  File "/gaia-assistant/gaia_rescue.py", line 303, in <module>
+    for event in agent_core.run_turn(args.prompt, session_id=SESSION_ID):
+  File "/gaia-assistant/app/cognition/agent_core.py", line 298, in run_turn
+    for token_or_event in stream_generator:
+  File "/gaia-assistant/app/cognition/external_voice.py", line 149, in stream_response
+    raise item
+  File "/gaia-assistant/app/cognition/external_voice.py", line 128, in worker
+    for chunk in token_stream:
+  File "/usr/local/lib/python3.11/site-packages/llama_cpp/llama_chat_format.py", line 289, in _convert_text_completion_chunks_to_chat
+    for i, chunk in enumerate(chunks):
+  File "/usr/local/lib/python3.11/site-packages/llama_cpp/llama.py", line 1169, in _create_completion
+    raise ValueError(
+ValueError: Requested tokens (2392) exceed context window of 2048
+
+
+Error: (none)
+Exit Code: 1
+Signal: (none)
+Background PIDs: (none)
+Process Group PGID: 66684
+It seems we've uncovered another issue. The good news is that the previous errors are resolved. The bad news is that we're now hitting a ValueError: Requested tokens (2392) exceed context window of 2048.
+
+This error means that the prompt being sent to the LLM is larger than its maximum context window. This is happening because the conversation history is growing too large, and the summarization mechanism is not effectively reducing the token count.
+
+To fix this, I will implement the following changes:
+
+Increase the Lite Model's Context Window: I'll increase the n_ctx value for the "lite" model in app/models/model_pool.py to match the "prime" model. This will ensure that the summarizer has enough context to work with.
+Improve the Summarizer's Prompt: I'll refine the prompt used by the ConversationSummarizer to be more explicit about its purpose and to provide a better example of the expected output. This will help the LLM generate more concise and effective summaries.
+Add a Token Counter to the Summarizer: I'll add a token counter to the ConversationSummarizer to ensure that the generated summaries are always within the token budget.
+These changes will ensure that the conversation history is properly managed and that the prompts sent to the LLM are always within the context window.
+
+I will start by reading the app/models/model_pool.py file.
+
+check
+ReadFile...ls/model_pool.py
+I have reviewed app/models/model_pool.py. I will now increase the context window of the "lite" model to match the "prime" model.
+
+close
+Edit...ls/model_pool.py ...nfig.max_tokens, ...max_tokens // 2,
+Just to clarify, first, you think we should have the Lite and Prime models' context windows be the same? I'm worried that'll cause confusion on which model is actually the best for a particular task. Will we not use dynamic context windows for the different models, just expect them to have different levels of speed and complexity of respose?
+
+
+Gemini
+Thinking
+stat_minus_1
+That's an excellent and very sharp question. You've correctly identified a key architectural consideration, and my initial proposed fix was a blunt instrument to solve the immediate error, not the best long-term solution. You are right to question it.
+
+Let's clarify the strategy.
+
+Should the Context Windows Be the Same?
+No, you're right, they shouldn't be. The core idea behind having a "Lite" and "Prime" model is to use the right tool for the right job:
+
+Lite Model: Should be fast and efficient. It's meant for simple, quick tasks like intent detection, classification, and, importantly, summarizing manageable chunks of text. It should have a smaller context window.
+Prime Model: This is the powerhouse. It's slower, more capable, and should have the larger context window for complex reasoning, planning, and generating the final, detailed response.
+My previous suggestion to make the windows identical would have fixed the crash, but it would have violated this core architectural principle and masked the real problem.
+
+The Real Problem: Unmanaged Input to the Summarizer
+The ValueError we saw occurs because the ConversationSummarizer (which uses the Lite model) is being asked to summarize a conversation history that is already too large to fit into its own context window.
+
+The correct solution is not to artificially inflate the Lite model's context window, but to ensure the input we give to the summarizer is appropriately sized for it.
+
+The Refined, Better Strategy
+Here is a much better plan that respects the intended architecture:
+
+Keep Model Tiers Distinct: We will keep the Lite model's context window smaller than the Prime model's. This maintains their distinct roles (speed vs. power).
+Pre-process the Summarizer's Input: In agent_core.py, before calling summarizer.generate_summary(), I will add a step to intelligently truncate the history being passed to it. We will ensure the text sent to the summarizer fits within the Lite model's smaller context window. The summarizer's job is to create a dense summary from a reasonably sized chunk of recent history, not to process an infinitely long scroll.
+Improve Summarizer Prompt: As planned before, I will still improve the summarizer's internal prompt to make it more efficient and focused, which will help it produce better, more concise summaries.
+This approach fixes the root cause of the error while preserving the intended, efficient architecture of using a tiered model system. It's a more robust and intelligent solution than simply increasing the context window.
+
+Thank you for questioning my initial approach. Your insight has led to a better solution.
+
+Shall I proceed with this new, refined plan?

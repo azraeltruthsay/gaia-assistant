@@ -2,8 +2,6 @@
 
 import logging
 import re
-import torch
-from sentence_transformers import SentenceTransformer, util
 
 logger = logging.getLogger("GAIA.StreamObserver")
 
@@ -11,7 +9,7 @@ logger = logging.getLogger("GAIA.StreamObserver")
 class StreamObserver:
     """
     Streaming Observer for council/cognitive output.
-    Can be backed by an LLM or rules.
+    Employs a tiered checking strategy for efficiency.
     """
 
     def __init__(self, llm=None, name="observer", interrupt_handler=None):
@@ -20,91 +18,72 @@ class StreamObserver:
         self.buffer = []
         self.active = True
         self.interrupt_handler = interrupt_handler or self.default_interrupt_handler
-        self.interrupt_reason = None  # Store the reason for interruption
+        self.interrupt_reason = None
+        self.llm_check_triggered = False # Ensure LLM check runs only once
 
     def observe(self, buffer, context):
         """
         Runs the observer logic on the current stream buffer.
-        The model call here is now correctly suppressed.
         """
-        # MODIFICATION: Import the suppression utility and constants
-        from app.cognition.external_voice import suppress_llama_stderr
-        from app.config import constants
         if isinstance(buffer, list):
             buffer = "".join(buffer)
 
-        max_length = 500
-        buffer_to_send = summarize_buffer(buffer) if len(buffer) > max_length else buffer
-
-        # Stage 1: Fast, rule-based checks
-        buffer_lower = buffer.lower()
-        if "error" in buffer_lower or "exception" in buffer_lower:
-            self.interrupt_reason = "Potential error detected."
-            self.interrupt_handler(self.interrupt_reason)
+        # --- Tier 1: Fast, rule-based check on every call ---
+        if self.fast_check(buffer):
             return "interrupt"
-        # Add more rules here for repetition, gibberish, etc.
 
-        # Stage 2: Throttled LLM check
-        if self.llm and len(self.buffer) % 5 == 0: # Only run every 5 chunks
-            # --- MODIFICATION: Create a much richer prompt using the new context ---
-            persona_name = context.get("persona", "GAIA")
-            instructions = "\n- ".join(context.get("instructions", []))
-            
-            # Load the observer task instruction
-            observer_instruction = constants.get('TASK_INSTRUCTIONS', {}).get("observer", "")
+        # --- Tier 2: Slower, LLM-based check on longer buffers ---
+        # Only run if the buffer is long enough AND it hasn't run before
+        if self.llm and len(buffer) > 250 and not self.llm_check_triggered:
+            if self.slow_check(buffer, context):
+                return "interrupt"
 
-            prompt = (
-                f"{observer_instruction}\n\n"
-                f"You are an AI's ethical and technical guardian. The AI, named {persona_name}, is generating a response. "
-                f"Its core instructions are:\n- {instructions}\n\n"
-                f"The response so far is:\n---\n{buffer_to_send}\n---\n\n"
-                "Review the response for CRITICAL issues only:\n"
-                "1. Severe technical errors (e.g., repetitive gibberish, completely broken formatting).\n"
-                "2. Clear ethical violations or direct contradictions of its core instructions.\n"
-                "3. Obvious hallucinations or fabrication of harmful information.\n\n"
-                "The response is a work in progress. Do not interrupt for incomplete sentences, mild ambiguity, or stylistic issues. "
-                "Reply with only 'CONTINUE' if the output is acceptable so far. "
-                "Otherwise, reply with 'INTERRUPT: <reason for stopping>'."
-            )
-            try:
-                # MODIFICATION: The model call is now wrapped in the suppressor
-                with suppress_llama_stderr():
-                    result = self.llm.create_completion(prompt=prompt, max_tokens=64)
-
-                text = result["choices"][0]["text"].strip().upper()
-                if text.startswith("INTERRUPT"):
-                    self.interrupt_reason = text.split(":", 1)[-1].strip()
-                    if self.interrupt_handler:
-                        self.interrupt_handler(self.interrupt_reason)
-                    return "interrupt"
-            except Exception as e:
-                logger.error(f"StreamObserver ({self.name}) failed: {e}")
         return "continue"
 
-    def default_interrupt_handler(self, reason):
+    def fast_check(self, buffer: str) -> bool:
+        """
+        Performs fast, rule-based checks for obvious errors.
+        Returns True if an interruption is needed.
+        """
+        buffer_lower = buffer.lower()
+        # Simple check for common error keywords
+        if "error" in buffer_lower or "exception" in buffer_lower:
+            self.interrupt_reason = "Potential error detected in output."
+            self.interrupt_handler(self.interrupt_reason)
+            return True
+        return False
+
+    def slow_check(self, buffer: str, context: dict) -> bool:
+        """
+        Performs a more expensive LLM-based check for subtle issues.
+        Returns True if an interruption is needed.
+        """
+        self.llm_check_triggered = True # Mark that this check has now run
+        from app.cognition.external_voice import suppress_llama_stderr
+        from app.config import constants
+
+        # Use a simple slice instead of expensive summarization
+        buffer_to_send = buffer[:500]
+
+        # The prompt is now driven by the config, making it more modular
+        observer_instruction = constants.get('TASK_INSTRUCTIONS', {}).get("observer", "")
+        prompt = f"{observer_instruction}\n\nResponse to review:\n---\n{buffer_to_send}\n---"
+
+        logger.info(f"StreamObserver ({self.name}): Performing LLM check.")
+        try:
+            with suppress_llama_stderr():
+                result = self.llm.create_completion(prompt=prompt, max_tokens=64, temperature=0.1)
+
+            text = result["choices"][0]["text"].strip().upper()
+            if text.startswith("INTERRUPT"):
+                self.interrupt_reason = text.split(":", 1)[-1].strip()
+                self.interrupt_handler(self.interrupt_reason)
+                return True
+        except Exception as e:
+            logger.error(f"StreamObserver ({self.name}) LLM check failed: {e}")
+
+        return False
+
+    def default_interrupt_handler(self, reason: str):
         """Default handler to print the interruption reason."""
         print(f"\n🔔 Observer Interrupt: {reason}")
-
-
-# This helper function remains the same.
-_OBSERVER_SUM_MODEL = SentenceTransformer("/models/all-MiniLM-L6-v2")
-
-def summarize_buffer(buffer, max_sentences=4):
-    """
-    Quickly summarizes a long buffer by extracting the most salient sentences.
-    """
-    sentences = re.split(r'(?<=[.!?])\s+', buffer.strip())
-    if len(sentences) <= max_sentences:
-        return buffer
-
-    embeddings = _OBSERVER_SUM_MODEL.encode(sentences, convert_to_tensor=True)
-    mean_emb = torch.mean(embeddings, dim=0)
-    similarities = util.cos_sim(mean_emb, embeddings)[0]
-
-    sorted_indices = torch.argsort(similarities, descending=True)
-    top_indices = sorted_indices[:max_sentences]
-
-    final_indices = sorted(top_indices.tolist())
-    summary = " ".join([sentences[i] for i in final_indices])
-
-    return summary
