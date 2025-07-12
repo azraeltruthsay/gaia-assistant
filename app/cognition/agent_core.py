@@ -275,13 +275,15 @@ class AgentCore:
         # Add the refined plan to the messages for the final response generation
         messages.append({"role": "assistant", "content": f"I will proceed with the following plan: {refined_plan}"})
 
-        observer_model = self.model_pool.get_idle_model(exclude=[selected_model_name])
+        observer_model_name = self.model_pool.get_idle_model(exclude=[selected_model_name])
+        observer_model = self.model_pool.get(observer_model_name) if observer_model_name else None
         observer = StreamObserver(llm=observer_model, name="AgentCore-Observer") if observer_model else None
 
         voice = ExternalVoice(
             model=selected_model,
             model_pool=self.model_pool,
             config=self.config,
+            thought=user_input,
             messages=messages,            # pass the list *as messages*
             source="agent_core",
             observer=observer,
