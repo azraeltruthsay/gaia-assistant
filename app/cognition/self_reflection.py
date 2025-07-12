@@ -141,6 +141,10 @@ def reflect_and_refine(context: dict, output: str, config, llm, ethical_sentinel
     except Exception as e:
         logger.warning(f"SelfReflection: clearing sketchpad failed: {e}", exc_info=True)
 
+    # Ensure final_thought is a string before searching
+    if not isinstance(final_thought, str):
+        final_thought = ""
+
     # Extract the refined plan from the PLAN block
     plan_match = re.search(r"PLAN:(.*)", final_thought, re.DOTALL)
     if plan_match:

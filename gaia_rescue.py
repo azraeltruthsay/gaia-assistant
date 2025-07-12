@@ -114,7 +114,7 @@ class MinimalAIManager:
                 data = {
                     "name": "gaia-dev-emergency",
                     "description": "Emergency fallback persona.",
-                    "template": "You are GAIA‑Dev, operating in a minimal rescue shell.",
+                    "template": "You are GAIA-Dev, operating in a minimal rescue shell.",
                     "instructions": [
                         "Primary persona file is missing. Operate with caution.",
                     ],
@@ -126,7 +126,7 @@ class MinimalAIManager:
 
     # ------------------------------------------------------------------- reload
     def reload(self, module_name: str) -> None:
-        """Hot‑reload a module; handy while tinkering inside the shell."""
+        """Hot-reload a module; handy while tinkering inside the shell."""
         try:
             if module_name.endswith(".py"):
                 module_name = module_name[:-3]
@@ -151,7 +151,7 @@ class MinimalAIManager:
     def read(self, filepath: str) -> None:
         """Log file contents to console."""
         try:
-            with open(filepath, "r", encoding="utf‑8") as fh:
+            with open(filepath, "r", encoding="utf-8") as fh:
                 content = fh.read()
             logger.info("📄 %s\n---\n%s\n---", filepath, content)
         except Exception as exc:  # pragma: no cover
@@ -166,7 +166,7 @@ class MinimalAIManager:
                 os.rename(filepath, backup)
                 logger.info("🗃️  Backup created: %s", backup)
 
-            with open(filepath, "w", encoding="utf‑8") as fh:
+            with open(filepath, "w", encoding="utf-8") as fh:
                 fh.write(content)
             logger.info("✅ Wrote %s", filepath)
         except Exception as exc:  # pragma: no cover
@@ -229,7 +229,7 @@ def rescue_chat_loop(ai: MinimalAIManager, session_id: str) -> None:
                 break
 
             if prompt == "<<<":
-                print("🔽 Multi‑line mode (type >>> to send).")
+                print("🔽 Multi-line mode (type >>> to send).")
                 lines = []
                 while (line := input()) != ">>>":
                     lines.append(line)
@@ -253,7 +253,7 @@ def rescue_chat_loop(ai: MinimalAIManager, session_id: str) -> None:
                     full_response += val
                 elif et == "interruption_start":
                     print(f"\n\n--- 🔔 INTERRUPT: {event.get('reason', 'Reason not provided.')} ---")
-                    print("🤔 Engaging self‑reflection to generate a corrected response…\n")
+                    print("🤔 Engaging self-reflection to generate a corrected response…\n")
                 elif et == "correction_start":
                     print("GAIA (Corrected) > ", end="", flush=True)
                 elif et == "action_failure":
@@ -291,23 +291,31 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="GAIA Rescue Shell")
     parser.add_argument("--session-id", type=str, default="cli_default_session", help="Session ID to use/continue.")
     parser.add_argument("--persona", type=str, default="dev", help="Persona to load (default: dev).")
+    parser.add_argument("--prompt", type=str, help="Run a single prompt and exit.")
     args = parser.parse_args()
     SESSION_ID = args.session_id
 
     ai = MinimalAIManager()
     ai.initialize(args.persona)
 
+if args.prompt:
+    agent_core = AgentCore(ai, ethical_sentinel=ai.ethical_sentinel)
+    for event in agent_core.run_turn(args.prompt, session_id=SESSION_ID):
+        if event.get("type") == "token":
+            print(event.get("value"), end="", flush=True)
+    print()
+else:
     print(
         "\n🧠 GAIA Rescue Shell initialized.\n"
         f"   Session ID: {SESSION_ID}\n\n"
         "Diagnostics & direct interaction available.\n\n"
-        "• rescue_chat_loop()         – start interactive chat for the current session\n"
-        "• ai.read('path') / ai.write – file ops\n"
-        "• ai.execute('ls -l')        – safe shell\n"
-        "• ai.helper.*                – helper utilities\n"
-        f"• ai.session_manager.reset_session('{SESSION_ID}') – clear this session's history\n"
-        "• reload('app.utils.gaia_rescue_helper') – hot‑reload helper\n"
-        "• exit() or Ctrl‑D           – quit\n"
+        "• rescue_chat_loop()         - start interactive chat for the current session\n"
+        "• ai.read('path') / ai.write - file ops\n"
+        "• ai.execute('ls -l')        - safe shell\n"
+        "• ai.helper.*                - helper utilities\n"
+        f"• ai.session_manager.reset_session('{SESSION_ID}') - clear this session's history\n"
+        "• reload('app.utils.gaia_rescue_helper') - hot-reload helper\n"
+        "• exit() or Ctrl-D           - quit\n"
     )
 
     code.interact(

@@ -1,6 +1,7 @@
 import logging
 import re
 import regex as re
+import ast
 from typing import Generator, Dict, Any
 
 from app.cognition.external_voice import ExternalVoice
@@ -33,11 +34,62 @@ class AgentCore:
         # The AI Manager now provides the persistent SessionManager
         self.session_manager = ai_manager.session_manager
 
+    def _safe_execute(self, code_snippet: str):
+        """
+        Safely executes a command by parsing it and calling the corresponding
+        whitelisted method on the ai_manager.
+        """
+        # Whitelist of allowed methods on the 'ai' object
+        allowed_methods = {
+            "read", "write", "execute", "reload",
+            "add_topic", "resolve_topic", "update_topic",
+        }
+
+        try:
+            # Parse the code snippet into an Abstract Syntax Tree
+            # We use mode='eval' because we expect a single expression.
+            tree = ast.parse(code_snippet, mode='eval')
+
+            # We expect an expression, which contains a Call node
+            if not isinstance(tree, ast.Expression) or not isinstance(tree.body, ast.Call):
+                raise ValueError("Command must be a single function call.")
+
+            call_node = tree.body
+
+            # Check that the call is on the 'ai' object
+            if not isinstance(call_node.func, ast.Attribute) or \
+               not isinstance(call_node.func.value, ast.Name) or \
+               call_node.func.value.id != 'ai':
+                raise ValueError("Command must be a call on the 'ai' object (e.g., ai.read(...)).")
+
+            method_name = call_node.func.attr
+
+            # Check if the method is in our whitelist
+            if method_name not in allowed_methods:
+                raise ValueError(f"Method '{method_name}' is not allowed.")
+
+            # Get the actual method from the ai_manager
+            method_to_call = getattr(self.ai_manager, method_name, None)
+            if not callable(method_to_call):
+                raise ValueError(f"Method '{method_name}' not found or not callable on ai_manager.")
+
+            # Evaluate the arguments safely using ast.literal_eval
+            args = [ast.literal_eval(arg) for arg in call_node.args]
+            kwargs = {kw.arg: ast.literal_eval(kw.value) for kw in call_node.keywords}
+
+            # Execute the method
+            return method_to_call(*args, **kwargs)
+
+        except (ValueError, SyntaxError, AttributeError) as e:
+            logger.error(f"Failed to safely execute command: '{code_snippet}'. Error: {e}")
+            raise  # Re-raise the exception to be caught by the caller
+
     def _execute_actions(self, response: str, session_id: str) -> Generator[Dict[str, Any], None, None]:
         """
         Parses a response for EXECUTE blocks, reflects, and yields events for each action.
         This is a generator function.
         """
+        # Use a non-greedy regex and assume one command per EXECUTE block
         commands_to_run = re.findall(r"EXECUTE:\s*(ai\..+)", response)
         if not commands_to_run:
             return
@@ -78,12 +130,14 @@ class AgentCore:
 
             # 4. Execute only valid ai.*(...) snippets from the refined command
             try:
-                # Extract a single ai.command(...) call
-                match = re.search(r"\b(ai\.[\w_]+\([^)]*\))", refined_command)
+                # Extract a single ai.command(...) call. This regex is more robust
+                # for nested parentheses but assumes the command is well-formed.
+                match = re.search(r"\b(ai\.[\w_]+\(.*\))", refined_command, re.S)
                 if match:
                     code_snippet = match.group(1)
                     yield {"type": "action_executing", "command": code_snippet}
-                    eval(code_snippet, {"ai": self.ai_manager})
+                    # NEW: Call the safe execution method instead of eval()
+                    self._safe_execute(code_snippet)
                     yield {"type": "action_success", "command": code_snippet}
                 else:
                     logger.warning(f"No executable ai.* snippet found in refined action: {refined_command}")

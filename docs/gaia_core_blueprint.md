@@ -63,11 +63,11 @@ The `ModelPool` class is responsible for loading and managing the different AI m
 *   **`set_persona(persona)`**: Sets the active persona for the models.
 *   **`acquire_model(name)`**: Marks a model as "busy" and returns it.
 *   **`release_model(name)`**: Marks a model as "idle".
-*   **`get_idle_model(exclude)`**: Returns the name of an idle model, optionally excluding a specific model.
+*   **`get_idle_model(exclude)`**: Returns the name of an idle model, optionally excluding a specific model. [Verified ✅ | Def: 2025-07-11]
 
 ### 2.5. `app/cognition/cognitive_dispatcher.py`: Dynamic Cognitive Dispatching [Verified: ❌]
 
-The `cognitive_dispatcher.py` module is responsible for analyzing incoming prompts and dispatching them to the most appropriate model with a dynamic context window.
+The `cognitive_dispatcher.py` module is responsible for analyzing incoming prompts and dispatching them to the most appropriate model with a dynamic context window. [Verified ✅ | Def: 2025-07-11]
 
 *   **`dispatch(prompt, persona_instructions)`**:
     *   Uses the "lite" model to analyze the prompt for complexity and required context.
@@ -130,21 +130,21 @@ The `gaia_rescue_helper.py` module provides a set of utility functions that can 
 
 Here's a step-by-step breakdown of how GAIA processes a user's request in the `dev` persona:
 
-1.  The user enters a prompt in the `rescue_chat_loop`. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-2.  The `rescue_chat_loop` calls `agent_core.run_turn`. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-3.  `run_turn` calls `build_prompt` with the `task_instruction="initial_planning"`. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-4.  `build_prompt` creates a prompt that includes the user's request and instructions to create a plan. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-5.  `run_turn` sends this prompt to the "prime" LLM, which generates an initial plan. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-6.  `run_turn` calls `reflect_and_refine` with the initial plan. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-7.  `reflect_and_refine` calls `build_prompt` with the `task_instruction="refinement"`. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-8.  `build_prompt` creates a prompt that instructs the LLM to critique and improve the plan. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-9.  `reflect_and_refine` sends this prompt to the "lite" LLM, which generates a refined plan. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-10. `run_turn` calls `build_prompt` again, this time without a task instruction, but including the refined plan in the conversation history. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-11. `run_turn` sends this final prompt to the "prime" LLM to generate the response. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-12. As the LLM generates the response, the `StreamObserver` monitors the output for errors. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-13. Once the response is complete, `run_turn` passes it to the `OutputRouter`. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-14. The `OutputRouter` parses the structured response, extracts the user-facing message, and returns it to `run_turn`. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-15. `run_turn` streams the user-facing message to the `rescue_chat_loop`, which prints it to the console. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
-16. If the response includes an `EXECUTE:` block, `run_turn` calls `_execute_actions` to run the command. [Verified ✅ | Def: 2025-07-09 | Call: 2025-07-09]
+1.  The user enters a prompt in the `rescue_chat_loop`. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+2.  The `rescue_chat_loop` calls `agent_core.run_turn`. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+3.  `run_turn` calls `build_prompt` with the `task_instruction="initial_planning"`. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+4.  `build_prompt` creates a prompt that includes the user's request and instructions to create a plan. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+5.  `run_turn` sends this prompt to the "prime" LLM, which generates an initial plan. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+6.  `run_turn` calls `reflect_and_refine` with the initial plan. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+7.  `reflect_and_refine` calls `build_prompt` with the `task_instruction="refinement"`. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+8.  `build_prompt` creates a prompt that instructs the LLM to critique and improve the plan. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+9.  `reflect_and_refine` sends this prompt to the "lite" LLM, which generates a refined plan. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+10. `run_turn` calls `build_prompt` again, this time without a task instruction, but including the refined plan in the conversation history. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+11. `run_turn` sends this final prompt to the "prime" LLM to generate the response. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+12. As the LLM generates the response, the `StreamObserver` monitors the output for errors. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+13. Once the response is complete, `run_turn` passes it to the `OutputRouter`. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+14. The `OutputRouter` parses the structured response, extracts the user-facing message, and returns it to `run_turn`. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+15. `run_turn` streams the user-facing message to the `rescue_chat_loop`, which prints it to the console. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+16. If the response includes an `EXECUTE:` block, `run_turn` calls `_execute_actions` to run the command. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
 
 This detailed, multi-step process ensures that GAIA's responses are well-planned, reflective, and safe.

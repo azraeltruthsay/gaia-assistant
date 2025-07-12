@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from app.models.model_pool import model_pool
 
 logger = logging.getLogger("GAIA.CognitiveDispatcher")
@@ -17,13 +18,22 @@ def dispatch(prompt: str, persona_instructions: str) -> dict:
         return None
 
     try:
-        analysis_prompt = f"Analyze this prompt for complexity and required context. Respond with a JSON object containing: {{'complexity': 'simple|moderate|complex', 'required_context': 'minimal|medium|full'}}.\n\nPrompt: {prompt}"
-        analysis_response = lite_model.create_completion(prompt=analysis_prompt, max_tokens=128)
+        # New, more direct prompt
+        analysis_prompt = f"You are a JSON output agent. Analyze the following prompt and respond with ONLY a single JSON object with two keys: 'complexity' (simple, moderate, or complex) and 'required_context' (minimal, medium, or full).\n\nPrompt: {prompt}"
         
+        analysis_response_raw = lite_model.create_completion(prompt=analysis_prompt, max_tokens=128) # Corrected variable name
+        analysis_response_text = analysis_response_raw["choices"][0]["text"].strip()
+
         try:
-            analysis = json.loads(analysis_response["choices"][0]["text"].strip())
+            # Use regex to find the JSON object in the response
+            json_match = re.search(r"\{.*\}", analysis_response_text, re.DOTALL)
+            if json_match:
+                analysis = json.loads(json_match.group(0))
+            else:
+                raise json.JSONDecodeError("No JSON object found in response", analysis_response_text, 0)
+
         except (json.JSONDecodeError, IndexError) as e:
-            logger.warning(f"Could not decode JSON from lite model. Error: {e}. Response: {analysis_response}")
+            logger.warning(f"Could not decode JSON from lite model. Error: {e}. Response: {analysis_response_text}")
             analysis = {"complexity": "simple", "required_context": "minimal"}
 
         complexity = analysis.get("complexity", "simple")
