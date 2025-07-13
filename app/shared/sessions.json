@@ -5,13 +5,9 @@
     "history": [
       {
         "role": "user",
-        "content": "Hello GAIA. Can you describe to me your primitive functions that are available within your architecture? Remember, you are the General Artisanal Intelligence Architecture, or at least the beginning of it. :)"
-      },
-      {
-        "role": "assistant",
-        "content": "I will proceed with the following plan:\n\n1. Execute: ai.read('knowledge/system_reference/gaia_constants.json')\n2. Execute: ai.read('knowledge/system_reference/safe_execute_functions.json')\n3. Vector query: ai.vector_query('GAIA-Dev primitive functions')\n\nThis will allow me to access the necessary JSON files containing the allowed functions and constants, and then query my vector database for the specific function names related to my primitive functions."
+        "content": "Hello GAIA. Can you give me a brief overview of your primitive functions?"
       }
     ],
-    "created_at": "2025-07-13T02:18:25.239969"
+    "created_at": "2025-07-13T02:55:59.910569"
   }
 }

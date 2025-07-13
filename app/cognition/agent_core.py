@@ -324,7 +324,11 @@ Please generate a new, corrected, and complete response that addresses the user'
                 )
 
                 yield {"type": "correction_start"}
-                corrected_response_text = "".join(str(t) for t in correction_voice.stream_response(correction_messages))
+                # Stream the corrected response back to the caller
+                corrected_response_text = ""
+                for token in correction_voice.stream_response():
+                    yield {"type": "token", "value": token}
+                    corrected_response_text += token
                 full_response = corrected_response_text
                 yield {"type": "correction_end"}
                 break

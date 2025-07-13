@@ -141,7 +141,7 @@ Here's a step-by-step breakdown of how GAIA processes a user's request in the `d
 9.  `reflect_and_refine` sends this prompt to the "lite" LLM, which generates a refined plan. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
 10. `run_turn` calls `build_prompt` again, this time without a task instruction, but including the refined plan in the conversation history. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
 11. `run_turn` sends this final prompt to the "prime" LLM to generate the response. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
-12. As the LLM generates the response, the `StreamObserver` monitors the output for errors. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
+12. As the LLM generates the response, the `StreamObserver` monitors the output for errors. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-12]
 13. Once the response is complete, `run_turn` passes it to the `OutputRouter`. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
 14. The `OutputRouter` parses the structured response, extracts the user-facing message, and returns it to `run_turn`. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
 15. `run_turn` streams the user-facing message to the `rescue_chat_loop`, which prints it to the console. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
