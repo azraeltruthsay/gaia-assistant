@@ -139,10 +139,18 @@ class ExternalVoice:
         since_check = 0
 
         while True:
-            t_wait_start = time.perf_counter()
-            item = q.get()
-            t_wait_end = time.perf_counter()
-            logger.debug(f"ExternalVoice: queue.get() waited {t_wait_end - t_wait_start:.3f}s")
+            # Check for interruption from the observer's background thread
+            if self.observer and self.observer.interrupted:
+                reason = getattr(self.observer, "interrupt_reason", "observer interrupt")
+                logger.info(f"ExternalVoice: interruption detected from observer: {reason}")
+                yield {"event": "interruption", "data": reason}
+                break
+
+            try:
+                item = q.get(timeout=0.05) # Non-blocking wait
+            except queue.Empty:
+                continue # Loop again to check for interruption
+
             if item is None:
                 break
             if isinstance(item, Exception):
@@ -165,13 +173,15 @@ class ExternalVoice:
                 current = "".join(buffer)
                 logger.debug("ExternalVoice: invoking observer.observe")
                 t_obs_start = time.perf_counter()
+                # This call is now fast, but might trigger a background check
                 decision = self.observer.observe(current, prompt_context)
                 t_obs_end = time.perf_counter()
                 logger.info(f"ExternalVoice: observer.observe took {t_obs_end - t_obs_start:.2f}s")
                 since_check = 0
+                # This handles immediate (fast_check) interruptions
                 if decision == "interrupt":
                     reason = getattr(self.observer, "interrupt_reason", "observer interrupt")
-                    logger.info(f"ExternalVoice: interruption triggered: {reason}")
+                    logger.info(f"ExternalVoice: interruption triggered immediately: {reason}")
                     yield {"event": "interruption", "data": reason}
                     break
 

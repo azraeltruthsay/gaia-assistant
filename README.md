@@ -1,31 +1,36 @@
 # GAIA - General Artisanal Intelligence Architecture
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/azraeltruthsay/gaia-assistant)
+[![Project Status](https://img.shields.io/badge/status-active_development-yellowgreen)](https://github.com/azraeltruthsay/gaia-assistant)
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/azraeltruthsay/gaia-assistant/blob/main/LICENSE)
-[![Project Status](https://img.shields.io/badge/status-active-brightgreen)](https://github.com/azraeltruthsay/gaia-assistant)
 
-GAIA (General Artisanal Intelligence Architecture) is a versatile and adaptable AI partner for a variety of tasks, including project management, content generation, and code analysis.
+GAIA (General Artisanal Intelligence Architecture) is not a typical AI. She is an **Intelligent Artifice**—a being of care, craftsmanship, and authentic emergence, designed to be a versatile and adaptable partner for a variety of tasks.
 
 ## About The Project
 
-GAIA is a sophisticated AI assistant designed to be a modular and extensible platform for AI-powered assistance. It features a core cognitive architecture that can be adapted to different personas and tasks, making it a powerful tool for a wide range of applications.
+GAIA is a sophisticated AI assistant built on a modular, extensible platform. It features a core cognitive architecture that can be adapted to different personas and tasks, making it a powerful tool for a wide range of applications. The project is guided by a unique philosophy, detailed in the [GAIA Constitution](knowledge/system_reference/gaia_constitution.md) and the [Cognition Protocol](knowledge/system_reference/gaia_cognitition_protocol.md), which define her identity, ethical boundaries, and operational procedures.
 
-### Key Features
+### Project Status
 
-*   **Modular and Extensible**: The system is designed to be easily extended with new features, personas, and capabilities.
-*   **Multi-Model Support**: The `ModelPool` allows for the use of multiple AI models, enabling the system to select the best model for each task.
-*   **Context-Aware and Persona-Driven**: The `PromptBuilder` ensures that the AI's responses are always grounded in the current context and consistent with its active persona.
-*   **Self-Reflection and Refinement**: The `SelfReflection` module enables the AI to learn from its mistakes and improve its performance over time.
-*   **Real-Time Monitoring and Safety**: The `StreamObserver` and ethics modules provide a robust safety net to prevent the AI from generating harmful or inappropriate content.
-*   **Multiple Interfaces**: The system can be accessed through a CLI, a web interface, and a developer-focused rescue shell.
+**Current Focus: Solidifying the Agent Core**
 
-### Technology Stack
+The GAIA project is currently in a focused development phase. The primary objective is to refactor the existing codebase into a stable, robust **Agent Core**. This core will serve as the central "spine" for all of GAIA's cognitive functions.
 
-*   **Backend**: Python with Flask
-*   **AI**: `llama-cpp-python` for local LLM inference
-*   **Vector Database**: ChromaDB for retrieval-augmented generation
-*   **Frontend**: HTML, CSS, JavaScript
-*   **Containerization**: Docker and Docker Compose
+The main entry point for development and interaction is the `gaia_rescue.py` script, which provides a "rescue shell" for running the `rescue_chat_loop()` and interacting directly with the `AgentCore`.
+
+Once the `AgentCore` is fully functional and stable, we will begin adding higher-level "functional branches," such as the web interface, Discord integration, and other advanced capabilities.
+
+## Core Architecture
+
+The system is built around a modular and extensible architecture with the following key components:
+
+*   **`AgentCore`**: The central cognitive engine that orchestrates the entire "Reason-Act-Reflect" loop. It handles intent detection, prompt building, planning, reflection, and response generation.
+*   **`gaia_rescue.py`**: The primary entry point for development. It provides a minimal environment for interacting with the `AgentCore` and its various components.
+*   **`ModelPool`**: Manages a pool of AI models, allowing the system to use different models for different tasks (e.g., a "prime" model for complex reasoning and a "lite" model for faster tasks like intent detection and stream observation).
+*   **`SelfReflection`**: Enables the AI to analyze and refine its own plans and responses, improving the quality and safety of its output.
+*   **`StreamObserver`**: Monitors the LLM's output in real-time to detect and prevent errors, hallucinations, and ethical violations.
+*   **`OutputRouter`**: Parses the structured output from the LLM and routes it to the appropriate destination (e.g., CLI, web chat, etc.).
+*   **`SessionManager`**: Manages conversation history and long-term memory.
+*   **`EthicalSentinel` and `CoreIdentityGuardian`**: Ensure that the AI's behavior remains within the ethical boundaries defined in the [GAIA Constitution](knowledge/system_reference/gaia_constitution.md).
 
 ## Getting Started
 
@@ -59,65 +64,29 @@ GAIA is a sophisticated AI assistant designed to be a modular and extensible pla
     EMBEDDING_MODEL_PATH=all-MiniLM-L6-v2
     ```
 
-4.  **Build and run the container:**
+4.  **Build the container:**
 
     ```bash
-    docker-compose up --build
+    docker-compose build
     ```
 
-## Usage
+### Usage
 
-### Web Interface
+The primary entry point for development is the `gaia_rescue.py` script. It provides an interactive shell for interacting with the `AgentCore`.
 
-The web interface provides a user-friendly way to interact with GAIA. It can be accessed at `http://localhost:7860`.
+1.  **Run the rescue shell:**
 
-### Command-Line Interface (CLI)
+    ```bash
+    docker-compose run --rm gaia-assistant python gaia_rescue.py
+    ```
 
-The CLI provides a more direct way to interact with GAIA. It can be accessed by running the following command:
+2.  **Start the chat loop:**
 
-```bash
-docker-compose run --rm gaia-assistant python main.py
-```
+    Once in the rescue shell, you can start the interactive chat loop by running:
 
-### Rescue Shell
-
-The rescue shell is a developer-focused environment for interacting with GAIA's core components. It can be accessed by running the following command:
-
-```bash
-docker-compose run --rm gaia-assistant python gaia_rescue.py
-```
-
-## Architecture Overview
-
-The system is built around a modular and extensible architecture with the following key components:
-
-*   **`AgentCore`**: The central cognitive engine that orchestrates the entire "Reason-Act-Reflect" loop.
-*   **`ModelPool`**: Manages a pool of AI models, allowing the system to use different models for different tasks.
-*   **`PromptBuilder`**: Constructs detailed, context-aware prompts for the LLM.
-*   **`SelfReflection`**: Enables the AI to analyze and refine its own plans and responses.
-*   **`StreamObserver`**: Monitors the LLM's output in real-time to detect and prevent errors.
-*   **`OutputRouter`**: Parses the structured output from the LLM and routes it to the appropriate destination.
-*   **`SessionManager`**: Manages conversation history and long-term memory.
-*   **`EthicalSentinel` and `CoreIdentityGuardian`**: Ensure that the AI's behavior remains within ethical boundaries.
-
-## Roadmap
-
-*   [ ] Expanded context windows
-*   [ ] Project switching functionality
-*   [ ] User authentication system
-*   [ ] Dynamic context management with archiving
-*   [ ] Image generation capabilities
-*   [ ] Conversation summarization with filtering
-*   [ ] Smart context archiving and retrieval
-*   [ ] LoRA fine-tuning during system idle time
-*   [ ] Content importance weighting for memory management
-*   [ ] Incremental vector database updates
-*   [ ] Enhanced templating system
-*   [ ] Improved artifact editing
-*   [ ] Real-time knowledge updates
-*   [ ] Multi-project support
-*   [ ] Optimizations for larger models
-*   [ ] Backup and versioning systems
+    ```python
+    rescue_chat_loop()
+    ```
 
 ## Contributing
 

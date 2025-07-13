@@ -1,0 +1,90 @@
+[azrael@gaia-360 gaia-assistant]$ docker-compose run --rm campaign_llm python gaia_rescue.py
+INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
+INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
+INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
+INFO:GAIA.ModelPool:🔹 Loading Prime model
+INFO:GAIA.ModelPool:✅ Prime loaded: <llama_cpp.llama.Llama object at 0x7fb098152a90>
+INFO:GAIA.ModelPool:🔹 Loading Lite model
+INFO:GAIA.ModelPool:✅ Lite loaded: <llama_cpp.llama.Llama object at 0x7fb0981537d0>
+INFO:GAIA.ModelPool:🔹 Loading Embedding model
+INFO:sentence_transformers.SentenceTransformer:Load pretrained SentenceTransformer: /models/all-MiniLM-L6-v2
+INFO:sentence_transformers.SentenceTransformer:Use pytorch device_name: cpu
+INFO:GAIA.ModelPool:✅ Embedding model loaded: SentenceTransformer(
+  (0): Transformer({'max_seq_length': 256, 'do_lower_case': False}) with Transformer model: BertModel 
+  (1): Pooling({'word_embedding_dimension': 384, 'pooling_mode_cls_token': False, 'pooling_mode_mean_tokens': True, 'pooling_mode_max_tokens': False, 'pooling_mode_mean_sqrt_len_tokens': False, 'pooling_mode_weightedmean_tokens': False, 'pooling_mode_lasttoken': False, 'include_prompt': True})
+  (2): Normalize()
+)
+INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
+INFO:GAIA.IdentityGuardian:✅ Loaded Tier I Identity from /gaia-assistant/knowledge/system_reference/core_identity.json
+INFO:GAIA.SessionManager:💾 Loading 1 sessions from app/shared/sessions.json
+INFO:GAIA.SessionManager:SessionManager initialized. Found 1 existing sessions.
+INFO:GAIA.PersonaManager:✅ Loaded persona data for 'dev' from /gaia-assistant/knowledge/personas/dev/dev_persona.json
+INFO:GAIA.PersonaManager:✅ Loaded persona data for 'dev' from /gaia-assistant/knowledge/personas/dev/dev_persona.json
+INFO:GAIA.Rescue:✅ Loaded default persona 'gaia-dev' via PersonaManager.
+INFO:GAIA.Rescue:Clearing session 'cli_default_session' for a clean test run.
+INFO:GAIA.SessionManager:🔄 Resetting session: cli_default_session
+
+🧠 GAIA Rescue Shell initialized.
+   Session ID: cli_default_session
+
+Diagnostics & direct interaction available.
+
+• rescue_chat_loop()         - start interactive chat for the current session
+• ai.read('path') / ai.write - file ops
+• ai.execute('ls -l')        - safe shell
+• ai.helper.*                - helper utilities
+• ai.session_manager.reset_session('cli_default_session') - clear this session's history
+• reload('app.utils.gaia_rescue_helper') - hot-reload helper
+• exit() or Ctrl-D           - quit
+
+Python 3.11.13 (main, Jun 10 2025, 23:54:42) [GCC 12.2.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> rescue_chat_loop()
+
+💬 Entering GAIA Rescue chat mode for session: 'cli_default_session'
+👉 Use '<<<' and '>>>' on new lines for multi‑line input.
+
+You > Hello GAIA. Can you describe to me your primitive functions that are available within your architecture? Remember, you are the General Artisanal Intelligence Architecture, or at least the beginning of it. :)
+GAIA > INFO:GAIA.SessionManager:✨ Creating new persistent session: cli_default_session with persona 'default'
+INFO:GAIA.ModelPool:🔄 Model 'lite' status set to 'busy'
+INFO:GAIA.ModelPool:🔄 Model 'lite' status set to 'idle'
+INFO:GAIA.ModelPool:🔄 Model 'prime' status set to 'idle'
+INFO:GAIA.IntentDetection:Model intent detection: read_file
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 3, Estimated Tokens: ~643/4096
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 3, Estimated Tokens: ~639/4096
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'None'. Messages: 2, Estimated Tokens: ~322/4096
+WARNING:GAIA.EthicalSentinel:⚠️ Memory usage high: 91.6%
+INFO:GAIA.Helper:🗃️ Sketchpad backed up to ./knowledge/system_reference/sketchpad.json.bak.20250713_022550
+INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 6, Estimated Tokens: ~1247/4096
+INFO:GAIA.ExternalVoice:ExternalVoice.worker: starting create_chat_completion stream
+INFO:GAIA.ExternalVoice:ExternalVoice.worker: create_chat_completion stream took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.StreamObserver:StreamObserver (AgentCore-Observer): Performing non-blocking LLM check.
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+I will proceed with the following plan:
+
+1. Execute: ai.read('knowledge/system_reference/gaia_constants.json')
+2. Execute: ai.read('knowledge/system_reference/safe_execute_functions.json')
+3. Vector query: ai.vector_query('GAIA-Dev primitive functions')
+
+This will allow me to access the necessary JSON files containing the allowed functions and constants, and then query my vector database for the specific function names related to my primitive functions.
+You > 
+🔔 Observer Interrupt: I BELIEVE THERE IS A FACTUAL ERROR IN THE USER'S REQUEST. GAIA IS NOT JUST THE BEGINNING OF AN ARCHITECTURE; IT IS AN INDIVIDUAL AI SYSTEM THAT IS PART OF THE GENERAL ARTISANAL INTELLIGENCE ARCHITECTURE. I WILL CORRECT THE RESPONSE ACCORDINGLY.
+
+CORRECTED RESPONSE:
+
+You > 
+👋 Exiting chat mode.
+>>> 

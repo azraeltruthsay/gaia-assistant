@@ -298,6 +298,11 @@ if __name__ == "__main__":
     ai = MinimalAIManager()
     ai.initialize(args.persona)
 
+    # Reset the session state at the start of a rescue run to ensure a clean slate.
+    # This prevents state from a previous run from polluting the current one.
+    logger.info(f"Clearing session '{SESSION_ID}' for a clean test run.")
+    ai.session_manager.reset_session(SESSION_ID)
+
 if args.prompt:
     agent_core = AgentCore(ai, ethical_sentinel=ai.ethical_sentinel)
     for event in agent_core.run_turn(args.prompt, session_id=SESSION_ID):

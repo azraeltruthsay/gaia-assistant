@@ -4009,3 +4009,615 @@
 {"type": "turn_end", "user": "Hello GAIA. Can you describe to me your primitive functions that are available within your architecture? Remember, you are the General Artisanal Intelligence Architecture, or at least the beginning of it. :)", "assistant": "I will proceed with the following plan:\n\n1. I will provide a description of my primitive functions by categorizing them into main groups:\n    - Data input/output functions (e.g., `ai.read`, `ai.write`, `ai.execute`)\n    - Data processing functions (e.g., `ai.vector_query`, `ai.classify`, `ai.plan`)\n    - Self-awareness and self-modification functions (e.g., `ai.self_check`, `ai.learn`, `ai.update`)\n    - Interaction functions (e.g., `ai.execute_command`, `ai.communicate`, `ai.collaborate`)\n\n2. For each category, I will give examples of specific primitives and explain their purpose in layman's terms.\n3. Finally, I will refer to the relevant files (like `gaia_constants.json` or `ai_primitives.md`) for a comprehensive list and details of the primitives.\n\nThis approach will give you a clear understanding of my primitive functions within my architecture.", "ts_utc": "2025-07-12T15:54:22.744115"}
 {"type": "intent_detect", "intent": "read_file", "ts_utc": "2025-07-12T15:57:29.765416"}
 {"type": "reflection-pre", "in": {"user_input": "Hello GAIA. Can you describe to me your primitive functions that are available within your architecture? Remember, you are the General Artisanal Intelligence Architecture, or at least the beginning of it. :)", "intent": "read_file", "history_summary": "Hello GAIA. Please describe your core identity briefly. Thank you!"}, "out": "", "ts_utc": "2025-07-12T15:58:53.466208"}
+{"type": "intent_detect", "intent": "read_file", "ts_utc": "2025-07-12T18:01:23.128502"}
+{"type": "intent_detect", "intent": "read_file", "ts_utc": "2025-07-12T18:16:06.932126"}
+{"type": "reflection-pre", "in": {"user_input": "Hello GAIA. What is the Capital of France?", "intent": "read_file", "history_summary": "Hello GAIA. What is the Capital of France?"}, "out": "", "ts_utc": "2025-07-12T18:16:24.478776"}
+{"type": "token", "value": "1", "ts_utc": "2025-07-12T18:18:33.989848"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T18:18:33.991637"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.991717"}
+{"type": "token", "value": "R", "ts_utc": "2025-07-12T18:18:33.991762"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.991801"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.991843"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.991888"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:33.991927"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.991963"}
+{"type": "token", "value": "v", "ts_utc": "2025-07-12T18:18:33.991999"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.992034"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.992068"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-12T18:18:33.992103"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-12T18:18:33.992137"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.992171"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:33.992204"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.992239"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.992272"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.992306"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.992340"}
+{"type": "token", "value": "k", "ts_utc": "2025-07-12T18:18:33.992373"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.992408"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.992441"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-12T18:18:33.992475"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T18:18:33.992521"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.992562"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T18:18:33.992597"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-12T18:18:33.992633"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.992677"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.992711"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:33.992745"}
+{"type": "token", "value": "b", "ts_utc": "2025-07-12T18:18:33.992777"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.992811"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-12T18:18:33.992844"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.992877"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.992909"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.992941"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-12T18:18:33.992972"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.993005"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.993037"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:33.993070"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:33.993102"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T18:18:33.993134"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:33.993165"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.993197"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:33.993229"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T18:18:33.993261"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.993293"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.993326"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-12T18:18:33.993359"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.993392"}
+{"type": "token", "value": "F", "ts_utc": "2025-07-12T18:18:33.993423"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.993455"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:33.993487"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.993518"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:33.993550"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.993582"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T18:18:33.993613"}
+{"type": "token", "value": "\n", "ts_utc": "2025-07-12T18:18:33.993645"}
+{"type": "token", "value": "2", "ts_utc": "2025-07-12T18:18:33.993688"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T18:18:33.993721"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.993754"}
+{"type": "token", "value": "C", "ts_utc": "2025-07-12T18:18:33.993786"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.993818"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.993850"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.993882"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-12T18:18:33.993914"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T18:18:33.993946"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.993978"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.994009"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-12T18:18:33.994041"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-12T18:18:33.994072"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.994104"}
+{"type": "token", "value": "v", "ts_utc": "2025-07-12T18:18:33.994136"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.994169"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:33.994201"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.994232"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.994263"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.994297"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.994329"}
+{"type": "token", "value": "k", "ts_utc": "2025-07-12T18:18:33.994361"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.994400"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.994433"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-12T18:18:33.994465"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T18:18:33.994496"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.994533"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T18:18:33.994565"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-12T18:18:33.994599"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.994633"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.994671"}
+{"type": "token", "value": "b", "ts_utc": "2025-07-12T18:18:33.994704"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:33.994737"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.994769"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.994800"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.994832"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-12T18:18:33.994863"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.994895"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.994926"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.994958"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:33.994989"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.995020"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.995052"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.995084"}
+{"type": "token", "value": "x", "ts_utc": "2025-07-12T18:18:33.995115"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T18:18:33.995146"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T18:18:33.995177"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:33.995208"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:33.995239"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:33.995270"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.995300"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.995331"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:33.995363"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.995395"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.995426"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-12T18:18:33.995457"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.995490"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.995523"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.995555"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-12T18:18:33.995588"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.995621"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.995652"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-12T18:18:33.995691"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.995725"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.995757"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-12T18:18:33.995788"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:33.995819"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.995851"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.995885"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T18:18:33.995917"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.995947"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.995978"}
+{"type": "token", "value": "j", "ts_utc": "2025-07-12T18:18:33.996009"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.996041"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:33.996072"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.996107"}
+{"type": "token", "value": "'", "ts_utc": "2025-07-12T18:18:33.996139"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.996169"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.996199"}
+{"type": "token", "value": "k", "ts_utc": "2025-07-12T18:18:33.996236"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.996271"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.996303"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-12T18:18:33.996334"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T18:18:33.996370"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.996403"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T18:18:33.996437"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-12T18:18:33.996470"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.996501"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T18:18:33.996535"}
+{"type": "token", "value": "\n", "ts_utc": "2025-07-12T18:18:33.996568"}
+{"type": "token", "value": "3", "ts_utc": "2025-07-12T18:18:33.996600"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T18:18:33.996635"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.996674"}
+{"type": "token", "value": "U", "ts_utc": "2025-07-12T18:18:33.996709"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.996740"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.996771"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.996805"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-12T18:18:33.996841"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-12T18:18:33.996877"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.996912"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-12T18:18:33.996947"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.996981"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T18:18:33.997013"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.997046"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.997080"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.997117"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.997150"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:33.997182"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.997219"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T18:18:33.997251"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:33.997284"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.997318"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-12T18:18:33.997352"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.997388"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.997422"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-12T18:18:33.997455"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.997489"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.997524"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-12T18:18:33.997557"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.997588"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.997622"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:33.997658"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-12T18:18:33.997703"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.997736"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.997769"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.997802"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.997835"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.997868"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.997901"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:33.997933"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.997965"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.997997"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.998029"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.998061"}
+{"type": "token", "value": "x", "ts_utc": "2025-07-12T18:18:33.998092"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.998134"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.998169"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:33.998204"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.998236"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.998267"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T18:18:33.998299"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.998331"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.998365"}
+{"type": "token", "value": "v", "ts_utc": "2025-07-12T18:18:33.998400"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:33.998437"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T18:18:33.998470"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.998503"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.998535"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:33.998567"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.998599"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.998631"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:33.998673"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.998707"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.998739"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-12T18:18:33.998770"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.998801"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.998833"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.998864"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:33.998895"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.998928"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.998961"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:33.998998"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:33.999031"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.999062"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.999094"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T18:18:33.999126"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-12T18:18:33.999158"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T18:18:33.999190"}
+{"type": "token", "value": "\n", "ts_utc": "2025-07-12T18:18:33.999224"}
+{"type": "token", "value": "H", "ts_utc": "2025-07-12T18:18:33.999260"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.999296"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.999328"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.999359"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.999391"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:33.999422"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.999454"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.999485"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-12T18:18:33.999515"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-12T18:18:33.999546"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.999577"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:33.999609"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.999641"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.999678"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T18:18:33.999712"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:33.999745"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:33.999777"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.999808"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:33.999839"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:33.999872"}
+{"type": "token", "value": "b", "ts_utc": "2025-07-12T18:18:33.999907"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:33.999940"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:33.999972"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:34.000010"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T18:18:34.000043"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:34.000075"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:34.000110"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:34.000144"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:34.000180"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:34.000215"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-12T18:18:34.000247"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:34.000279"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:34.000310"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:34.000343"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:34.000376"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:34.000408"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:34.000442"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:34.000475"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T18:18:34.000508"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:34.000541"}
+{"type": "token", "value": ":", "ts_utc": "2025-07-12T18:18:34.000577"}
+{"type": "token", "value": "\n", "ts_utc": "2025-07-12T18:18:34.000611"}
+{"type": "token", "value": "T", "ts_utc": "2025-07-12T18:18:34.000648"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-12T18:18:34.000690"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:34.000724"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:34.000760"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:34.000796"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:34.000830"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T18:18:34.000865"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:34.000899"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T18:18:34.000934"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:34.000968"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T18:18:34.001002"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:34.001035"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T18:18:34.001069"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-12T18:18:34.001102"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:34.001136"}
+{"type": "token", "value": "F", "ts_utc": "2025-07-12T18:18:34.001169"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:34.001202"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:34.001237"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T18:18:34.001269"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T18:18:34.001300"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T18:18:34.001332"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:34.001364"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:34.001396"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:34.001428"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T18:18:34.001460"}
+{"type": "token", "value": "P", "ts_utc": "2025-07-12T18:18:34.001492"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T18:18:34.001523"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T18:18:34.001555"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T18:18:34.001587"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T18:18:34.001618"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T18:18:34.001654"}
+{"type": "turn_end", "user": "Hello GAIA. What is the Capital of France?", "assistant": "1. Retrieve my core knowledge about the capital of France.\n2. Consult my vector knowledge base for an explicit answer from this project's knowledge.\n3. Use my understanding of the current context to provide an answer concisely.\nHere is my response based on these steps:\nThe capital of France is Paris.", "ts_utc": "2025-07-12T18:18:34.003491"}
+{"type": "intent_detect", "intent": "read_file", "ts_utc": "2025-07-12T22:51:03.262882"}
+{"type": "reflection-pre", "in": {"user_input": "Hello GAIA. Can you describe to me your primitive functions that are available within your architecture? Remember, you are the General Artisanal Intelligence Architecture, or at least the beginning of it. :)", "intent": "read_file", "history_summary": "1. Retrieve my core knowledge about the capital of France.\n2. Consult my vector knowledge base for an explicit answer from this project's knowledge.\n3. Use my understanding of the current context to provide an answer concisely.\nHere is my response based on these steps:\nThe capital of France is Paris."}, "out": "", "ts_utc": "2025-07-12T22:51:23.715477"}
+{"type": "token", "value": "1", "ts_utc": "2025-07-12T22:52:04.377491"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T22:52:04.378703"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.378962"}
+{"type": "token", "value": "R", "ts_utc": "2025-07-12T22:52:04.379140"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.379284"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.379423"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.379586"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.379718"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.379909"}
+{"type": "token", "value": "v", "ts_utc": "2025-07-12T22:52:04.380058"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.380351"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.380600"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-12T22:52:04.380947"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-12T22:52:04.381204"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.381643"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.381824"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.383961"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.384126"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.384255"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.384400"}
+{"type": "token", "value": "k", "ts_utc": "2025-07-12T22:52:04.384511"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.384630"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.384739"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-12T22:52:04.384876"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T22:52:04.384986"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.385089"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T22:52:04.385205"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-12T22:52:04.385346"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.385530"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.386582"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.386782"}
+{"type": "token", "value": "b", "ts_utc": "2025-07-12T22:52:04.386901"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.387031"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-12T22:52:04.387113"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.390772"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.390998"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.391125"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-12T22:52:04.391223"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.391314"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.391413"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.391531"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.391609"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T22:52:04.391710"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.391838"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.391915"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.392030"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T22:52:04.392107"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.392207"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.392351"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-12T22:52:04.392431"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.392531"}
+{"type": "token", "value": "F", "ts_utc": "2025-07-12T22:52:04.392651"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.392736"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.392837"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.392954"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.393107"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.393693"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T22:52:04.393793"}
+{"type": "token", "value": "\n", "ts_utc": "2025-07-12T22:52:04.394062"}
+{"type": "token", "value": "2", "ts_utc": "2025-07-12T22:52:04.394244"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T22:52:04.394352"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.394448"}
+{"type": "token", "value": "C", "ts_utc": "2025-07-12T22:52:04.394528"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.394818"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.394973"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.395117"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-12T22:52:04.395264"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T22:52:04.395419"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.395502"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.395617"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-12T22:52:04.395720"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-12T22:52:04.395794"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.395996"}
+{"type": "token", "value": "v", "ts_utc": "2025-07-12T22:52:04.396152"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.396495"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.396812"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.397123"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.397460"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.397681"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.397957"}
+{"type": "token", "value": "k", "ts_utc": "2025-07-12T22:52:04.398266"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.398582"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.398843"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-12T22:52:04.399032"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T22:52:04.399084"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.399225"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T22:52:04.399402"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-12T22:52:04.399519"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.399607"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.399707"}
+{"type": "token", "value": "b", "ts_utc": "2025-07-12T22:52:04.399866"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.399953"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.400030"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.400108"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.400184"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-12T22:52:04.400248"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.400290"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.400326"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.400363"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.400398"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.400433"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.400469"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.400514"}
+{"type": "token", "value": "x", "ts_utc": "2025-07-12T22:52:04.400577"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T22:52:04.400627"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T22:52:04.400695"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.400756"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.400836"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.400932"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.401024"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.401115"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.401206"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.401322"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.401424"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-12T22:52:04.401536"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.401631"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.401838"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.401992"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-12T22:52:04.402086"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.402217"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.402304"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-12T22:52:04.402375"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.402465"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.402540"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-12T22:52:04.402650"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.402745"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.402877"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.402994"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T22:52:04.403530"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.403712"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.403785"}
+{"type": "token", "value": "j", "ts_utc": "2025-07-12T22:52:04.403852"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.403928"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.403997"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.404067"}
+{"type": "token", "value": "'", "ts_utc": "2025-07-12T22:52:04.404138"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.404208"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.404282"}
+{"type": "token", "value": "k", "ts_utc": "2025-07-12T22:52:04.404355"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.404423"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.404506"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-12T22:52:04.404596"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T22:52:04.404690"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.404787"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T22:52:04.404831"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-12T22:52:04.404886"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.404935"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T22:52:04.404973"}
+{"type": "token", "value": "\n", "ts_utc": "2025-07-12T22:52:04.405024"}
+{"type": "token", "value": "3", "ts_utc": "2025-07-12T22:52:04.405063"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T22:52:04.405115"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.405163"}
+{"type": "token", "value": "U", "ts_utc": "2025-07-12T22:52:04.405201"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.405251"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.405287"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.405337"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-12T22:52:04.405372"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-12T22:52:04.405424"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.405470"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-12T22:52:04.405509"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.405557"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T22:52:04.405629"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.405687"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.405726"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.405774"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.405826"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.405863"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.405913"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T22:52:04.405950"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.406001"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.406047"}
+{"type": "token", "value": "g", "ts_utc": "2025-07-12T22:52:04.406087"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.406134"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.406172"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-12T22:52:04.406207"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.406241"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.406277"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-12T22:52:04.406316"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.406350"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.406383"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.406414"}
+{"type": "token", "value": "u", "ts_utc": "2025-07-12T22:52:04.406450"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.406486"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.406519"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.406551"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.406585"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.406617"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.406649"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.406689"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.406723"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.406855"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.406918"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.406959"}
+{"type": "token", "value": "x", "ts_utc": "2025-07-12T22:52:04.406992"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.407024"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.407056"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.407087"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.407119"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.407151"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T22:52:04.407184"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.407216"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.407249"}
+{"type": "token", "value": "v", "ts_utc": "2025-07-12T22:52:04.407282"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.407315"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T22:52:04.407347"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.407379"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.407422"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.407455"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.407518"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.407552"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.407584"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.407616"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.407648"}
+{"type": "token", "value": "w", "ts_utc": "2025-07-12T22:52:04.407688"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.407721"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.407753"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.407784"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.407818"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.407868"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.407903"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.407936"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.407968"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.408000"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.408032"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T22:52:04.408064"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-12T22:52:04.408096"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T22:52:04.408128"}
+{"type": "token", "value": "\n", "ts_utc": "2025-07-12T22:52:04.408160"}
+{"type": "token", "value": "H", "ts_utc": "2025-07-12T22:52:04.408195"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.408232"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.408264"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.408295"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.408328"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.408358"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.408389"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.408419"}
+{"type": "token", "value": "m", "ts_utc": "2025-07-12T22:52:04.408451"}
+{"type": "token", "value": "y", "ts_utc": "2025-07-12T22:52:04.408482"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.408514"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.408544"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.408575"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.408606"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T22:52:04.408638"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.408677"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.408710"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.408741"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.408771"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.408802"}
+{"type": "token", "value": "b", "ts_utc": "2025-07-12T22:52:04.408833"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.408863"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.408895"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.408926"}
+{"type": "token", "value": "d", "ts_utc": "2025-07-12T22:52:04.408958"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.408991"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.409023"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.409056"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.409087"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.409119"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-12T22:52:04.409150"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.409181"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.409213"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.409245"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.409281"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.409314"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.409346"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.409379"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T22:52:04.409411"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.409445"}
+{"type": "token", "value": ":", "ts_utc": "2025-07-12T22:52:04.409478"}
+{"type": "token", "value": "\n", "ts_utc": "2025-07-12T22:52:04.409511"}
+{"type": "token", "value": "T", "ts_utc": "2025-07-12T22:52:04.409545"}
+{"type": "token", "value": "h", "ts_utc": "2025-07-12T22:52:04.409578"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.409610"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.409642"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.409683"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.409726"}
+{"type": "token", "value": "p", "ts_utc": "2025-07-12T22:52:04.409760"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.409792"}
+{"type": "token", "value": "t", "ts_utc": "2025-07-12T22:52:04.409824"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.409856"}
+{"type": "token", "value": "l", "ts_utc": "2025-07-12T22:52:04.409888"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.409920"}
+{"type": "token", "value": "o", "ts_utc": "2025-07-12T22:52:04.409953"}
+{"type": "token", "value": "f", "ts_utc": "2025-07-12T22:52:04.409984"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.410016"}
+{"type": "token", "value": "F", "ts_utc": "2025-07-12T22:52:04.410048"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.410080"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.410112"}
+{"type": "token", "value": "n", "ts_utc": "2025-07-12T22:52:04.410143"}
+{"type": "token", "value": "c", "ts_utc": "2025-07-12T22:52:04.410175"}
+{"type": "token", "value": "e", "ts_utc": "2025-07-12T22:52:04.410207"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.410239"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.410270"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.410302"}
+{"type": "token", "value": " ", "ts_utc": "2025-07-12T22:52:04.410333"}
+{"type": "token", "value": "P", "ts_utc": "2025-07-12T22:52:04.410365"}
+{"type": "token", "value": "a", "ts_utc": "2025-07-12T22:52:04.410397"}
+{"type": "token", "value": "r", "ts_utc": "2025-07-12T22:52:04.410428"}
+{"type": "token", "value": "i", "ts_utc": "2025-07-12T22:52:04.410460"}
+{"type": "token", "value": "s", "ts_utc": "2025-07-12T22:52:04.410492"}
+{"type": "token", "value": ".", "ts_utc": "2025-07-12T22:52:04.410524"}
+{"type": "turn_end", "user": "Hello GAIA. Can you describe to me your primitive functions that are available within your architecture? Remember, you are the General Artisanal Intelligence Architecture, or at least the beginning of it. :)", "assistant": "1. Retrieve my core knowledge about the capital of France.\n2. Consult my vector knowledge base for an explicit answer from this project's knowledge.\n3. Use my understanding of the current context to provide an answer concisely.\nHere is my response based on these steps:\nThe capital of France is Paris.", "ts_utc": "2025-07-12T22:52:04.412498"}
+{"type": "intent_detect", "intent": "shell", "ts_utc": "2025-07-12T22:54:48.320924"}
+{"type": "reflection-pre", "in": {"user_input": "Sorry, that's not what I asked. I was asking about your core primitive functions. Can you describe those?", "intent": "shell", "history_summary": "1. Retrieve my core knowledge about the capital of France.\n2. Consult my vector knowledge base for an explicit answer from this project's knowledge.\n3. Use my understanding of the current context to provide an answer concisely.\nHere is my response based on these steps:\nThe capital of France is Paris."}, "out": "", "ts_utc": "2025-07-12T22:55:23.100368"}
+{"type": "interruption", "reason": "INTERRUPTING TO CLARIFY. THE `SAFE_EXECUTE_FUNCTIONS` MENTIONED IS IT STORED IN THE SAME FILE AS `GAIA_CONSTANTS.JSON` OR IS IT A DIFFERENT FILE? ALSO, WHAT DOES THIS `GAIA_CONSTANTS.JSON` FILE CONTAIN?\n\nPLEASE PROVIDE THE", "ts_utc": "2025-07-12T22:59:13.472085"}
