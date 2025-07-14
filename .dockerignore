@@ -9,3 +9,106 @@ personas/
 shared/
 logs/
 gaia_env/
+
+# Git repository
+.git/
+
+# START OF .gitignore SYNC
+# === Python ===
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*$py.class
+
+# C extensions
+*.so
+
+
+# === Environments ===
+# Virtual environment directories
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variable files
+.env
+*.env
+
+
+# === Distribution / Packaging ===
+# Build artifacts from tools like setuptools, wheel, etc.
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+
+# === Testing & Coverage ===
+# Reports and caches from testing frameworks
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+*.bak.*
+
+
+# === LLM Models & Snapshots ===
+# Local model files and large data snapshots
+/app/model.gguf
+*.gguf
+*.ckpt
+*.pt
+*.pth
+*.bin
+
+
+# === Vector DB / Memory Artifacts ===
+# ChromaDB storage, generated summaries, and logs
+/app/shared/chroma_db/
+/app/knowledge/system-reference/code_summaries/
+/app/shared/gaia_code_snapshot.json
+/app/shared/sessions.json # Add this line
+/app/conversation_logs/
+/logs/
+*.log
+
+
+# === OS & Editor Specific ===
+# System-generated metadata and IDE settings
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+
+
+# === Other Caches & Temporary Files ===
+*.sqlite
+*.sqlite3
+*.db
+*.tmp
+# END OF .gitignore SYNC

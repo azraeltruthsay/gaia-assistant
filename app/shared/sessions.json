@@ -1,17 +1,1 @@
-{
-  "cli_default_session": {
-    "session_id": "cli_default_session",
-    "persona": "default",
-    "history": [
-      {
-        "role": "user",
-        "content": "Hello GAIA. Can you give me a brief overview of your primitive functions?"
-      },
-      {
-        "role": "assistant",
-        "content": "EXECUTE: ai.helper.sketch('Overview of Primitives', '1. Read: For reading data or files. 2. Write: For writing data or files. 3. Delete: For deleting data or files. 4. Vector Query: For consulting embedded knowledge. 5. Execute: For running shell commands. 6. Check: For a quick status update of a task.')\n\nHere is a brief overview of my primitive functions:\n\n1. Read: Used for reading data or files.\n2. Write: Used for writing data or files.\n3. Delete: Used for deleting data or files.\n4. Vector Query: Consults the embedded knowledge in my vector database.\n5. Execute: Runs shell commands, limited to safe functions.\n6. Check: Provides a quick status update of a task."
-      }
-    ],
-    "created_at": "2025-07-13T02:55:59.910569"
-  }
-}
+{}

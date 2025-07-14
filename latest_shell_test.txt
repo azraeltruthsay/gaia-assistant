@@ -3,9 +3,9 @@ INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.j
 INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
 INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
 INFO:GAIA.ModelPool:🔹 Loading Prime model
-INFO:GAIA.ModelPool:✅ Prime loaded: <llama_cpp.llama.Llama object at 0x7fb098152a90>
+INFO:GAIA.ModelPool:✅ Prime loaded: <llama_cpp.llama.Llama object at 0x7f14aa053190>
 INFO:GAIA.ModelPool:🔹 Loading Lite model
-INFO:GAIA.ModelPool:✅ Lite loaded: <llama_cpp.llama.Llama object at 0x7fb0981537d0>
+INFO:GAIA.ModelPool:✅ Lite loaded: <llama_cpp.llama.Llama object at 0x7f14a9534110>
 INFO:GAIA.ModelPool:🔹 Loading Embedding model
 INFO:sentence_transformers.SentenceTransformer:Load pretrained SentenceTransformer: /models/all-MiniLM-L6-v2
 INFO:sentence_transformers.SentenceTransformer:Use pytorch device_name: cpu
@@ -45,19 +45,21 @@ Type "help", "copyright", "credits" or "license" for more information.
 💬 Entering GAIA Rescue chat mode for session: 'cli_default_session'
 👉 Use '<<<' and '>>>' on new lines for multi‑line input.
 
-You > Hello GAIA. Can you describe to me your primitive functions that are available within your architecture? Remember, you are the General Artisanal Intelligence Architecture, or at least the beginning of it. :)
+You > Hello GAIA. Can you give me a brief overview of your primitive functions?
 GAIA > INFO:GAIA.SessionManager:✨ Creating new persistent session: cli_default_session with persona 'default'
 INFO:GAIA.ModelPool:🔄 Model 'lite' status set to 'busy'
 INFO:GAIA.ModelPool:🔄 Model 'lite' status set to 'idle'
+INFO:GAIA.ModelPool:🔄 Model 'prime' status set to 'busy'
+INFO:GAIA.ModelPool:🔄 Model 'lite' status set to 'idle'
 INFO:GAIA.ModelPool:🔄 Model 'prime' status set to 'idle'
 INFO:GAIA.IntentDetection:Model intent detection: read_file
-INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 3, Estimated Tokens: ~643/4096
-INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 3, Estimated Tokens: ~639/4096
-INFO:GAIA.PromptBuilder:Final prompt assembled for session 'None'. Messages: 2, Estimated Tokens: ~322/4096
-WARNING:GAIA.EthicalSentinel:⚠️ Memory usage high: 91.6%
-INFO:GAIA.Helper:🗃️ Sketchpad backed up to ./knowledge/system_reference/sketchpad.json.bak.20250713_022550
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 3, Estimated Tokens: ~595/4096
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 3, Estimated Tokens: ~591/4096
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'None'. Messages: 2, Estimated Tokens: ~191/4096
+WARNING:GAIA.EthicalSentinel:⚠️ Memory usage high: 93.1%
+INFO:GAIA.Helper:🗃️ Sketchpad backed up to ./knowledge/system_reference/sketchpad.json.bak.20250713_030445
 INFO:GAIA.Config:Loaded GAIA constants from /gaia-assistant/app/gaia_constants.json
-INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 6, Estimated Tokens: ~1247/4096
+INFO:GAIA.PromptBuilder:Final prompt assembled for session 'cli_default_session'. Messages: 6, Estimated Tokens: ~1175/4096
 INFO:GAIA.ExternalVoice:ExternalVoice.worker: starting create_chat_completion stream
 INFO:GAIA.ExternalVoice:ExternalVoice.worker: create_chat_completion stream took 0.00s
 INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
@@ -71,20 +73,56 @@ INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
 INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
 INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
 INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
 INFO:GAIA.StreamObserver:StreamObserver (AgentCore-Observer): Performing non-blocking LLM check.
 INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
-I will proceed with the following plan:
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+INFO:GAIA.ExternalVoice:ExternalVoice: observer.observe took 0.00s
+[Output Router] Executing for destination 'cli_chat': ai.helper.sketch('Overview of Primitives', '1. Read: For reading data or files. 2. Write: For writing data or files. 3. Delete: For deleting data or files. 4. Vector Query: For consulting embedded knowledge. 5. Execute: For running shell commands. 6. Check: For a quick status update of a task.')
 
-1. Execute: ai.read('knowledge/system_reference/gaia_constants.json')
-2. Execute: ai.read('knowledge/system_reference/safe_execute_functions.json')
-3. Vector query: ai.vector_query('GAIA-Dev primitive functions')
+Here is a brief overview of my primitive functions:
 
-This will allow me to access the necessary JSON files containing the allowed functions and constants, and then query my vector database for the specific function names related to my primitive functions.
+1. Read: Used for reading data or files.
+2. Write: Used for writing data or files.
+3. Delete: Used for deleting data or files.
+4. Vector Query: Consults the embedded knowledge in my vector database.
+5. Execute: Runs shell commands, limited to safe functions.
+6. Check: Provides a quick status update of a task.
+EXECUTE: ai.helper.sketch('Overview of Primitives', '1. Read: For reading data or files. 2. Write: For writing data or files. 3. Delete: For deleting data or files. 4. Vector Query: For consulting embedded knowledge. 5. Execute: For running shell commands. 6. Check: For a quick status update of a task.')
+
+Here is a brief overview of my primitive functions:
+
+1. Read: Used for reading data or files.
+2. Write: Used for writing data or files.
+3. Delete: Used for deleting data or files.
+4. Vector Query: Consults the embedded knowledge in my vector database.
+5. Execute: Runs shell commands, limited to safe functions.
+6. Check: Provides a quick status update of a task.ERROR:GAIA.Rescue:Chat loop error: reflect_and_refine() missing 1 required positional argument: 'instructions'
+Traceback (most recent call last):
+  File "/gaia-assistant/gaia_rescue.py", line 247, in rescue_chat_loop
+    for event in agent_core.run_turn(prompt, session_id=session_id):
+  File "/gaia-assistant/app/cognition/agent_core.py", line 363, in run_turn
+    yield from self._execute_actions(full_response, session_id)
+  File "/gaia-assistant/app/cognition/agent_core.py", line 116, in _execute_actions
+    refined_command = reflect_and_refine(
+                      ^^^^^^^^^^^^^^^^^^^
+TypeError: reflect_and_refine() missing 1 required positional argument: 'instructions'
+
+❌ Error: reflect_and_refine() missing 1 required positional argument: 'instructions'
 You > 
-🔔 Observer Interrupt: I BELIEVE THERE IS A FACTUAL ERROR IN THE USER'S REQUEST. GAIA IS NOT JUST THE BEGINNING OF AN ARCHITECTURE; IT IS AN INDIVIDUAL AI SYSTEM THAT IS PART OF THE GENERAL ARTISANAL INTELLIGENCE ARCHITECTURE. I WILL CORRECT THE RESPONSE ACCORDINGLY.
-
-CORRECTED RESPONSE:
-
-You > 
-👋 Exiting chat mode.
->>> 

@@ -214,11 +214,11 @@ def run_self_reflection(context, output, config=None, llm=None):
             ):
                 try:
                     from app.cognition.thought_seed import maybe_generate_seed
-                    maybe_generate_seed(reflection, context, config)
+                    maybe_generate_seed(reflection, context, config, llm=llm)
                 except Exception as seed_exc:
                     logger.error(f"Error generating thought seed: {seed_exc}")
         
-            maybe_review_seeds(config=config)
+            maybe_review_seeds(config=config, llm=llm)
             return reflection
         except Exception as e:
             logger.error(f"Self-reflection LLM error: {e}")

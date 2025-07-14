@@ -358,6 +358,14 @@ Please generate a new, corrected, and complete response that addresses the user'
         # MODIFICATION: Record that a turn has just completed successfully
         self.session_manager.record_last_activity()
 
+        # Maybe generate a thought seed for later reflection
+        try:
+            from app.cognition.thought_seed import maybe_generate_seed
+            context = {"user_input": user_input, "gaia_response": full_response}
+            maybe_generate_seed(user_input, context, self.config, llm=self.model_pool.get("prime"))
+        except Exception as e:
+            logger.error(f"Failed to generate thought seed: {e}", exc_info=True)
+
         if full_response:
             t_exec_start = _time.perf_counter()
             yield from self._execute_actions(full_response, session_id)
