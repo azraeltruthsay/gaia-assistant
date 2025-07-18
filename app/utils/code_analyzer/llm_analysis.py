@@ -1,12 +1,6 @@
-"""
-llm_analysis.py
-
-Handles code analysis using an LLM (Large Language Model).
-"""
-
 import logging
 from typing import List, Dict
-from app.cognition.inner_monologue import process_thought
+from app.cognition.agent_core import AgentCore
 from app.config import Config
 
 logger = logging.getLogger("GAIA.LLMAnalysis")
@@ -17,8 +11,9 @@ def summarize_chunks(chunks: List[Dict], llm, reflect: bool = True) -> str:
     """
     try:
         cfg = Config()
-        persona = "technical summarizer"
-        instructions = "Review the provided code functions and summarize their purpose in plain English."
+        # This is a placeholder for a more robust AI Manager instance
+        ai_manager = type('obj', (object,), {'model_pool': llm, 'config': cfg, 'active_persona': type('obj', (object,), {'get_full_instructions': lambda: ""})()})()
+        agent_core = AgentCore(ai_manager)
 
         messages = [chunk["content"] for chunk in chunks if chunk["type"] in ("function", "class")]
         payload = "\n\n".join(messages).strip()
@@ -27,14 +22,11 @@ def summarize_chunks(chunks: List[Dict], llm, reflect: bool = True) -> str:
             logger.warning("LLMAnalysis received an empty code chunk payload. Skipping summarization.")
             return "(Empty prompt — no summary generated.)"
 
-        summary = process_thought(
-            task_type="code_summary",
-            persona=persona,
-            instructions=instructions,
-            payload=payload,
-            llm=llm,
-            reflect=reflect
-        )
+        # We need to adapt the agent_core's run_turn method to this use case.
+        # For now, we'll just pass the payload as the user input.
+        response_generator = agent_core.run_turn(payload, session_id="code_summary")
+        summary = "".join([event["value"] for event in response_generator if event["type"] == "token"])
+
         return summary
 
     except Exception as e:

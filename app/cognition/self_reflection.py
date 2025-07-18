@@ -57,7 +57,7 @@ def reflect_and_refine(context: dict, output: str, config, llm, ethical_sentinel
     )
     prompt = messages[0]['content']
 
-    final_thought = None
+    final_thought = ""
     iterations = getattr(config, 'max_reflection_iterations', 3)
     threshold = getattr(config, 'reflection_threshold', 0.9)
     max_tokens = getattr(config, 'reflection_max_tokens', 256)

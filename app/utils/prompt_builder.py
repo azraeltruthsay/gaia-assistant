@@ -9,6 +9,7 @@ Prompt Builder (robust, persona/context-aware)
 import logging
 import os
 from typing import List, Dict
+from app.cognition.cognition_packet import CognitionPacket  # NEW import
 
 # We need a tokenizer to count tokens for budget management.
 # This assumes a utility function exists. If not, we can create a simple one.
@@ -120,6 +121,17 @@ def _build_prompt_core(
     )
 
     return final_prompt
+
+
+def build_from_packet(self, packet: CognitionPacket) -> str:
+    """
+    Build the full prompt text by combining system templates with the
+    packet JSON. The LLM sees both the human instructions and the packet.
+    """
+    system = self.build_system_prompt([])  # reuse existing template logic
+    packet_json = packet.to_json()
+    return f"{system}\n\nCognition Packet:\n```json\n{packet_json}\n```"
+
 
 # Older modules (external_voice, a few tests) still call
 #     build_prompt(context=ctx_dict)

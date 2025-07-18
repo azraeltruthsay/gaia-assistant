@@ -10,11 +10,11 @@ GAIA Cognitive Pipeline (Production)
 import logging
 from typing import Any, Callable, Dict, Optional
 
-from app.behavior.intent_detection import detect_intent
+from app.cognition.nlu.intent_detection import detect_intent
 from app.gaia_core.manager import route_primitive, get_context
 from app.behavior.persona_manager import load_persona
 from app.behavior.persona_adapter import adapt_persona
-from app.cognition.inner_monologue import generate_response as generate_inner_monologue
+from app.cognition.agent_core import AgentCore
 from app.utils.stream_observer import stream_observer
 from app.cognition.self_reflection import run_self_reflection
 
@@ -71,7 +71,7 @@ def gaia_pipeline(
 
     # === Main Model Pipeline ===
     logger.info("🧠 [Pipeline] Running inner monologue (model-powered)...")
-    monologue = generate_inner_monologue(
+    monologue = run_turn(
         user_input,
         config=config,
         llm=state.model_pool.get(responder_name),

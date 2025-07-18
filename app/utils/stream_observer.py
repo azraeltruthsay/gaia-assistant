@@ -42,7 +42,6 @@ class StreamObserver:
         # --- Tier 2: Slower, LLM-based check in a background thread ---
         with self._lock:
             if self.llm and len(buffer) > 250 and not self.llm_check_triggered:
-                self.llm_check_triggered = True
                 thread = threading.Thread(target=self._threaded_slow_check, args=(buffer, context))
                 thread.daemon = True
                 thread.start()

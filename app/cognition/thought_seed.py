@@ -1,3 +1,4 @@
+
 """
 Thought Seed System (GAIA pillar-compliant)
 - Generates, stores, reviews, and processes thought seeds.
@@ -14,6 +15,7 @@ import logging
 # unified reflection engine
 from app.cognition.self_reflection import run_self_reflection
 from app.utils.thoughtstream import write as ts_write
+
 logger = logging.getLogger("GAIA.ThoughtSeed")
 
 SEEDS_DIR = Path("./knowledge/seeds")
@@ -56,17 +58,7 @@ def generate_thought_seed(prompt, context=None, config=None, llm=None):  # <--- 
             "A seed thought is a single sentence describing a possible next step, a question to investigate, or an insight to remember. Do not act on it, just generate the thought."
         )
         # --- MODIFICATION END ---
-        seed_text = process_thought(
-            task_type="thought_seed",
-            persona=config.persona_name,
-            instructions="Generate only a thought seed. Do not act or execute.",
-            payload=seed_prompt,
-            identity_intro=config.identity_intro,
-            reflect=False,
-            context=context,
-            llm=llm,  # <--- Pass the LLM here
-            config=config
-        )
+        seed_text = seed_prompt
         seed_obj = {
             "created": datetime.utcnow().isoformat(),
             "context": context,

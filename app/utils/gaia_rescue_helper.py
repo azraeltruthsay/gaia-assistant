@@ -185,7 +185,7 @@ def clear_sketchpad():
 
 def update_json(filepath, key_path, new_value):
     """Update a JSON file at a given nested key_path with safe backup."""
-    full_path = os.path.join(Config.KNOWLEDGE_ROOT, filepath)
+    full_path = os.path.join(Config().KNOWLEDGE_DIR, filepath)
     if not full_path.endswith(".json") or not os.path.exists(full_path):
         print(f"❌ Invalid or missing file: {full_path}")
         return
