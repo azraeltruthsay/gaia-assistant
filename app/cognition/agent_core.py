@@ -148,72 +148,75 @@ class AgentCore:
 
         yield {"type": "action_end"}
 
-    def _stream_and_parse(self, stream_generator) -> Generator[Dict[str, Any], None, None]:
-        full_response = ""
-        response_buffer = ""
-        is_response_block = False
-        for token_or_event in stream_generator:
-            if isinstance(token_or_event, dict):
-                yield token_or_event
-                continue
-            token = str(token_or_event)
-            full_response += token
-            if not is_response_block:
-                response_buffer += token
-                if "RESPONSE:" in response_buffer:
-                    is_response_block = True
-                    # Clear buffer and yield the part of the token after the marker
-                    yield {"type": "token", "value": response_buffer.split("RESPONSE:", 1)[1]}
-                    response_buffer = ""
-            elif is_response_block:
-                yield {"type": "token", "value": token}
-        yield {"type": "full_response", "value": full_response}
-
     def run_turn(self, user_input: str, session_id: str, destination: str = "cli_chat") -> Generator[Dict[str, Any], None, None]:
         from app.cognition.nlu.intent_service import detect_intent
         import time as _time
         t0 = _time.perf_counter()
         selected_model_name = None
+        from app.cognition.cognitive_dispatcher import dispatch
+        dispatch_result = dispatch(user_input, self.ai_manager.active_persona.get_full_instructions())
+        if not dispatch_result:
+            yield {"type": "token", "value": "I am currently unable to process your request."}
+            return
+        selected_model_name = dispatch_result["model_name"]
+        selected_model = dispatch_result["model"]
+        token_budget = dispatch_result["token_budget"]
+        self.session_manager.add_message(session_id, "user", user_input)
+        active_persona = self.ai_manager.active_persona
+        persona_instructions = active_persona.get_full_instructions()
+        persona_instruction_list = active_persona.instructions
+        lite_llm = self.model_pool.acquire_model("lite")
+        prime_llm = self.model_pool.acquire_model("prime")
+        intent_str = None
         try:
-            from app.cognition.cognitive_dispatcher import dispatch
-            dispatch_result = dispatch(user_input, self.ai_manager.active_persona.get_full_instructions())
-            if not dispatch_result:
-                yield {"type": "token", "value": "I am currently unable to process your request."}
-                return
-            selected_model_name = dispatch_result["model_name"]
-            selected_model = dispatch_result["model"]
-            token_budget = dispatch_result["token_budget"]
-            self.session_manager.add_message(session_id, "user", user_input)
-            active_persona = self.ai_manager.active_persona
-            persona_instructions = active_persona.get_full_instructions()
-            persona_instruction_list = active_persona.instructions
-            intent_str = detect_intent(user_input, self.config, lite_llm=self.model_pool.get("lite"), full_llm=self.model_pool.get("prime"))
-            intent_result = {"intent": intent_str}
-            ts_write({"type": "intent_detect", **intent_result}, session_id)
-            history = self.session_manager.get_history(session_id)
-            if len(history) > HISTORY_SUMMARY_THRESHOLD:
-                summarizer = ConversationSummarizer(llm=self.model_pool.get("prime"), embed_model=self.model_pool.get("embed"))
+            intent_str = detect_intent(user_input, self.config, lite_llm=lite_llm, full_llm=prime_llm)
+        finally:
+            self.model_pool.release_model("lite")
+            self.model_pool.release_model("prime")
+        intent_result = {"intent": intent_str}
+        ts_write({"type": "intent_detect", **intent_result}, session_id)
+        history = self.session_manager.get_history(session_id)
+        if len(history) > HISTORY_SUMMARY_THRESHOLD:
+            prime_llm = self.model_pool.acquire_model("prime")
+            embed_model = self.model_pool.acquire_model("embed")
+            try:
+                summarizer = ConversationSummarizer(llm=prime_llm, embed_model=embed_model)
                 summary = summarizer.generate_summary(history)
                 history = [{"role": "system", "content": f"Summary of prior conversation: {summary}"}]
-            plan_messages = build_prompt(config=self.config, persona_instructions=persona_instructions, session_id=session_id, history=history, user_input=user_input, task_instruction="initial_planning", token_budget=token_budget)
-            initial_plan = selected_model.create_chat_completion(messages=plan_messages, max_tokens=self.config.max_tokens, temperature=self.config.temperature, top_p=self.config.top_p)["choices"][0]["message"]["content"].strip()
-            messages = build_prompt(config=self.config, persona_instructions=persona_instructions, session_id=session_id, history=history, user_input=user_input, token_budget=token_budget)
-            planning_context = {"user_input": user_input, "intent": intent_result.get("intent"), "history_summary": messages[1]["content"] if len(messages) > 1 else ""}
-            refined_plan = reflect_and_refine(context=planning_context, output=initial_plan, config=self.config, llm=self.model_pool.get_idle_model(exclude=[selected_model_name]), ethical_sentinel=self.ethical_sentinel, instructions=persona_instruction_list)
-            ts_write({"type": "reflection-pre", "in": planning_context, "out": refined_plan}, session_id)
-            messages.append({"role": "assistant", "content": f"I will proceed with the following plan: {refined_plan}"})
-            observer_model_name = self.model_pool.get_idle_model(exclude=[selected_model_name])
-            observer_model = self.model_pool.get(observer_model_name) if observer_model_name else None
-            observer = StreamObserver(llm=observer_model, name="AgentCore-Observer") if observer_model else None
-            voice = ExternalVoice(model=selected_model, model_pool=self.model_pool, config=self.config, thought=user_input, messages=messages, source="agent_core", observer=observer, context={"history": messages}, session_id=session_id)
+            finally:
+                self.model_pool.release_model("prime")
+                self.model_pool.release_model("embed")
+        plan_messages = build_prompt(config=self.config, persona_instructions=persona_instructions, session_id=session_id, history=history, user_input=user_input, task_instruction="initial_planning", token_budget=token_budget)
+        initial_plan = selected_model.create_chat_completion(messages=plan_messages, max_tokens=self.config.max_tokens, temperature=self.config.temperature, top_p=self.config.top_p)["choices"][0]["message"]["content"].strip()
+        messages = build_prompt(config=self.config, persona_instructions=persona_instructions, session_id=session_id, history=history, user_input=user_input, token_budget=token_budget)
+        planning_context = {"user_input": user_input, "intent": intent_result.get("intent"), "history_summary": messages[1]["content"] if len(messages) > 1 else ""}
+        reflection_model_name = self.model_pool.get_idle_model(exclude=[selected_model_name])
+        reflection_model = self.model_pool.acquire_model(reflection_model_name)
+        try:
+            logger.debug(f"Reflection input context: {planning_context}")
+            logger.debug(f"Reflection input plan: {initial_plan}")
+            refined_plan = reflect_and_refine(context=planning_context, output=initial_plan, config=self.config, llm=reflection_model, ethical_sentinel=self.ethical_sentinel, instructions=persona_instruction_list)
+            logger.debug(f"Reflection output: {refined_plan}")
+        finally:
+            if reflection_model_name:
+                self.model_pool.release_model(reflection_model_name)
+        ts_write({"type": "reflection-pre", "in": planning_context, "out": refined_plan}, session_id)
+        messages.append({"role": "assistant", "content": f"I will proceed with the following plan: {refined_plan}"})
+        observer_model_name = self.model_pool.get_idle_model(exclude=[selected_model_name])
+        observer_model = self.model_pool.acquire_model(observer_model_name)
+        observer = StreamObserver(llm=observer_model, name="AgentCore-Observer") if observer_model else None
+        voice = ExternalVoice(model=selected_model, model_pool=self.model_pool, config=self.config, thought=user_input, messages=messages, source="agent_core", observer=observer, context={"history": messages}, session_id=session_id)
+        try:
+            # Collect the full response from the stream
             stream_generator = voice.stream_response()
-            full_response = ""
-            for event in self._stream_and_parse(stream_generator):
-                if event["type"] == "full_response":
-                    full_response = event["value"]
-                    break
-                else:
-                    yield event
+            full_response = "".join([str(token) for token in stream_generator if isinstance(token, str)])
+            logger.debug(f"Full LLM response before routing: {full_response}")
+            # Use the OutputRouter to parse and handle the response
+            user_facing_response = route_output(full_response, self.ai_manager, session_id, destination)
+            logger.debug(f"User-facing response after routing: {user_facing_response}")
+            # Yield the final response to the user
+            yield {"type": "token", "value": user_facing_response}
+            logger.debug(f"Yielded to user: {user_facing_response}")
             self.ai_manager.status["last_response"] = full_response
             self.session_manager.add_message(session_id, "assistant", full_response)
             from app.utils.chat_logger import log_chat_entry
@@ -223,14 +226,17 @@ class AgentCore:
             try:
                 from app.cognition.thought_seed import maybe_generate_seed
                 context = {"user_input": user_input, "gaia_response": full_response}
-                maybe_generate_seed(user_input, context, self.config, llm=self.model_pool.get("prime"))
+                logger.debug(f"Seed generation input: user_input={user_input}, gaia_response={full_response}")
+                prime_llm = self.model_pool.acquire_model("prime")
+                try:
+                    result = maybe_generate_seed(user_input, context, self.config, llm=prime_llm)
+                    logger.debug(f"Seed generation output: {result}")
+                finally:
+                    self.model_pool.release_model("prime")
             except Exception as e:
                 logger.error(f"Failed to generate thought seed: {e}", exc_info=True)
-            commands_to_run = re.findall(r"EXECUTE:\s*(ai\..+?)", full_response)
-            if commands_to_run:
-                yield from self._execute_actions(commands_to_run, session_id)
-            logger.info(f"AgentCore: run_turn total took {_time.perf_counter() - t0:.2f}s")
+            logger.info(f"AgentCore: run_turn total took {{_time.perf_counter() - t0:.2f}}s")
         finally:
-            if selected_model_name:
-                self.model_pool.release_model(selected_model_name)
-                logger.info(f"AgentCore: Released model {selected_model_name}")
+            if observer_model_name:
+                self.model_pool.release_model(observer_model_name)
+        logger.info(f"AgentCore: Released model {selected_model_name}")

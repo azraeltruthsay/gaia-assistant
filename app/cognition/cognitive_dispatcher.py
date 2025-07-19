@@ -19,32 +19,20 @@ def dispatch(prompt: str, persona_instructions: str) -> dict:
         return None
 
     try:
-        # New, more robust prompt with a JSON schema
-        analysis_prompt = f"""You are a JSON output agent. Analyze the following prompt and respond with ONLY a single JSON object that conforms to the following schema:
-
-        {{
-            "type": "object",
-            "properties": {{
-                "complexity": {{
-                    "type": "string",
-                    "enum": ["simple", "moderate", "complex"]
-                }},
-                "required_context": {{
-                    "type": "string",
-                    "enum": ["minimal", "medium", "full"]
-                }}
-            }},
-            "required": ["complexity", "required_context"]
-        }}
-
-        Prompt: {prompt}
-        """
+        # Improved, more explicit analysis prompt to encourage valid JSON output
+        analysis_prompt = (
+            "You are GAIA's cognitive dispatcher. Your task is to analyze the following user prompt and respond ONLY with a valid JSON object. "
+            "The JSON must have two keys: 'complexity' (with value 'simple', 'moderate', or 'complex') and 'required_context' (with value 'minimal', 'medium', or 'full'). "
+            "Do not include any explanation, commentary, or extra text. Example: {\"complexity\": \"moderate\", \"required_context\": \"medium\"}. "
+            f"Prompt: {prompt}"
+        )
         
         analysis_response_raw = lite_model.create_completion(prompt=analysis_prompt, max_tokens=128)
         analysis_response_text = analysis_response_raw["choices"][0]["text"].strip()
 
         try:
-            json_match = re.search(r"\{.*\}", analysis_response_text, re.DOTALL)
+            # Enhanced JSON extraction to find the first valid JSON object
+            json_match = re.search(r"(?s)\{.*?\}", analysis_response_text)
             if json_match:
                 analysis = json.loads(json_match.group(0))
             else:

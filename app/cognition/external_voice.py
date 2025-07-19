@@ -108,82 +108,59 @@ class ExternalVoice:
 
         self.messages = build_prompt(context=prompt_context)
 
-        # ---- Launch model stream in a worker thread ---------------------- #
-        q: "queue.Queue[object]" = queue.Queue()
-
-        def worker() -> None:
-            try:
-                logger.info("ExternalVoice.worker: starting create_chat_completion stream")
-                t_start = time.perf_counter()
-                with suppress_llama_stderr():
-                    token_stream = self.model.create_chat_completion(
-                        messages=self.messages,
-                        max_tokens=self.config.max_tokens,
-                        temperature=self.config.temperature,
-                        top_p=self.config.top_p,
-                        stream=True,
-                    )
-                t_end = time.perf_counter()
-                logger.info(f"ExternalVoice.worker: create_chat_completion stream took {t_end - t_start:.2f}s")
-                for chunk in token_stream:
-                        q.put(chunk)
-            except Exception as exc:  # pass exception back
-                q.put(exc)
-            finally:
-                q.put(None)  # sentinel
-
-        threading.Thread(target=worker, daemon=True).start()
-
-        # ---- Consume queue, yield tokens -------------------------------- #
-        buffer: List[str] = []
-        since_check = 0
-
-        while True:
-            # Check for interruption from the observer's background thread
-            if self.observer and self.observer.interrupted:
-                reason = getattr(self.observer, "interrupt_reason", "observer interrupt")
-                logger.info(f"ExternalVoice: interruption detected from observer: {reason}")
-                yield {"event": "interruption", "data": reason}
-                break
-
-            try:
-                item = q.get(timeout=0.05) # Non-blocking wait
-            except queue.Empty:
-                continue # Loop again to check for interruption
-
-            if item is None:
-                break
-            if isinstance(item, Exception):
-                raise item
-
-            token = item["choices"][0]["delta"].get("content", "")
-            if not token:
-                continue
-
-            buffer.append(token)
-            yield token
-
-            since_check += 1
-            need_check = (
-                since_check >= self.observer_threshold
-                or any(p in token for p in self.logical_stop_punct)
+        # ---- Direct model stream (no worker thread) -------------------- #
+        logger.info("ExternalVoice: starting create_chat_completion stream directly")
+        t_start = time.perf_counter()
+        try:
+            token_stream = self.model.create_chat_completion(
+                messages=self.messages,
+                max_tokens=self.config.max_tokens,
+                temperature=self.config.temperature,
+                top_p=self.config.top_p,
+                stream=True,
             )
+            t_end = time.perf_counter()
+            logger.info(f"ExternalVoice: create_chat_completion stream took {t_end - t_start:.2f}s")
 
-            if self.observer and need_check:
-                current = "".join(buffer)
-                logger.debug("ExternalVoice: invoking observer.observe")
-                t_obs_start = time.perf_counter()
-                # This call is now fast, but might trigger a background check
-                decision = self.observer.observe(current, prompt_context)
-                t_obs_end = time.perf_counter()
-                logger.info(f"ExternalVoice: observer.observe took {t_obs_end - t_obs_start:.2f}s")
-                since_check = 0
-                # This handles immediate (fast_check) interruptions
-                if decision == "interrupt":
+            buffer: List[str] = []
+            since_check = 0
+
+            for item in token_stream:
+                if self.observer and self.observer.interrupted:
                     reason = getattr(self.observer, "interrupt_reason", "observer interrupt")
-                    logger.info(f"ExternalVoice: interruption triggered immediately: {reason}")
+                    logger.info(f"ExternalVoice: interruption detected from observer: {reason}")
                     yield {"event": "interruption", "data": reason}
                     break
+
+                token = item["choices"][0]["delta"].get("content", "")
+                if not token:
+                    continue
+
+                buffer.append(token)
+                yield token
+
+                since_check += 1
+                need_check = (
+                    since_check >= self.observer_threshold
+                    or any(p in token for p in self.logical_stop_punct)
+                )
+
+                if self.observer and need_check:
+                    current = "".join(buffer)
+                    logger.debug("ExternalVoice: invoking observer.observe")
+                    t_obs_start = time.perf_counter()
+                    decision = self.observer.observe(current, prompt_context)
+                    t_obs_end = time.perf_counter()
+                    logger.info(f"ExternalVoice: observer.observe took {t_obs_end - t_obs_start:.2f}s")
+                    since_check = 0
+                    if decision == "interrupt":
+                        reason = getattr(self.observer, "interrupt_reason", "observer interrupt")
+                        logger.info(f"ExternalVoice: interruption triggered immediately: {reason}")
+                        yield {"event": "interruption", "data": reason}
+                        break
+        except Exception as e:
+            logger.error(f"Error during model stream: {e}", exc_info=True)
+            raise
 
     # --------------------------------------------------------------------- #
     # convenience helpers

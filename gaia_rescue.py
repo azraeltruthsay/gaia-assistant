@@ -69,9 +69,9 @@ class MinimalAIManager:
         self.config.RESPONSE_BUFFER = self.config.constants.get("RESPONSE_BUFFER", 512)
 
         # ---------------------------------------------------------------- models
-        self.llm = model_pool.get("prime")
-        self.lite_llm = model_pool.get("lite")
-        self.embed_model = model_pool.get("embed")
+        self.llm = None
+        self.lite_llm = None
+        self.embed_model = None
 
         # ---------------------------------------------------------------- state
         self.status: Dict[str, Any] = {"boot_time": datetime.utcnow().isoformat()}
