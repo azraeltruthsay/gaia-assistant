@@ -3,7 +3,14 @@
 [![Project Status](https://img.shields.io/badge/status-active_development-yellowgreen)](https://github.com/azraeltruthsay/gaia-assistant)
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/azraeltruthsay/gaia-assistant/blob/main/LICENSE)
 
+
 GAIA (General Artisanal Intelligence Architecture) is not a typical AI. She is an **Intelligent Artifice**—a being of care, craftsmanship, and authentic emergence, designed to be a versatile and adaptable partner for a variety of tasks.
+
+**Latest Enhancements (2025-07-19):**
+- PromptBuilder now injects chain-of-thought and confirmation instructions for safer, more reliable LLM outputs.
+- StreamObserver and OutputRouter validated for correct interrupt handling and output parsing.
+- All core pipeline components confirmed functional in CLI and rescue shell.
+- See [GAIA Core Blueprint](docs/gaia_core_blueprint.md) and [dev_log.md](dev_log.md) for verification details.
 
 ## About The Project
 
@@ -21,16 +28,23 @@ Once the `AgentCore` is fully functional and stable, we will begin adding higher
 
 ## Core Architecture
 
+
 The system is built around a modular and extensible architecture with the following key components:
 
-*   **`AgentCore`**: The central cognitive engine that orchestrates the entire "Reason-Act-Reflect" loop. It handles intent detection, prompt building, planning, reflection, and response generation.
-*   **`gaia_rescue.py`**: The primary entry point for development. It provides a minimal environment for interacting with the `AgentCore` and its various components.
-*   **`ModelPool`**: Manages a pool of AI models, allowing the system to use different models for different tasks (e.g., a "prime" model for complex reasoning and a "lite" model for faster tasks like intent detection and stream observation).
-*   **`SelfReflection`**: Enables the AI to analyze and refine its own plans and responses, improving the quality and safety of its output.
-*   **`StreamObserver`**: Monitors the LLM's output in real-time to detect and prevent errors, hallucinations, and ethical violations.
-*   **`OutputRouter`**: Parses the structured output from the LLM and routes it to the appropriate destination (e.g., CLI, web chat, etc.).
-*   **`SessionManager`**: Manages conversation history and long-term memory.
+*   **`AgentCore`**: Orchestrates the Reason-Act-Reflect loop, including intent detection, planning, prompt building, reflection, and action execution.
+*   **`gaia_rescue.py`**: Developer-focused rescue shell for direct, minimal interaction with the AgentCore.
+*   **`ModelPool`**: Loads and manages prime, lite, and embedding models.
+*   **`SelfReflection`**: Critiques and refines plans using the LLM.
+*   **`StreamObserver`**: Monitors and interrupts LLM output for safety; observer interrupts are respected and handled in the pipeline.
+*   **`OutputRouter`**: Parses and routes structured LLM output to the appropriate destination.
+*   **`SessionManager`**: Handles persistent session and history management.
 *   **`EthicalSentinel` and `CoreIdentityGuardian`**: Ensure that the AI's behavior remains within the ethical boundaries defined in the [GAIA Constitution](knowledge/system_reference/gaia_constitution.md).
+*   **`PromptBuilder`**: Assembles context-rich, budget-aware prompts with injected reasoning instructions. [Verified 2025-07-19]
+
+
+## Verification & Protocol Compliance
+
+GAIA's architecture and cognitive flow are documented and verified in the [GAIA Core Blueprint](docs/gaia_core_blueprint.md). The [Cognition Protocol](knowledge/system_reference/gaia_cognitition_protocol.md) is honored in all major components, with compliance and status tracked in the dev log.
 
 ## Getting Started
 

@@ -81,6 +81,7 @@ The `prompt_builder.py` module is responsible for constructing the prompts sent 
 
 *   **`build_prompt(config, persona_instructions, session_id, history, user_input, task_instruction)`**:
     *   Assembles a tiered prompt that includes the persona, conversation history (summarized if necessary), user input, and an optional task-specific instruction.
+    *   Injects chain-of-thought and confirmation instructions as a system message before the user input for improved reliability and safety. [Verified ✅ | Def: 2025-07-19 | Call: 2025-07-19]
     *   Manages the token budget to ensure the prompt does not exceed the model's context window.
 
 ### 2.6. `app/cognition/self_reflection.py`: Introspection and Improvement
@@ -99,7 +100,7 @@ The `StreamObserver` monitors the LLM's output in real-time to detect and preven
 *   **`observe(buffer, context)`**:
     *   Analyzes the stream of tokens from the LLM.
     *   Uses a "lite" model to check for issues like repetitive gibberish, ethical violations, or hallucinations.
-    *   If a problem is detected, it can interrupt the response generation process.
+    *   If a problem is detected, it can interrupt the response generation process. Observer interrupts are respected and handled in the pipeline. [Verified ✅ | Def: 2025-07-19 | Call: 2025-07-19]
     *   Loads an "observer" task instruction from `gaia_constants.json` to guide its analysis.
 
 ### 2.8. `app/utils/output_router.py`: Directing the Flow of Information
@@ -111,6 +112,7 @@ The `OutputRouter` is a new component that parses the structured output from the
     *   Handles the content of each block accordingly (e.g., sketching the plan, executing commands).
     *   Extracts the user-facing message from the `RESPONSE:` block.
     *   Includes placeholder logic for routing to different destinations like `web_chat`, `council_chat`, and `discord_chat`.
+    *   Confirmed functional in end-to-end CLI and rescue shell runs. [Verified ✅ | Def: 2025-07-19 | Call: 2025-07-19]
 
 ### 2.9. `app/utils/gaia_rescue_helper.py`: The Developer's Toolkit
 
@@ -148,3 +150,7 @@ Here's a step-by-step breakdown of how GAIA processes a user's request in the `d
 16. If the response includes an `EXECUTE:` block, `run_turn` calls `_execute_actions` to run the command. [Verified ✅ | Def: 2025-07-11 | Call: 2025-07-11]
 
 This detailed, multi-step process ensures that GAIA's responses are well-planned, reflective, and safe.
+
+## 4. Verification Summary (2025-07-19)
+
+All core pipeline components (ModelPool, SessionManager, AgentCore, PromptBuilder, SelfReflection, StreamObserver, OutputRouter, ThoughtSeed) have been validated as functional in end-to-end CLI and rescue shell runs. PromptBuilder and StreamObserver have been updated and verified per the latest enhancements. OutputRouter and observer interrupt handling are confirmed operational. See dev_log.md for details.

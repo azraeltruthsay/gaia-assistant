@@ -58,7 +58,16 @@ def _build_prompt_core(
     # --- Tier 0 & 3: The immutable parts of the prompt ---
     if task_instruction:
         persona_instructions = f"{task_instruction}\n\n{persona_instructions}"
+    # [L10] Inject Chain-of-Thought and confirmation instructions
+    cot_instruction = (
+        "Let's think through this step by step before answering."
+    )
+    confirm_instruction = (
+        "After reasoning, please list each task you plan to mark complete and ask for confirmation before applying updates."
+    )
+    # Insert as a system message before the final user input
     core_prompt = {"role": "system", "content": persona_instructions}
+    injected_instructions = {"role": "system", "content": f"{cot_instruction}\n{confirm_instruction}"}
     user_prompt = {"role": "user", "content": user_input}
 
     # --- Calculate the token budget ---
@@ -111,6 +120,8 @@ def _build_prompt_core(
     if summary_prompt:
         final_prompt.append(summary_prompt)
     final_prompt.extend(history_to_include)
+    # Insert the injected instructions before the final user input
+    final_prompt.append(injected_instructions)
     final_prompt.append(user_prompt)
 
     final_token_count = config.MAX_TOKENS - remaining_budget - config.RESPONSE_BUFFER
